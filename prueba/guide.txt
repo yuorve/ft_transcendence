@@ -1,4 +1,7 @@
 #crear y usar BabylonJS
+	Instalar NodeJs(y npm)
+		-> curl -o- https://fnm.vercel.app/install | bash
+		-> fnm install 22
 	npm create vite@latest -> vanilla, typescript
 	npm install
 	npm install -D @babylonjs/core
