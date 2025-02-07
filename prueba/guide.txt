@@ -1,0 +1,9 @@
+#crear y usar BabylonJS
+	npm create vite@latest -> vanilla, typescript
+	npm install
+	npm install -D @babylonjs/core
+	npm run dev
+	Paginas útiles
+		-> https://fonts.google.com/	Descargar fuentes de letra
+		-> https://gero3.github.io/facetype.js/		Convertir fuentes(tts) en json
+		-> https://github.com/WaelYasmina/babylontut/tree/main Repositorio del tutorial
