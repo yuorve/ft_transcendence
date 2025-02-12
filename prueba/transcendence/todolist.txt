@@ -1,0 +1,2 @@
+-> arreglar colisiones cuando la pelota roza la paleta
+-> revisar funcion movimiento de la pelota
