@@ -1,2 +1,3 @@
--> arreglar colisiones cuando la pelota roza la paleta
+-> comprobar colisiones cuando la pelota roza la paleta
 -> revisar funcion movimiento de la pelota
+-> TICTACTOE gestionar el empate
