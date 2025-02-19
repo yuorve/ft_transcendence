@@ -2,7 +2,7 @@ import * as BABYLON from '@babylonjs/core'
 import { GUI3DManager } from "@babylonjs/gui";
 import { HolographicButton } from "@babylonjs/gui";
 
-const canvas = document.getElementById('renderCanvas')  as HTMLCanvasElement;  //lugar donde se renderiza
+const canvas = document.getElementById('renderCanvasT')  as HTMLCanvasElement;  //lugar donde se renderiza
 
 const engine = new BABYLON.Engine(canvas); //motor 3d BABYLON
 

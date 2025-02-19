@@ -1,9 +1,5 @@
 import * as BABYLON from '@babylonjs/core'
 
-const canvas = document.getElementById('renderCanvas')  as HTMLCanvasElement;  //lugar donde se renderiza
-
-const engine = new BABYLON.Engine(canvas); //motor 3d BABYLON
-
 var inputMap: { [key: string]: boolean } = {};  // Mapea teclas a valores booleanos
 window.addEventListener("keydown", function(evt) {
   inputMap[evt.key] = true;  // Marca la tecla como presionada
@@ -12,9 +8,9 @@ window.addEventListener("keyup", function(evt) {
   inputMap[evt.key] = false;  // Marca la tecla como liberada
 });
 
-const CreateScene = function()    //funcion de la escena donde se crea todo
-{
-  	const scene = new BABYLON.Scene(engine);
+export function CreateScene(engine: BABYLON.Engine) {
+	
+	const scene = new BABYLON.Scene(engine);
 	
 	//BACKGROUD
 	const background = new BABYLON.Layer('background','space.jpg', scene, true);
@@ -101,18 +97,18 @@ const CreateScene = function()    //funcion de la escena donde se crea todo
 	
 	// TEXT
 
-	async function loadFontData() {
-    const response = await fetch('/Knewave_Regular.json');
-    const fontData = await response.json();
-    const text = BABYLON.MeshBuilder.CreateText('', 'THE PONG', fontData, {
-        size: 2,
-        depth: 0.5
-      });
-      if (text)
-        text.position = new BABYLON.Vector3(0, -1, 3);
-    return fontData;
-  }
-  loadFontData();
+// 	async function loadFontData() {
+//     const response = await fetch('/src/Knewave_Regular.json');
+//     const fontData = await response.json();
+//     const text = BABYLON.MeshBuilder.CreateText('', 'THE PONG', fontData, {
+//         size: 2,
+//         depth: 0.5
+//       });
+//       if (text)
+//         text.position = new BABYLON.Vector3(0, -1, 3);
+//     return fontData;
+//   }
+//   loadFontData();
 	
 	// RESET BALL
 	function resetBall() {
@@ -166,16 +162,16 @@ const CreateScene = function()    //funcion de la escena donde se crea todo
 		paddle2.position.y -= paddleSpeed;
 	});
 	return scene;
-  }
+}
 
-  const scene = CreateScene();
+//   const scene = CreateScene();
 
-engine.runRenderLoop(function()   //loop
-{
-  scene.render();
-});
+// engine.runRenderLoop(function()   //loop
+// {
+//   scene.render();
+// });
 
-window.addEventListener('resize', function()  //evita que los objetos 3d se deformen
-{
-  engine.resize();
-});
+// window.addEventListener('resize', function()  //evita que los objetos 3d se deformen
+// {
+//   engine.resize();
+// });

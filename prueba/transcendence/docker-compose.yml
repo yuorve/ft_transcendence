@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - transcendence_net
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    depends_on:
+      - database
+    env_file:
+      - .env
+    networks:
+      - transcendence_net
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  database:
+    image: nouchka/sqlite3:latest
+    volumes:
+      - ./database:/database
+    networks:
+      - transcendence_net
+
+networks:
+  transcendence_net:
+    driver: bridge
