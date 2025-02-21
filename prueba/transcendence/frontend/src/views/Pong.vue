@@ -37,7 +37,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="h-[92.6%] m-0 p-0">
+    <div class="h-200 w-full m-0 p-0">
       <canvas id="renderCanvasP" class="p-0 m-0 w-full h-full outline-none"></canvas>
     </div>
   </template>
