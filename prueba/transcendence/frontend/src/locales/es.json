@@ -13,5 +13,7 @@
   "message": "Escribe un mensaje...",
 
   "profError": "Error obteniendo perfil",
-  "profUser": "Perfil de Usuario"
+  "profUser": "Perfil de Usuario",
+  "changeImg": "Cambiar imangen",
+  "changeName": "Cambiar nombre"
   }

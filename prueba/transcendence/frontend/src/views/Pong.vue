@@ -37,8 +37,38 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div class="h-200 w-full m-0 p-0">
-      <canvas id="renderCanvasP" class="p-0 m-0 w-full h-full outline-none"></canvas>
+  <div class="flex h-full">
+    <div class="w-1/6 bg-gradient-to-b from-blue-400 to-transparent ">
+      jugador 1
     </div>
-  </template>
+    <div class="flex flex-col flex-1 m-0 p-0 h-full border-l-3 border-l-blue-700 border-r-3 border-r-amber-700">
+      <div class="border-b-3 border-b-gray-700 h-3/4">
+        <canvas id="renderCanvasP" class="w-full h-full outline-none"></canvas>
+      </div>
+      <div class="bg-gradient-to-b from-gray-400 to-transparent w-full h-1/4">
+        contador
+      </div>
+    </div>
+    <div class="w-1/6 bg-gradient-to-b from-amber-400 to-transparent ">
+      jugador 2
+    </div>
+  </div>
+</template>
+
+<!-- <div class="flex h-full w-full border-3 border-blue-600">
+  <div class="flex flex-col w-3/4 h-full border-3 border-white">
+    <div class="w-full h-1/6 border-2 border-red-200">
+      jugador 1
+    </div>
+    <div class="border-3 border-red-900 h-3/4">
+      <canvas id="renderCanvasP" class="w-full h-full outline-none"></canvas>
+    </div>
+    <div class="w-auto h-1/6 border-2 border-red-200">
+      jugador 2
+    </div>
+  </div>
+  <div class="border-3 border-amber-400 w-1/4 h-full">
+    contador
+  </div>
+</div> -->
   
