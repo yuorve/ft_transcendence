@@ -4,11 +4,13 @@ import Login from "./views/Login.vue";
 import Profile from "./views/Profile.vue";
 import Chat from "./views/Chat.vue";
 import Pong from "./views/Pong.vue";
+import Tictactoe from "./views/Tictactoe.vue";
 
 const routes = [
   { path: "/", component: Home },
   { path: "/login", component: Login },
   { path: "/pong", component: Pong },
+  { path: "/tictactoe", component: Tictactoe },
   {
     path: "/profile",
     component: Profile,

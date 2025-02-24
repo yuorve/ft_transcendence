@@ -47,7 +47,7 @@ function sendChatMessage() {
           <input class="px-auto my-3 border border-gray-400 shadow-md bg-white focus:outline-1 focus:outline-gray-700 rounded-md" v-model="message" :placeholder="$t('message')" @keyup.enter="sendChatMessage"/>
         </div>
         <div class="flex-grow justify-center flex">
-          <button class="my-2 px-3 shadow-md active:translate-y-0.5 focus-none bg-green-300 active:bg-green-400 rounded-xl" @click="sendChatMessage">Enviar</button>
+          <button class="my-2 px-3 shadow-md active:translate-y-0.5 focus-none bg-green-300 active:bg-green-400 border-1 border-green-600 rounded-xl" @click="sendChatMessage">Enviar</button>
         </div>
       </div>
     </div>

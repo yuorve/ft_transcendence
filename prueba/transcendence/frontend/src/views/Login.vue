@@ -83,7 +83,7 @@ const callback = (response) => {
     <div class="login-form flex flex-col gap-7 w-70 items-center mt-4">
       <input v-model="username" type="text" :placeholder="$t('user')" class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700"/>
       <input v-model="password" type="password" :placeholder="$t('password')" class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700"/>
-      <button @click="handleLogin" class="active:translate-y-0.5 bg-green-400 w-35 h-10 rounded-md border-1 border-green-600 shadow-md">{{$t("login")}}</button>
+      <button @click="handleLogin" class="active:translate-y-0.5 bg-green-400 active:bg-green-500 w-35 h-10 rounded-md border-1 border-green-600 shadow-md">{{$t("login")}}</button>
     </div>
 
     <p class="separator m-3 text-md text-gray-500">O</p>
