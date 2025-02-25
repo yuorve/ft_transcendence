@@ -9,10 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.0.7",
+    "@babylonjs/loaders": "^7.49.0",
+    "@tailwindcss/vite": "^4.0.9",
     "@vueuse/firebase": "^12.7.0",
+    "axios": "^1.7.9",
     "earcut": "^3.0.1",
-    "tailwindcss": "^4.0.7",
+    "i18n": "^0.15.1",
     "vue": "^3.5.13",
     "vue-i18n": "^11.1.1",
     "vue-router": "^4.5.0",
@@ -20,11 +22,15 @@
   },
   "devDependencies": {
     "@babylonjs/core": "^7.50.0",
-    "@babylonjs/gui": "^7.49.0",
+    "@babylonjs/gui": "^7.50.0",
+    "@types/earcut": "^3.0.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.9",
     "typescript": "~5.7.2",
-    "vite": "^6.1.1",
+    "vite": "^6.2.0",
     "vue-tsc": "^2.2.0"
   }
 }
