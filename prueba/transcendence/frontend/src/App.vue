@@ -1,19 +1,34 @@
-<script setup lang="ts">
+<script setup>
 import { RouterLink, RouterView } from "vue-router";
 import { useI18n } from 'vue-i18n';
 import { setLanguage } from './i18n';
 
+import { inject, computed } from "vue";
+import { useRouter } from "vue-router";
+
 const { t } = useI18n();
-const changeLanguage = (lang: string) => {
+const changeLanguage = (lang) => {
   setLanguage(lang);
+};
+
+const router = useRouter();
+const auth = inject("auth");
+const logout = inject("logout");
+
+// Computamos el estado del usuario en tiempo real
+const isAuthenticated = computed(() => !!auth.username);
+
+const handleLogout = () => {
+  logout();
+  router.push("/login");
 };
 </script>
 
 <template>
   <nav class="bg-gradient-to-r from-blue-500 to-blue-900 flex w-full h-18 p-3 px-0 border-amber-300 border">
     <div class="flex justify-evenly items-center w-400">
-      <router-link class="bg-red-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</router-link>
-      <router-link class="bg-red-600 p-3 rounded-xl text-white" to="/chat">{{ t('chat') }}</router-link>
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</RouterLink>
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/chat">{{ t('chat') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/Pong">{{ t('pong') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/Tictactoe">{{ t('tictac') }}</RouterLink>
       <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white" to="/login">{{ t('tournament') }}</RouterLink>

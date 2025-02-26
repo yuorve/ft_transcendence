@@ -12,8 +12,8 @@ const changeLanguage = (lang: string) => {
 <template>
   <nav class="bg-gradient-to-r from-blue-500 to-blue-900 flex w-full h-18 p-3 px-0 border-amber-300 border">
     <div class="flex justify-evenly items-center w-400">
-      <router-link class="bg-red-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</router-link>
-      <router-link class="bg-red-600 p-3 rounded-xl text-white" to="/chat">{{ t('chat') }}</router-link>
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</RouterLink>
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/chat">{{ t('chat') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/Pong">{{ t('pong') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/Tictactoe">{{ t('tictac') }}</RouterLink>
       <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white" to="/login">{{ t('tournament') }}</RouterLink>

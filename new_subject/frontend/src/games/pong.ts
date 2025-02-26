@@ -106,7 +106,6 @@ export default function initPong() {
 		paddle2.material = paddle2Mat;
 		
 		// TEXT
-
 		async function loadFontData() {
 		const response = await fetch('/Knewave_Regular.json');
 		const fontData = await response.json();
@@ -185,4 +184,5 @@ export default function initPong() {
 	{
 	engine.resize();
 	});
+	return {scene, engine };
 }

@@ -1,8 +1,31 @@
 <script setup lang="ts">
-// import { onMounted, onBeforeUnmount } from 'vue';
-// import { CreateScene } from '/src/tictactoe';  // Ajusta la ruta según la ubicación de tu archivo pong.ts
+import { onMounted, onUnmounted } from "vue";
+import initTicTacToe from "../games/tictactoe";
+import { Engine, Scene } from "@babylonjs/core";
 
-// import * as BABYLON from '@babylonjs/core';
+let scene: Scene | null = null;
+let engine: Engine | null = null;
+
+onMounted(() => {
+    try {
+        const result = initTicTacToe(); // Llamamos la función del juego
+        scene = result.scene;
+        engine = result.engine;
+    } catch (error) {
+        console.error("Error al inicializar Tic Tac Toe:", error);
+    }
+});
+
+onUnmounted(() => {
+    if (scene) {
+        scene.dispose(); // Eliminar la escena de Babylon.js
+        scene = null;
+    }
+    if (engine) {
+        engine.dispose(); // Apagar el motor de Babylon.js
+        engine = null;
+    }
+});
 </script>
 
 <template>
@@ -16,10 +39,10 @@
 		</div>
 		<div class="flex flex-col flex-1 m-0 p-0 h-full border-l-3 border-l-blue-700 border-r-3 border-r-amber-700">
 			<div class="border-b-3 border-b-gray-700 h-3/4">
-				<canvas id="renderCanvasT" class="w-full h-full outline-none"></canvas>
+				<canvas id="renderCanvas" class="w-full h-full outline-none"></canvas>
 			</div>
 			<div class="bg-gradient-to-b from-gray-400 to-transparent w-full h-1/4">
-			contador 3 en raya
+			contador 3 en raya boton de reiniciar?
 			</div>
 		</div>
 		<div class="w-1/6 flex flex-col bg-gradient-to-b from-amber-400 to-transparent ">

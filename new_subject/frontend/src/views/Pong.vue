@@ -1,39 +1,31 @@
 <script setup lang="ts">
-// import { onMounted, onBeforeUnmount } from 'vue';
-// // import { CreateScene } from '/src/pong';  // Ajusta la ruta según la ubicación de tu archivo pong.ts
+import { onMounted, onUnmounted } from "vue";
+import initPong from "../games/pong";
+import { Engine, Scene } from "@babylonjs/core";
 
-// import * as BABYLON from '@babylonjs/core';
+let scene: Scene | null = null;
+let engine: Engine | null = null;
 
-// let engine: BABYLON.Engine;
-// let scene: BABYLON.Scene | null = null;
+onMounted(() => {
+    try {
+      const result = initPong(); // Llamamos la función del juego
+        scene = result.scene;
+        engine = result.engine;
+    } catch (error) {
+        console.error("Error al inicializar Pong:", error);
+    }
+});
 
-// onMounted(() => {
-//   const canvas = document.getElementById('renderCanvasP') as HTMLCanvasElement;
-//   engine = new BABYLON.Engine(canvas, true);  // true para habilitar el antialiasing
-  
-//   // Creamos una nueva escena
-//   scene = CreateScene(engine);
-  
-//   // Llamamos al motor para renderizar la escena en el loop
-//   engine.runRenderLoop(() => {
-//     scene?.render();
-//   });
-
-//   // Aseguramos que el canvas se ajuste al cambiar el tamaño de la ventana
-//   window.addEventListener('resize', () => {
-//     engine.resize();
-//   });
-// });
-
-// // Limpiar la escena cuando el componente se desmonte
-// onBeforeUnmount(() => {
-//   if (scene) {
-//     scene.dispose();  // Destruye la escena cuando el componente se desmonta
-//   }
-//   if (engine) {
-//     engine.dispose();  // Destruye el motor cuando el componente se desmonta
-//   }
-// });
+onUnmounted(() => {
+    if (scene) {
+        scene.dispose(); // Eliminar la escena de Babylon.js
+        scene = null;
+    }
+    if (engine) {
+        engine.dispose(); // Apagar el motor de Babylon.js
+        engine = null;
+    }
+});
 </script>
 
 <template>
@@ -47,7 +39,7 @@
     </div>
     <div class="flex flex-col flex-1 m-0 p-0 h-full border-l-3 border-l-blue-700 border-r-3 border-r-amber-700">
       <div class="border-b-3 border-b-gray-700 h-3/4">
-        <canvas id="renderCanvasP" class="w-full h-full outline-none"></canvas>
+        <canvas id="renderCanvas" class="w-full h-full outline-none"></canvas>
       </div>
       <div class="bg-gradient-to-b from-gray-400 to-transparent w-full h-1/4">
         contador
