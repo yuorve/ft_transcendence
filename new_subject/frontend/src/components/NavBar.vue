@@ -101,24 +101,35 @@ const handleLogout = () => {
   logout();
   router.push("/login");
 };
+
+let isLogin = computed(() =>
+{
+  console.log("aqui es isLogin");
+  console.log(isAuthenticated.value);
+ return isAuthenticated.value ?  auth.username  : t("login");
+});
+
 </script>
 
 <template>
-  <nav class="navbar bg-gradient-to-r from-blue-500 to-blue-900 flex w-full h-18 p-3 px-0 border-amber-300 border">
-    <div class="flex justify-evenly items-center w-400">
+  <nav class="bg-gradient-to-r from-blue-500 to-blue-900 flex w-full h-18 p-3 px-0 border-amber-300 border">
+    <div class="flex justify-evenly items-center w-400" v-if="isAuthenticated">
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/chat">{{ t('chat') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/Pong">{{ t('pong') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white" to="/Tictactoe">{{ t('tictac') }}</RouterLink>
       <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white" to="/login">{{ t('tournament') }}</RouterLink>
     </div>
+    <div class="flex items-center ml-10 w-400" v-else="isAuthenticated">
+      <RouterLink class="bg-gray-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</RouterLink>
+    </div>
     <div class="flex flex-1 justify-end items-center sm:gap-5 gap-1">
       <div class="h-12 flex gap-2 sm:pr-2 sm:w-auto items-center sm:bg-red-600 sm:rounded-l-4xl sm:rounded-r-md text-white">
         <RouterLink class=" h-12 w-12 rounded-full flex justify-center items-center" to="/login">
           <img src="../../space.jpg" alt="Profile image" class="w-12 h-12 rounded-full cursor-pointer border-2 sm:border-0">
         </RouterLink>
-        <RouterLink class="hidden sm:block" to="/profile">{{t("profile")}}</RouterLink>
-        <!-- <li v-if="isAuthenticated"><button @click="handleLogout">{{ auth.username }} 🚪 Cerrar Sesión</button></li> -->
+        <RouterLink class="hidden sm:block" to="/profile">{{ isLogin }}</RouterLink>
+        <li v-if="isAuthenticated"><button @click="handleLogout"> 🚪 </button></li>
       </div>
       <details class="rounded-lg relative z-50 mr-2">
         <summary class="cursor-pointer w-14 h-14 list-none flex items-center justify-center">

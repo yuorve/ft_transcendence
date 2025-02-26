@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
 import { useI18n } from 'vue-i18n';
 import { setLanguage } from './i18n';
@@ -39,4 +39,43 @@ const changeLanguage = (lang: string) => {
   </nav>
   
   <RouterView/>
+</template> -->
+
+<script setup>
+import { reactive, provide } from "vue";
+import NavBar from "./components/NavBar.vue";
+
+const auth = reactive({
+  username: localStorage.getItem("username") || "",
+});
+
+const setUsername = (name) => {
+  auth.username = name;
+  localStorage.setItem("username", name);
+};
+
+const logout = () => {
+  auth.username = "";
+  localStorage.removeItem("username");
+  localStorage.removeItem("token");
+};
+
+// Proveemos `auth` y funciones globales
+provide("auth", auth);
+provide("setUsername", setUsername);
+provide("logout", logout);
+</script>
+
+<template>
+  <NavBar />
+  <!-- <router-view /> -->
 </template>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f4f4f4;
+}
+</style>
