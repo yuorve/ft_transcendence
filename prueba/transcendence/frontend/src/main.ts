@@ -1,6 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import router from "./router.ts";
+import router from "./router";
 import GoogleLogin from "vue3-google-login";
 import i18n from './i18n';
 

@@ -19,7 +19,7 @@ const fastify = Fastify({ logger: true });
 
 // Habilitar CORS
 fastify.register(require('@fastify/cors'), {
-  origin: ["http://localhost:5173", "http://localhost"], // Permite el frontend en Vite
+  origin: ["http://localhost:5173", "http://localhost:8080", "http://localhost"], // Permite el frontend en Vite
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,

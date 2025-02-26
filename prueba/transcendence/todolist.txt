@@ -1,4 +1,0 @@
--> el fondo del body no se actualiza en paginas mas largas como el login(cuadno estan los juegos uno encima de otro)
--> la barra de menu se solapa con mucho zoom
--> que las flechas del pong mo muevan la camara(cuando el canvas esta seleccionado)
--> hacer que cuando vuelva a la pantalla del pong siga por donde estaba?

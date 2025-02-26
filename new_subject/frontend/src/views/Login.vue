@@ -81,8 +81,8 @@ const callback = (response) => {
 
     <!-- Formulario de Login con Usuario y Contraseña -->
     <div class="login-form flex flex-col gap-7 w-70 items-center mt-4">
-      <input v-model="username" type="text" :placeholder="$t('user')" class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700"/>
-      <input v-model="password" type="password" :placeholder="$t('password')" class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700"/>
+      <input id="userLog" v-model="username" type="text" :placeholder="$t('user')" class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700"/>
+      <input id="passLog" v-model="password" type="password" :placeholder="$t('password')" class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700"/>
       <button @click="handleLogin" class="active:translate-y-0.5 bg-green-400 active:bg-green-500 w-35 h-10 rounded-md border-1 border-green-600 shadow-md">{{$t("login")}}</button>
     </div>
 

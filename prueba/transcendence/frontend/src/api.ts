@@ -1,7 +1,7 @@
 import type { int } from "@babylonjs/core";
 import axios from "axios";
 
-const API_URL = "http://localhost:4000"; // Dirección del backend
+export const API_URL = "http://localhost:4000"; // Dirección del backend
 
 export const registerUser = async (formData: FormData) => {
   return axios.post(`${API_URL}/register`, formData, {
