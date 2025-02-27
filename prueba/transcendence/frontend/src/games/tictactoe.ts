@@ -16,9 +16,10 @@ export default function initTicTacToe() {
         const background = new BABYLON.Layer('background','space.jpg', scene, true);
 
         // LIGHTS
+        //@ts-ignore
         const light = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(0, 1, 0), scene);
-        light.intensity = 0.5; // Máxima iluminación
-        light.groundColor = new BABYLON.Color3(1, 1, 1); // Ilumina todo por igual
+        // light.intensity = 0.7; // Máxima iluminación
+        // light.groundColor = new BABYLON.Color3(1, 1, 1); // Ilumina todo por igual
 
         // CAMERA
         const camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene); //camara
@@ -220,4 +221,5 @@ export default function initTicTacToe() {
     {
       engine.resize();
     });
+    return { scene, engine };
 }

@@ -34,7 +34,8 @@ updateHtmlLang(defaultLanguage);
 
 // 🔹 Función para cambiar el idioma y actualizar el HTML
 export function setLanguage(lang: string) {
-  i18n.global.locale.value = lang;
+  if (supportedLanguages.includes(lang as any))
+    i18n.global.locale.value = lang as "en" | "hy" | "es";
   localStorage.setItem('language', lang);
   updateHtmlLang(lang);
 }

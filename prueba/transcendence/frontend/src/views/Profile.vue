@@ -1,27 +1,8 @@
-<template>
-  <div class="container mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg max-w-md">
-    <h2 class="text-2xl font-semibold text-center mb-4">Perfil de Usuario</h2>
-
-    <div class="flex flex-col items-center">
-      <!-- Imagen de perfil -->
-      <img
-        :src="user.profileImage || defaultProfileImage"
-        alt="Foto de perfil"
-        class="w-32 h-32 rounded-full shadow-md mb-4 object-cover"
-      />
-
-      <!-- Información del usuario -->
-      <p class="text-lg font-semibold">👤 {{ user.username }}</p>
-      <p class="text-gray-600">📧 {{ user.email }}</p>
-      <p class="text-gray-500 text-sm">🕒 Registrado el: {{ formatDate(user.created_at) }}</p>
-    </div>
-  </div>
-</template>
-
 <script>
 import { ref, onMounted } from "vue";
 import { getProfile, API_URL } from "../api";
 import defaultProfileImage from "../assets/default-profile.png"; // Imagen predeterminada en caso de que no haya foto
+import { useI18n } from "vue-i18n";
 
 export default {
   data() {
@@ -44,6 +25,9 @@ export default {
         ? `${API_URL}${this.user.profileImage}` 
         : this.defaultProfileImage; 
         console.log(this.user);
+      this.user.email = this.user.email
+      ? `${API_URL}${this.user.email}`
+      : "no email";
     } catch (error) {
       console.error("Error al cargar el perfil:", error);
     }
@@ -58,8 +42,33 @@ export default {
 };
 </script>
 
-<style scoped>
-.container {
-  background-color: #f8f9fa;
-}
-</style>
+<template>
+  <div class="flex justify-center h-full w-full">
+    <div class="w-2/5 bg-gradient-to-l from-gray-500 via-transparent to-transparent"></div>
+    <div class="w-3/5 flex flex-col bg-gray-500 items-center">
+      <div class="flex w-full">
+        <div class="w-1/2 h-80 flex gap-8 flex-col justify-center items-center">
+          <img src="../../space.jpg" alt="Profile image" class="rounded-full w-30 h-30">
+          <button class="bg-blue-700 mt-0 m-10 p-3 rounded-2xl shadow-md active:bg-blue-800 active:translate-y-0.5">{{ $t('changeImg') }}</button>
+        </div>
+        <div class="w-1/2 flex gap-8 flex-col justify-center items-center">
+          <p class="text-2xl">{{ user.username }}</p>
+          <button class="bg-blue-700 mt-0 m-10 p-3 rounded-2xl shadow-md active:bg-blue-800 active:translate-y-0.5">{{ $t('changeName') }}</button>
+        </div>
+      </div>
+      <div class="border-2 w-full h-full rounded-md">
+        <div class="flex border-3">
+          <div class="flex justify-center items-center w-1/2 border-3">{{ user.email }}</div>
+          <div class="flex justify-center items-center flex-1 border-3">cambiar email</div>
+        </div>
+        <div class="flex border-3">
+          <div class="flex justify-center items-center w-1/2 border-3">contraseña ****</div>
+          <div class="flex justify-center items-center flex-1 border-3">cambiar contraseña</div>
+        </div>
+        opciones
+        <p class="text-gray-50 text-sm">🕒 Registrado el: {{ formatDate(user.created_at) }}</p>
+      </div>
+    </div>
+    <div class="w-2/5 bg-gradient-to-r from-gray-500 via-transparent to-transparent"></div>
+  </div>
+</template>

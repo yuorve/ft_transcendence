@@ -1,6 +1,7 @@
 <script setup>
 import { reactive, provide } from "vue";
 import NavBar from "./components/NavBar.vue";
+import Profile from "./views/Profile.vue";
 
 const auth = reactive({
   username: localStorage.getItem("username") || "",
@@ -28,11 +29,11 @@ provide("logout", logout);
   <!-- <router-view /> -->
 </template>
 
-<style>
+<!-- <style>
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
   background: #f4f4f4;
 }
-</style>
+</style> -->

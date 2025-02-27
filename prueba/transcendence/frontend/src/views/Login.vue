@@ -73,65 +73,25 @@ const callback = (response) => {
 </script>
 
 <template>
-  <div class="login-container">
-    <h2>Iniciar Sesión</h2>
+  <div class="login-container flex flex-col justify-center items-center p-5 bg-amber-300">
+    <h2>{{$t("login")}}</h2>
 
     <!-- Formulario de Login con Usuario y Contraseña -->
-    <div class="login-form">
-      <input v-model="username" type="text" placeholder="Usuario" />
-      <input v-model="password" type="password" placeholder="Contraseña" />
-      <button @click="handleLogin">Iniciar Sesión</button>
+    <div class="login-form flex flex-col gap-7 w-70 items-center mt-4">
+      <input id="userLog" v-model="username" type="text" :placeholder="$t('user')" class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700"/>
+      <input id="passLog" v-model="password" type="password" :placeholder="$t('password')" class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700"/>
+      <button @click="handleLogin" class="active:translate-y-0.5 bg-green-400 active:bg-green-500 w-35 h-10 rounded-md border-1 border-green-600 shadow-md">{{$t("login")}}</button>
     </div>
 
-    <p class="separator">O</p>
+    <p class="separator m-3 text-md text-gray-500">O</p>
 
     <!-- Botón de Google Sign-In -->
-    <GoogleLogin :callback="callback"/>
-
-    <p v-if="message" class="message">{{ message }}</p>
+    <GoogleLogin :callback="callback" class="shadow-md"/>
     <p class="text-sm text-center mt-4">
       ¿No tienes cuenta?
       <router-link to="/register" class="text-blue-500 hover:underline">Regístrate aquí</router-link>
     </p>
+
+    <p class="text-red-500 mt-3">{{ message }}</p>
   </div>
 </template>
-
-<style>
-.login-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 250px;
-}
-.login-form input {
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-.login-form button {
-  background-color: #42b883;
-  color: white;
-  border: none;
-  padding: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-.separator {
-  margin: 20px 0;
-  font-size: 14px;
-  color: #666;
-}
-.message {
-  margin-top: 15px;
-  color: red;
-  font-size: 14px;
-}
-</style>
