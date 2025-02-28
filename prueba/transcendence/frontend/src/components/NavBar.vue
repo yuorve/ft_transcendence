@@ -52,7 +52,7 @@ const changeFlag = computed(() => {
     </div>
     <div class="flex ml-8 items-center w-400" v-else>
       <RouterLink class="bg-green-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</RouterLink></div>
-    <details class="flex items-center w-400 sm:hidden relative z-50">
+    <details v-if="isAuthenticated" class="flex items-center w-400 sm:hidden relative z-50">
       <summary class="list-none cursor-pointer bg-red-600 p-3 rounded-xl text-white ml-3">
         <p>{{ movSel }}</p>
       </summary>
@@ -93,45 +93,3 @@ const changeFlag = computed(() => {
   <RouterView/>
 </template>
 
-<style scoped>
-.navbar {
-  background: #333;
-  padding: 10px;
-  text-align: center;
-}
-
-.nav-links {
-  display: flex;
-  justify-content: space-between; /* Distribuye los elementos */
-  align-items: center; /* Centra verticalmente */
-  width: 100%;
-  padding: 0;
-  list-style: none;
-}
-
-.nav-left {
-  display: flex;
-  gap: 20px; /* Espaciado entre enlaces */
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-}
-
-.navbar ul li a,
-.navbar ul li button {
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px 12px;
-}
-
-.navbar ul li a:hover,
-.navbar ul li button:hover {
-  text-decoration: underline;
-}
-</style>

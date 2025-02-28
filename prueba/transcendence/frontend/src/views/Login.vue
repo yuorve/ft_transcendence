@@ -88,8 +88,8 @@ const callback = (response) => {
     <!-- Botón de Google Sign-In -->
     <GoogleLogin :callback="callback" class="shadow-md"/>
     <p class="text-sm text-center mt-4">
-      ¿No tienes cuenta?
-      <router-link to="/register" class="text-blue-500 hover:underline">Regístrate aquí</router-link>
+      {{$t("notAcc")}}
+      <router-link to="/register" class="text-blue-500 hover:underline">{{$t("regHere")}}</router-link>
     </p>
 
     <p class="text-red-500 mt-3">{{ message }}</p>

@@ -16,5 +16,8 @@
   "profError": "Error obtaining profile",
   "profUser": "User profile",
   "changeImg": "Change image",
-  "changeName": "Change name"
+  "changeName": "Change name",
+
+  "notAcc": "You do not have account?",
+  "regHere": "Register here"
   }

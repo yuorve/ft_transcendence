@@ -1,23 +1,25 @@
 <template>
-	<div class="register-container">
-	  <h2>Registro</h2>
-	  <form @submit.prevent="register">
-		<label>Usuario</label>
-		<input type="text" v-model="username" required placeholder="Nombre de usuario" />
-  
-		<label>Correo Electrónico</label>
-		<input type="email" v-model="email" required placeholder="correo@ejemplo.com" />
-  
-		<label>Contraseña</label>
-		<input type="password" v-model="password" required placeholder="*******" />
-  
-		<label>Foto de perfil</label>
-		<input type="file" @change="handleFileUpload" accept="image/*" />
-  
-		<button type="submit">Registrarse</button>
-	  </form>
-  
-	  <p>¿Ya tienes cuenta? <router-link to="/login">Iniciar sesión</router-link></p>
+	<div class="flex items-center justify-center p-5 bg-amber-300">
+		<div class="register-container">
+		<h2>Registro</h2>
+		<form @submit.prevent="register">
+			<label>Usuario</label>
+			<input type="text" v-model="username" required placeholder="Nombre de usuario" />
+	
+			<label>Correo Electrónico</label>
+			<input type="email" v-model="email" required placeholder="correo@ejemplo.com" />
+	
+			<label>Contraseña</label>
+			<input type="password" v-model="password" required placeholder="*******" />
+	
+			<label>Foto de perfil</label>
+			<input type="file" @change="handleFileUpload" accept="image/*" />
+	
+			<button type="submit">Registrarse</button>
+		</form>
+	
+		<p>¿Ya tienes cuenta? <router-link to="/login">Iniciar sesión</router-link></p>
+		</div>
 	</div>
   </template>
   
