@@ -1,0 +1,3 @@
+--> poner bandera de error
+--> arreglar navBar en armenio justo antes de de que se minice
+--> largo maximo del nombre de usuario en el navBar

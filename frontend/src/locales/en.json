@@ -1,0 +1,23 @@
+{
+  "start": "Start",
+  "chat": "Chat",
+  "pong": "Pong",
+  "tictac": "TicTacToe",
+  "tournament": "Tournament",
+  "profile": "Profile",
+  "login": "Login",
+  "user": "User",
+  "password": "Password",
+  
+  "IRTChat": "In real time chat",
+  "you": "You",
+  "message": "Write a message...",
+
+  "profError": "Error obtaining profile",
+  "profUser": "User profile",
+  "changeImg": "Change image",
+  "changeName": "Change name",
+
+  "notAcc": "You do not have account?",
+  "regHere": "Register here"
+  }

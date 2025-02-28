@@ -1,0 +1,20 @@
+{
+  "start": "Inicio",
+  "chat": "Chat",
+  "pong": "Pong",
+  "tictac": "3 en raya",
+  "tournament": "Torneo",
+  "profile": "Perfil",
+  "login": "Iniciar sesión",
+  "user": "Usuario",
+  "password": "Contraseña",
+  
+  "IRTChat": "Chat en tiempo real",
+  "you": "Tú",
+  "message": "Escribe un mensaje...",
+
+  "profError": "Error obteniendo perfil",
+  "profUser": "Perfil de Usuario",
+  "changeImg": "Cambiar imangen",
+  "changeName": "Cambiar nombre"
+  }
