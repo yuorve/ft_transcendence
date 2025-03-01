@@ -9,7 +9,23 @@ export const registerUser = async (formData: FormData) => {
       "Content-Type": "multipart/form-data",
     },
   });
-}
+};
+
+export const UpdateImage = async (formData: FormData) => {
+  return axios.post(`${API_URL}/update-profile`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const UpdatePassword = async (formData: FormData) => {
+  return axios.post(`${API_URL}/update-password`, formData);
+};
+
+export const checkUsernameAvailability = async (username: String) => {
+  return axios.get(`${API_URL}/check-username/${username}`);
+};
 
 export const loginWithGoogle = async (googleToken: string) => {
   try {

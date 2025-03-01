@@ -1,5 +1,6 @@
 <script setup>
 import { RouterLink, RouterView, useRouter } from "vue-router";
+import { getProfile, API_URL } from "../api";
 import { useI18n } from 'vue-i18n';
 import { setLanguage } from '../i18n';
 import { inject, computed } from "vue";

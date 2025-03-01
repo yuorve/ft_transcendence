@@ -61,7 +61,8 @@ const all = promisify(db.all.bind(db));
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       player1 TEXT NOT NULL,
       player2 TEXT NOT NULL,
-      score TEXT NOT NULL,
+      score1 TEXT NOT NULL,
+      score2 TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
@@ -72,12 +73,12 @@ const all = promisify(db.all.bind(db));
 })();
 
 // Ruta de prueba
-fastify.get('/status', async (req, reply) => {
+fastify.get('/status', async (request, reply) => {
   reply.send({ message: 'Backend funcionando!' });
 });
 
-fastify.post('/google-login', async (req, reply) => {
-  const { token } = req.body;
+fastify.post('/google-login', async (request, reply) => {
+  const { token } = request.body;
   if (!token) {
     return reply.status(400).send({ error: 'Token de Google requerido' });
   }
@@ -113,7 +114,7 @@ fastify.post('/google-login', async (req, reply) => {
 });
 
 // Ruta para listar usuarios
-fastify.get('/users', async (req, reply) => {
+fastify.get('/users', async (request, reply) => {
   try {
     const users = await all('SELECT * FROM users');
     reply.send({ users });
@@ -122,9 +123,25 @@ fastify.get('/users', async (req, reply) => {
   }
 });
 
-const formbody = require("@fastify/formbody");
+// Ruta para verificar si un nombre de usuario está disponible
+fastify.get('/check-username/:username', async (request, reply) => {
+  try {
+    const { username } = request.params;
+    const user = await get('SELECT username FROM users WHERE username = ?', [username]);
+
+    if (user) {
+      reply.send({ available: false, message: 'El nombre de usuario ya está en uso' });
+    } else {
+      reply.send({ available: true, message: 'El nombre de usuario está disponible' });
+    }
+  } catch (error) {
+    reply.status(500).send({ error: 'Error al verificar el nombre de usuario' });
+  }
+});
+
 const fastifyMultipart = require("@fastify/multipart");
-fastify.register(formbody);
+//const formbody = require("@fastify/formbody");
+//fastify.register(formbody);
 // Habilitar `multipart/form-data`
 fastify.register(fastifyMultipart, { 
   attachFieldsToBody: true, // Adjunta los campos al `body`
@@ -133,36 +150,105 @@ fastify.register(fastifyMultipart, {
 
 // Ruta para registrar un usuario con contraseña cifrada
 fastify.post('/register', async (request, reply) => {
-  console.log("Body recibido:", request.body);
-  const data = await request.file();
+  try {
+    const { username, email, password, profileImage } = request.body;
   
-  // Extraer datos del body
-  const username = request.body.username?.value;
-  const email = request.body.email?.value;
-  const password = request.body.password?.value;
-  const profileImage = request.body.profileImage; // Es un objeto con `file`
+    // Validar campos de texto
+    if (!username || !email || !password) {
+      return reply.status(400).send({ error: "Faltan datos" });
+    }
 
-  if (!username || !email || !password) {
-    return reply.status(400).send({ error: "Faltan datos" });
+    // Validar que se haya subido un archivo
+    if (!profileImage || profileImage.type !== 'file') {
+      return reply.status(400).send({ error: "No se subió ninguna imagen de perfil." });
+    }
+
+    // Generar la ruta para guardar la imagen
+    const profileImagePath = `/uploads/${username.value}_${Date.now()}_${profileImage.filename}`;
+    const filePath = path.join(__dirname, profileImagePath);
+
+    // Escribir el Buffer directamente en el archivo
+    fs.writeFileSync(filePath, profileImage._buf);
+
+    // Guardar el usuario en la base de datos
+    const hashedPassword = await bcrypt.hash(password.value, 10);
+    await db.run(
+        "INSERT INTO users (username, email, password, profileImage, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+        [username.value, email.value, hashedPassword, profileImagePath]
+    );
+
+    reply.send({ success: true, message: "Usuario registrado con éxito", profilePicture: filePath });
+  } catch (err) {
+      console.error("Error al guardar la imagen:", err);
+      return reply.status(500).send({ error: "Error al guardar la imagen." });
   }
-  
-  // Guardar la imagen en el servidor
-  const filePath = `./uploads/${username}_${Date.now()}_${profileImage.filename}`;
-  await pump(profileImage.file, fs.createWriteStream(filePath));
+});
 
-  // Guardar el usuario en la base de datos
-  const hashedPassword = await bcrypt.hash(password, 10);
-  await db.run(
-      "INSERT INTO users (username, email, password, profileImage, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
-      [username, email, hashedPassword, filePath]
-  );
+// Ruta para actualizar la imagen de usuario
+fastify.post('/update-profile', async (request, reply) => {
+  try {
+    const { username, profileImage } = request.body;
+    if (!username) {
+      return reply.status(400).send({ error: 'Faltan datos' });
+    }
+    
+    const user = await get('SELECT * FROM users WHERE username = ?', [username.value]);
+    if (!user) return reply.status(401).send({ error: 'Usuario incorrecto' });
 
-  reply.send({ success: true, message: "Usuario registrado con éxito", profilePicture: filePath });
+    // Validar que se haya subido un archivo
+    if (!profileImage || profileImage.type !== 'file') {
+      return reply.status(400).send({ error: "No se subió ninguna imagen de perfil." });
+    }
+
+    // Generar la ruta para guardar la imagen
+    const profileImagePath = `/uploads/${username.value}_${Date.now()}_${profileImage.filename}`;
+    const filePath = path.join(__dirname, profileImagePath);
+
+    // Escribir el Buffer directamente en el archivo
+    fs.writeFileSync(filePath, profileImage._buf);
+
+    // Guardar el usuario en la base de datos
+    await db.run(
+        "UPDATE users SET profileImage = ? WHERE id = ?",
+        [profileImagePath, user.id]
+    );
+    
+    reply.send({ success: true, message: "Imagen actualizada con éxito", profilePicture: filePath });
+  } catch (error) {
+    reply.status(500).send({ error: 'Error en el servidor' });
+  }
+});
+
+// Ruta para actualizar la contraseña
+fastify.post('/update-password', async (request, reply) => {
+  const { username, password, newpassword } = request.body;
+  if (!username || !password || !newpassword) {
+    return reply.status(400).send({ error: 'Faltan datos' });
+  }
+
+  try {
+    const user = await get('SELECT * FROM users WHERE username = ?', [username.value]);
+    if (!user) return reply.status(401).send({ error: 'Usuario incorrecto' });
+
+    const match = await bcrypt.compare(password.value, user.password);
+    if (!match) return reply.status(401).send({ error: 'contraseña incorrecta' });
+
+    // Guardar el usuario en la base de datos
+    const hashedPassword = await bcrypt.hash(newpassword.value, 10);
+    await db.run(
+        "UPDATE users SET password = ? WHERE id = ?",
+        [hashedPassword, user.id]
+    );
+
+    reply.send({ success: true, message: "Constraseña actualizada con éxito" });
+  } catch (error) {
+    reply.status(500).send({ error: 'Error en el servidor' });
+  }
 });
 
 // Ruta para iniciar sesión y devolver un JWT
-fastify.post('/login', async (req, reply) => {
-  const { username, password } = req.body;
+fastify.post('/login', async (request, reply) => {
+  const { username, password } = request.body;
   if (!username || !password) {
     return reply.status(400).send({ error: 'Faltan datos' });
   }
@@ -182,9 +268,9 @@ fastify.post('/login', async (req, reply) => {
 });
 
 // Ruta protegida (solo accesible con token)
-fastify.get('/profile', async (req, reply) => {
+fastify.get('/profile', async (request, reply) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = request.headers.authorization?.split(' ')[1];
     if (!token) return reply.status(401).send({ error: 'Token requerido' });
 
     // Verificar el token
@@ -206,9 +292,10 @@ fastify.get('/profile', async (req, reply) => {
 });
 
 // Ruta para listar partidas
-fastify.get('/games', async (req, reply) => {
+fastify.get('/games/:user', async (request, reply) => {
   try {
-    const games = await all('SELECT * FROM games');
+    const userName = request.params.user;
+    const games = await all('SELECT * FROM games WHERE player1 = ?', [userName]);
     reply.send({ games });
   } catch (error) {
     reply.status(500).send({ error: error.message });
@@ -216,14 +303,14 @@ fastify.get('/games', async (req, reply) => {
 });
 
 // Ruta para registrar una partida
-fastify.post('/games', async (req, reply) => {
-  const { player1, player2, score } = req.body;
-  if (!player1 || !player2 || !score) {
+fastify.post('/games', async (request, reply) => {
+  const { player1, player2, score1, score2 } = request.body;
+  if (!player1 || !player2 || !score1 || !score2) {
     return reply.status(400).send({ error: 'Faltan datos' });
   }
 
   try {
-    await run('INSERT INTO games (player1, player2, score) VALUES (?, ?, ?)', [player1, player2, score]);
+    await run('INSERT INTO games (player1, player2, score1, score2) VALUES (?, ?, ?, ?)', [player1, player2, score1, score2]);
     reply.send({ message: 'Partida registrada' });
   } catch (error) {
     reply.status(500).send({ error: 'Error al registrar partida' });
