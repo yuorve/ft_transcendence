@@ -10,10 +10,12 @@ import Password from "./views/Password.vue";
 import Chat from "./views/Chat.vue";
 import Pong from "./views/Pong.vue";
 import TicTacToe from "./views/TicTacToe.vue";
+import Tournament from "./views/Tournament.vue";
 
 const routes = [
   { path: "/", component: Home },
   { path: "/login", component: Login },
+  { path: "/tournament", component: Tournament },
   { path: "/register", component: Register },
   {
     path: "/profile",

@@ -41,9 +41,8 @@ export default {
 </script>
 
 <template>
-  <div class="flex justify-center h-full w-full">
-    <div class="w-2/5 bg-gradient-to-l from-gray-500 via-transparent to-transparent"></div>
-    <div class="w-3/5 flex flex-col bg-gray-500 items-center">
+  <div class="flex justify-center items-center h-full w-full">
+    <div class="w-180 h-auto flex flex-col justify-center bg-gray-500 items-center rounded-4xl p-4">
       <div class="flex w-full">
         <div class="w-1/2 h-80 flex gap-8 flex-col justify-center items-center">
           <img :src=user.profileImage alt="Profile image" class="text-center items-center rounded-full w-30 h-30">
@@ -55,20 +54,21 @@ export default {
           <button class="bg-blue-700 mt-0 m-10 p-3 rounded-2xl shadow-md">{{ $t('changeName') }}</button>
         </div>
       </div>
-      <div class="border-2 w-full h-full rounded-md">
-        <div class="flex border-3">
-          <div class="flex justify-center items-center w-1/2 border-3">{{ user.email }}</div>
-          <div class="flex justify-center items-center flex-1 border-3">cambiar email</div>
+      <div class="w-full rounded-md">
+        <div class="flex justify-around m-2">
+          <div class="flex w-50 justify-center items-center bg-gray-600 rounded-md p-2">{{ user.email }}</div>
+          <div class="flex w-50 justify-center items-center bg-gray-600 rounded-full p-2">cambiar email</div>
         </div>
-        <div class="flex border-3">
-          <div class="flex justify-center items-center w-1/2 border-3">contraseña ****</div>
-          <RouterLink to="/password">Actualizar Contraseña</RouterLink>
+        <div class="flex justify-around m-2">
+          <div class="flex w-50 justify-center items-center bg-gray-600 rounded-md p-2">contraseña ****</div>
+          <RouterLink class="flex w-50 justify-center items-center bg-gray-600 rounded-full p-2" to="/password">Actualizar Contraseña</RouterLink>
         </div>
-        <p><router-link to="/games">Partidas Jugadas</router-link></p>
-        opciones
+        <div class="flex items-center justify-around">
+          <RouterLink class="bg-gray-600 p-2 rounded-full" to="/games">Partidas Jugadas</RouterLink>
+          <RouterLink class="bg-gray-600 p-2 rounded-full" to="/">Borrar cuenta</RouterLink>
+        </div>
         <p class="text-gray-50 text-sm">🕒 Registrado el: {{ formatDate(user.created_at) }}</p>
       </div>
     </div>
-    <div class="w-2/5 bg-gradient-to-r from-gray-500 via-transparent to-transparent"></div>
   </div>
 </template>

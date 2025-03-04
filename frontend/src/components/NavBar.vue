@@ -32,7 +32,8 @@ const movSel = computed(() => {
   router.currentRoute.value.path =='/chat' ? t('chat') :
    router.currentRoute.value.path == '/Pong' ? t('pong') :
    router.currentRoute.value.path == '/Tictactoe' ? t('tictac') :
-  t('tournament');
+   router.currentRoute.value.path == '/profile' ? t('profile') :
+  "unkown";
 });
 
 const changeFlag = computed(() => {
@@ -49,7 +50,7 @@ const changeFlag = computed(() => {
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/chat">{{ t('chat') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/Pong">{{ t('pong') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/Tictactoe">{{ t('tictac') }}</RouterLink>
-      <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white text-center" to="/">{{ t('tournament') }}</RouterLink>
+      <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white text-center" to="/tournament">{{ t('tournament') }}</RouterLink>
     </div>
     <div class="flex ml-8 items-center w-400" v-else>
       <RouterLink class="bg-green-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</RouterLink></div>
@@ -62,7 +63,7 @@ const changeFlag = computed(() => {
           <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/chat">{{ t('chat') }}</RouterLink>
           <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/Pong">{{ t('pong') }}</RouterLink>
           <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/Tictactoe">{{ t('tictac') }}</RouterLink>
-          <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white text-center" to="/">{{ t('tournament') }}</RouterLink>
+          <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white text-center" to="/tournament">{{ t('tournament') }}</RouterLink>
       </div>
     </details>
     <div class="flex flex-1 justify-end items-center sm:gap-5 gap-1">
