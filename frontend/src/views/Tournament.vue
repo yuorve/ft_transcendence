@@ -23,9 +23,9 @@ watch(number, (newValue) => {
   }
 });
 
-const increment = () => {
-  number.value++;
-};
+// const increment = () => {
+//   number.value++;
+// };
 const reset = () => {
   number.value = 0;
 };
@@ -46,15 +46,15 @@ while(count > 0) {
 <template>
     <div class="bg-violet-700 h-1/2 flex flex-col items-center gap-10">
         <p>Selecciona el número de jugadores</p>
-        <label for="numPl" class="bg-green-500">num jugadres</label>
+        <!-- <label for="numPl" class="bg-green-500">num jugadres</label>
         <input for="numPl" type="number" class="bg-white border-3" v-model="number">
-        <button @click="increment" class="bg-red-400 cursor-pointer w-20">sumar {{ number }}</button>
+        <button @click="increment" class="bg-red-400 cursor-pointer w-20">sumar {{ number }}</button> -->
         <div class="flex items-center justify-center gap-10">
             <button @click="reset" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">reset</button>
-            <button @click="generateRanks(number)" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">{{number}}</button>
+            <!-- <button @click="generateRanks(number)" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">{{number}}</button> -->
             <button @click="generateRanks(2)" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">2</button>
             <button @click="generateRanks(4)" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">4</button>
-            <button @click="generateRanks(6)" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">6</button>
+            <button @click="generateRanks(8)" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">8</button>
         </div>
         <div class="flex flex-col-reverse w-auto">
             <div v-for="(num, index) in ranks" :key="index" class="bg-gray-200 p-3 m-2 rounded flex justify-around">

@@ -38,12 +38,12 @@ onUnmounted(() => {
 			<div class="border-3 w-full flex-1 flex justify-center">stadistics</div>
 		</div>
 		<div class="flex flex-col flex-1 m-0 p-0 h-full border-l-3 border-l-blue-700 border-r-3 border-r-amber-700">
-			<div class="border-b-3 border-b-gray-700 h-3/4">
+			<div class="border-b-3 border-b-gray-700 h-full">
 				<canvas id="renderCanvas" class="w-full h-full outline-none"></canvas>
 			</div>
-			<div class="bg-gradient-to-b from-gray-400 to-transparent w-full h-1/4">
+			<!-- <div class="bg-gradient-to-b from-gray-400 to-transparent w-full h-1/4">
 			contador 3 en raya boton de reiniciar?
-			</div>
+			</div> -->
 		</div>
 		<div class="w-1/6 flex flex-col bg-gradient-to-b from-amber-400 to-transparent ">
 			<div class="w-full h-80 flex flex-col gap-10 justify-center items-center">

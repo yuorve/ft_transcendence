@@ -47,7 +47,7 @@ async function handleLogin() {
 
   try {
     const data = await login(username.value, password.value);
-    // console.log("Respuesta del backend:", data);
+    console.log("Respuesta del backend:", data);
 
     if (data.token) {
       localStorage.setItem("token", data.token);

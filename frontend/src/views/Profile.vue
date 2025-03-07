@@ -21,6 +21,7 @@ export default {
     try {
       const response = await getProfile();
       this.user = response[0];
+      // console.log(this.user);
       // Asegurar que la URL de la imagen sea accesible desde el frontend
       this.user.profileImage = this.user.profileImage
         ? `${API_URL}${this.user.profileImage}` 

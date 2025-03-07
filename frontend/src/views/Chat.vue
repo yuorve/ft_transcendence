@@ -32,7 +32,7 @@ function sendChatMessage() {
 
 <template>
   <div class="flex justify-center items-center mt-20">
-    <div class="chat-container bg-amber-200 w-100 h-100 justify-items-center flex-col rounded-md">
+    <div class="chat-container bg-amber-200 w-100 h-100 justify-center items-center flex flex-col rounded-md">
       <div class="h-10 content-center">
         <h2>💬 {{$t("IRTChat")}}</h2>
       </div>
