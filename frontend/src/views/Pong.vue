@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { computed, inject, onMounted, onUnmounted, watch } from "vue";
 import initPong from "../games/pong";
 import { puntuation } from "../games/pong";
 import { Engine, Scene } from "@babylonjs/core";
+import { useRoute, useRouter } from "vue-router";
 
 let scene: Scene | null = null;
 let engine: Engine | null = null;
+const auth = inject<{username: string}>("auth");
+const route = useRoute();
+const player1 = route.query.player1 || auth?.username;
+const player2 = route.query.player2 || "Invitado";
 
+if (!auth) {
+  throw new Error("No se encontró al usuario");
+}
 
 onMounted(() => {
   try {
@@ -30,6 +38,40 @@ onUnmounted(() => {
   puntuation.pr = 0;  //sin estas dos lineas la puntuación se guarda aunque se cambie de vista
   puntuation.pl = 0;
 });
+
+const sendrouter = useRouter();
+const sendPunt = (winner: string) => {
+      sendrouter.push({
+    path: "/Tournament",
+    query: {
+      puntL: puntuation.pl,
+      puntR: puntuation.pr,
+      winner: winner
+    }
+    });
+};
+
+// Observa la puntuación del lado izquierdo
+watch(
+  () => puntuation.pl,
+  (newVal) => {
+    if (newVal >= 1) {
+      console.log("¡La puntuación del jugador izquierdo ha llegado a 5!");
+      sendPunt(player1 as string);
+    }
+  }
+);
+
+// Observa la puntuación del lado derecho
+watch(
+  () => puntuation.pr,
+  (newVal) => {
+    if (newVal >= 1) {
+      console.log("¡La puntuación del jugador derecho ha llegado a 5!");
+      sendPunt(player2 as string);
+    }
+  }
+);
 </script>
 
 <template>
@@ -40,13 +82,13 @@ onUnmounted(() => {
     <div class="flex justify-center items-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-1/4">
       <div class="w-1/3 h-full flex justify-center gap-5 items-center">
         <img src="../../space.jpg" alt="" class=" w-30 h-30 rounded-full shadow-2xl border-2">
-        <p class="text-5xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">jugador 1</p>
+        <p class="text-5xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">{{ player1 }}</p>
       </div>
       <div class="w-1/3 flex justify-around">
         <h1 class="sm:text-8xl text-6xl">{{ puntuation.pl }} - {{ puntuation.pr }}</h1>
       </div>
       <div class="w-1/3 h-full flex justify-center gap-5 items-center">
-        <p class="text-5xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md">Jugador 2</p>
+        <p class="text-5xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md">{{ player2 }}</p>
         <img src="../../space.jpg" alt="" class=" w-25 h-25 rounded-full shadow-2xl border-2">
       </div>
     </div>
