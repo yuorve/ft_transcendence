@@ -22,7 +22,7 @@ async function handleGoogleSuccess(response) {
     if (data.token) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", data.username);
-      setUsername(data.username);
+      setUsername(data.username, data.token);
       message.value = "Inicio de sesión exitoso con Google!";
 
       // Esperar un poco antes de redirigir
@@ -47,12 +47,12 @@ async function handleLogin() {
 
   try {
     const data = await login(username.value, password.value);
-    console.log("Respuesta del backend:", data);
+    //console.log("Respuesta del backend:", data);
 
     if (data.token) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("username", username.value);
-      setUsername(username.value);
+      setUsername(username.value, data.token);
       message.value = "Inicio de sesión exitoso!";
 
       setTimeout(() => {

@@ -12,6 +12,7 @@ export default defineConfig({
       "Cross-Origin-Resource-Policy": "cross-origin"
     },
     host: "localhost",
+    allowedHosts: ["80-yuorve-fttranscendence-mwntw4fq46g.ws-eu118.gitpod.io","localhost"],
     port: 5173,
     strictPort: true
   }

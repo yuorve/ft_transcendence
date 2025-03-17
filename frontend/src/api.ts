@@ -1,7 +1,11 @@
+// @ts-ignore
 import type { int } from "@babylonjs/core";
 import axios from "axios";
 
-export const API_URL = "http://localhost:4000"; // Dirección del backend
+// Dirección del backend
+//export const API_URL = "https://80-yuorve-fttranscendence-mwntw4fq46g.ws-eu118.gitpod.io/api";
+//export const API_URL = "https://backend:4000"; 
+export const API_URL = "http://localhost:4000"; 
 
 export const registerUser = async (formData: FormData) => {
   return axios.post(`${API_URL}/register`, formData, {
@@ -23,13 +27,17 @@ export const UpdatePassword = async (formData: FormData) => {
   return axios.post(`${API_URL}/update-password`, formData);
 };
 
+export const deleteAccount = async (formData: FormData) => {
+  return axios.post(`${API_URL}/delete-account`, formData);
+};
+
 export const checkUsernameAvailability = async (username: String) => {
   return axios.get(`${API_URL}/check-username/${username}`);
 };
 
 export const loginWithGoogle = async (googleToken: string) => {
   try {
-    const response = await fetch(`${API_URL}/google-login`, {
+    const response = await fetch(`${API_URL}/google-login`, {      
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: googleToken }),
@@ -70,11 +78,94 @@ export async function getGames(username: string) {
 }
 
 // Registrar una partida
-export async function createGame(player1: string, player2: string, score: int) {
+export async function createGame(game: string, player1: string, player2: string, score1: number, score2: number) {
   const response = await fetch(`${API_URL}/games`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ player1, player2, score }),
+    body: JSON.stringify({ game, player1, player2, score1, score2 }),
   });
   return response.json();
 }
+
+// Obtener lista de torneos
+export async function getTournament(id: number) {
+  const response = await fetch(`${API_URL}/tournament/${id}`);
+  return response.json();
+}
+
+// Registrar un torneo
+export async function createTournament(id: number, game: number, round: number) {
+  const response = await fetch(`${API_URL}/tournament`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, game, round }),
+  });
+  return response.json();
+}
+
+// Obtener lista de amigos
+export async function getFriends(username: string) {
+  const response = await fetch(`${API_URL}/friends/${username}`);
+  return response.json();
+}
+
+// Obtener lista de solicitudes de amistad
+export async function getRequests(username: string) {
+  const response = await fetch(`${API_URL}/friend-request/${username}`);
+  return response.json();
+}
+
+// Obtener lista de amistades bloqueadas
+export async function getBlocked(username: string) {
+  const response = await fetch(`${API_URL}/friend-blocked/${username}`);
+  return response.json();
+}
+
+// Enviar una solicitud de amistad
+export async function sendRequest(username: string, buddy: string) {
+  const response = await fetch(`${API_URL}/friend-request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, buddy }),
+  });
+  return response.json();
+}
+
+// Aceptar/Rechazar/Bloquear una amistad
+export async function actionRequest(id: string, req: string, blocked: string) {
+  const response = await fetch(`${API_URL}/friends`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, req, blocked }),
+  });
+  return response.json();
+}
+
+// Obtener lista de chats
+export async function getChats(id: string) {
+  const response = await fetch(`${API_URL}/chats/${id}`);
+  return response.json();
+}
+
+// Guardar un mensaje del chat
+export async function saveMessage(chat: string, sender: string, message: string) {
+  const response = await fetch(`${API_URL}/chats`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat, sender, message }),
+  });
+  return response.json();
+}
+
+// Obtener lista de usuarios
+export async function getUsers() {
+  const response = await fetch(`${API_URL}/users`);
+  return response.json();
+}
+
+// Obtener usuario
+export async function getUser(id: number) {
+  const response = await fetch(`${API_URL}/user/${id}`);
+  return response.json();
+}
+

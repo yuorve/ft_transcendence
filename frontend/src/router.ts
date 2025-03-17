@@ -9,12 +9,23 @@ import Update from "./views/Update.vue";
 import Password from "./views/Password.vue";
 import Chat from "./views/Chat.vue";
 import Pong from "./views/Pong.vue";
+import PongOnline from "./views/Pong-online.vue";
 import TicTacToe from "./views/TicTacToe.vue";
 import Tournament from "./views/Tournament.vue";
+import Friends from "./views/Friends.vue";
+import ConnectionLost from "./views/ConnectionLost.vue";
+// @ts-ignore
+import { CharacterSupportedState } from "@babylonjs/core";
 
 const routes = [
   { path: "/", component: Home },
   { path: "/login", component: Login },
+  { path: "/connection-lost", component: ConnectionLost},
+  { path: "/pong-online/:game", 
+    component: PongOnline,   
+    name: 'PongOnline',
+    props: true,
+  },
   { path: "/tournament", component: Tournament },
   { path: "/register", component: Register },
   {
@@ -54,8 +65,10 @@ const routes = [
     },
   },
   {
-    path: "/chat",
+    path: "/chat/:buddy",
+    name: 'Chats',
     component: Chat,
+    props: true,
     beforeEnter: (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -92,6 +105,18 @@ const routes = [
   {
     path: "/tictactoe",
     component: TicTacToe,
+    beforeEnter: (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        next("/login");
+      } else {
+        next();
+      }
+    },
+  },
+  {
+    path: "/friends",
+    component: Friends,
     beforeEnter: (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
       const token = localStorage.getItem("token");
       if (!token) {

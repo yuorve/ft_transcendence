@@ -1,6 +1,9 @@
 import * as BABYLON from '@babylonjs/core'
 import { GUI3DManager } from "@babylonjs/gui";
 import { HolographicButton } from "@babylonjs/gui";
+import { createGame } from "../api";
+
+let username = localStorage.getItem("username") || "";
 
 export default function initTicTacToe() {
     const canvas = document.getElementById('renderCanvas')  as HTMLCanvasElement;  //lugar donde se renderiza
@@ -191,6 +194,7 @@ export default function initTicTacToe() {
                                 button.dispose();
                             });
                         });
+                        createGame("tictactoe",username,"Invitado",1,0);
                         createX(0, 0, -3, butSize);
                     }
                     else if (checkVic() == true && figure == 1) {
@@ -199,6 +203,7 @@ export default function initTicTacToe() {
                                 button.dispose();
                             });
                         });
+                        createGame("tictactoe",username,"Invitado",0,1);
                         createCircle(0, 0, -3, butSize);
                     }
                 });

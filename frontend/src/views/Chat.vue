@@ -1,10 +1,15 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { connectWebSocket, sendMessage } from "../ws";
-import { useRouter } from "vue-router";
+import { getFriends, getChats, getUser, saveMessage } from "../api";
+import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 
+const route = useRoute();
+const token = localStorage.getItem("token") || "";
 const username = ref(localStorage.getItem("username") || "");
+const buddy = ref(route.params.buddy);
+const chatId = ref("");
 const message = ref("");
 const messages = ref([]);
 const router = useRouter();
@@ -14,16 +19,39 @@ const { t } = useI18n();
 if (!username.value) {
   router.push("/login");
 } else {
-  onMounted(() => {
-    connectWebSocket(username.value, (msg) => {
-      messages.value.push(msg);
-    });
+  onMounted(async () => {
+    try {
+      // Obtener el historial del chat al montar el componente
+      const response = await getFriends(username.value);
+      const friend = response.friends.find(friend => friend.buddy === buddy.value);
+      if (!friend) {
+        router.push("/friends");
+      }
+      chatId.value = friend.id;
+      const initialChats = await getChats(friend.id);
+      const transformedChats = initialChats.chat.map(msg => {
+        return {
+          username: msg.sender,
+          message: msg.message
+        };
+      });
+
+      messages.value = transformedChats;
+
+      // Conectar el WebSocket después de obtener los mensajes iniciales
+      connectWebSocket(token.value, chatId.value, (msg) => {
+        messages.value.push(msg);
+      });
+    } catch (error) {
+      console.error("Error al cargar los chats:", error);
+    }
   });
 }
 
 function sendChatMessage() {
   if (!message.value.trim()) return;
-  sendMessage(username.value, message.value);
+  sendMessage(chatId.value, username.value, message.value);
+  saveMessage(chatId.value, username.value, message.value);
   console.log("el valor  es " + t("you"));
   messages.value.push({ username: t("you"), message: message.value });
   message.value = "";
@@ -34,7 +62,7 @@ function sendChatMessage() {
   <div class="flex justify-center items-center mt-20">
     <div class="chat-container bg-amber-200 w-100 h-100 justify-center items-center flex flex-col rounded-md">
       <div class="h-10 content-center">
-        <h2>💬 {{$t("IRTChat")}}</h2>
+        <h2>💬 {{$t("IRTChat")}}: {{buddy}}</h2>
       </div>
       <div class="chat-box border shadow-md h-75 w-90 justify-items-center bg-amber-50 rounded-md">
         <p v-for="(msg, index) in messages" :key="index">

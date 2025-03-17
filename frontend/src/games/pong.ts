@@ -1,6 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import earcut from "earcut";
 import { reactive } from 'vue';
+import { createGame } from "../api";
 
 (window as any).earcut = earcut;
 
@@ -8,6 +9,10 @@ export const puntuation = reactive({
 	pl: 0,
 	pr: 0,
 });
+
+let gameState = 'playing'; // Posibles estados: 'playing', 'gameOver'
+let username = localStorage.getItem("username") || "";
+let maxscore = 5; //Máxima puntuación para detener el juego
 
 export default function initPong() {
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;  //lugar donde se renderiza
@@ -141,45 +146,53 @@ export default function initPong() {
 
 		// MOVEMENT
 		scene.onBeforeRenderObservable.add(function () {
-			sphere.position.x += ballInitDir.x;
-			sphere.position.y += ballInitDir.y;
-			sphere.rotation.x += ballInitDir.x;
-			sphere.rotation.y += ballInitDir.y;
+			if (gameState === 'playing') {
+				sphere.position.x += ballInitDir.x;
+				sphere.position.y += ballInitDir.y;
+				sphere.rotation.x += ballInitDir.x;
+				sphere.rotation.y += ballInitDir.y;
 
-			// collisions with paddles
-			if (sphere.intersectsMesh(paddle2, true) && ballInitDir.x > 0) { //false for less precission, more efficiency 
-				ballInitDir.x *= -1;
-			}
-			if (sphere.intersectsMesh(paddle1, true) && ballInitDir.x < 0) {
-				ballInitDir.x *= -1;
-			}
+				// collisions with paddles
+				if (sphere.intersectsMesh(paddle2, true) && ballInitDir.x > 0) { //false for less precission, more efficiency 
+					ballInitDir.x *= -1;
+				}
+				if (sphere.intersectsMesh(paddle1, true) && ballInitDir.x < 0) {
+					ballInitDir.x *= -1;
+				}
 
-			// collisions up and down
-			if (sphere.position.y >= maxUpDown + paddleHeight / 2)
-				ballInitDir.y *= -1;
-			if (sphere.position.y <= -maxUpDown - paddleHeight / 2)
-				ballInitDir.y *= -1;
+				// collisions up and down
+				if (sphere.position.y >= maxUpDown + paddleHeight / 2)
+					ballInitDir.y *= -1;
+				if (sphere.position.y <= -maxUpDown - paddleHeight / 2)
+					ballInitDir.y *= -1;
 
-			// out of table
-			if (sphere.position.x >= paddleDistance + paddleWidth / 2) {
-				puntuation.pl++;
-				resetBall();
-			}
-			if (sphere.position.x <= -paddleDistance - paddleWidth / 2)
-			{
-				puntuation.pr++;
-				resetBall();
-			}
+				// out of table
+				if (sphere.position.x >= paddleDistance + paddleWidth / 2) {
+					puntuation.pl++;
+					resetBall();
+				}
+				if (sphere.position.x <= -paddleDistance - paddleWidth / 2)
+				{
+					puntuation.pr++;
+					resetBall();
+				}
 
-			// paddle controls
-			if (inputMap['w'] && paddle1.position.y < maxUpDown + sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
-				paddle1.position.y += paddleSpeed;
-			if (inputMap['s'] && paddle1.position.y > -maxUpDown - sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
-				paddle1.position.y -= paddleSpeed;
-			if (inputMap['ArrowUp'] && paddle2.position.y < maxUpDown + sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
-				paddle2.position.y += paddleSpeed;
-			if (inputMap['ArrowDown'] && paddle2.position.y > -maxUpDown - sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
-				paddle2.position.y -= paddleSpeed;
+				if (puntuation.pl >= maxscore || puntuation.pr >= maxscore) {
+					gameState = 'gameOver';
+					// Guardar partida
+					createGame("pong",username,"Invitado",puntuation.pl,puntuation.pr);
+				}
+
+				// paddle controls
+				if (inputMap['w'] && paddle1.position.y < maxUpDown + sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
+					paddle1.position.y += paddleSpeed;
+				if (inputMap['s'] && paddle1.position.y > -maxUpDown - sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
+					paddle1.position.y -= paddleSpeed;
+				if (inputMap['ArrowUp'] && paddle2.position.y < maxUpDown + sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
+					paddle2.position.y += paddleSpeed;
+				if (inputMap['ArrowDown'] && paddle2.position.y > -maxUpDown - sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
+					paddle2.position.y -= paddleSpeed;
+			}
 		});
 		return scene;
 	}
