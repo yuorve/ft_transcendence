@@ -1,5 +1,5 @@
 <template>
-	<div class="container mx-auto p-4">
+	<div class="container mx-auto p-4 bg-amber-300 mt-3 rounded-xl">
 	  <h1 class="text-2xl font-bold mb-4">Partidas de {{ username }}</h1>
   
 	  <div v-if="!games" class="text-gray-600">
@@ -21,7 +21,7 @@
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr v-for="game in games" :key="game.id">
+		  <tr v-for="(game, index) in games" :key="game.id" :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-200'">
 			<td class="border px-4 py-2">{{ game.player1 }}</td>
 			<td class="border px-4 py-2">{{ game.player2 }}</td>
 			<td class="border px-4 py-2">{{ game.score1 }}</td>

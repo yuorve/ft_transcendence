@@ -1,5 +1,5 @@
 <template>
-	<div class="container mx-auto p-4">
+	<div class="container mx-auto p-4 bg-blue-300 mt-3 rounded-xl">
 	  <h1 class="text-2xl font-bold mb-4">Amigos de {{ username }}</h1>
 
 	  <div v-if="!friends" class="text-gray-600">
