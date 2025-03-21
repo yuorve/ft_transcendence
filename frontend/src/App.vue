@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, reactive, watch, provide } from "vue";
 import NavBar from "./components/NavBar.vue";
+import chat from "./views/Chat.vue";
 import Profile from "./views/Profile.vue";
 import { useWebSocket } from './services/websocket';
 
@@ -52,6 +53,7 @@ provide("logout", logout);
 
 <template>
   <NavBar />
+  <chat/>
   <!-- <router-view /> -->
 </template>
 
