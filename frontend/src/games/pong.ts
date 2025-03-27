@@ -178,9 +178,9 @@ export default function initPong() {
 				}
 
 				if (puntuation.pl >= maxscore || puntuation.pr >= maxscore) {
-					gameState = 'gameOver';
-					// Guardar partida
-					createGame("pong",username,"Invitado",puntuation.pl,puntuation.pr);
+					// gameState = 'gameOver';
+					// // Guardar partida
+					// createGame("pong",username,"Invitado",puntuation.pl,puntuation.pr);
 				}
 
 				// paddle controls

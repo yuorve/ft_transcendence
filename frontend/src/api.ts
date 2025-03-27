@@ -5,7 +5,8 @@ import axios from "axios";
 // Dirección del backend
 //export const API_URL = "https://80-yuorve-fttranscendence-mwntw4fq46g.ws-eu118.gitpod.io/api";
 //export const API_URL = "https://backend:4000"; 
-export const API_URL = "http://localhost:4000"; 
+//export const API_URL = "http://localhost:8080/api";
+export const API_URL = "http://localhost:4000";
 
 export const registerUser = async (formData: FormData) => {
   return axios.post(`${API_URL}/register`, formData, {
@@ -78,23 +79,23 @@ export async function getGames(username: string) {
 }
 
 // Registrar una partida
-export async function createGame(game: string, player1: string, player2: string, score1: number, score2: number) {
+export async function createGame(game: string, type: string, player1: string, player2: string, score1: number, score2: number) {
   const response = await fetch(`${API_URL}/games`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ game, player1, player2, score1, score2 }),
+    body: JSON.stringify({ game, type, player1, player2, score1, score2 }),
   });
   return response.json();
 }
 
 // Obtener lista de torneos
-export async function getTournament(id: number) {
-  const response = await fetch(`${API_URL}/tournament/${id}`);
+export async function getTournament(username: string) {
+  const response = await fetch(`${API_URL}/tournament/${username}`);
   return response.json();
 }
 
 // Registrar un torneo
-export async function createTournament(id: number, game: number, round: number) {
+export async function createTournament(id: string, game: string, round: number) {
   const response = await fetch(`${API_URL}/tournament`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -169,3 +170,6 @@ export async function getUser(id: number) {
   return response.json();
 }
 
+export function generateId() {
+  return Math.random().toString(36).substring(2, 15);
+}

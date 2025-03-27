@@ -4,6 +4,7 @@ import initPong from "../games/pong";
 import { puntuation } from "../games/pong";
 import { Engine, Scene } from "@babylonjs/core";
 import { useRoute, useRouter } from "vue-router";
+import { createGame, generateId } from "../api";
 
 let scene: Scene | null = null;
 let engine: Engine | null = null;
@@ -41,6 +42,9 @@ onUnmounted(() => {
 
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
+  const idgame = generateId();
+  console.log(idgame);
+  createGame(idgame, "pong", player1, player2, puntuation.pl, puntuation.pr);
       sendrouter.push({
     path: "/Tournament",
     query: {
@@ -55,7 +59,7 @@ const sendPunt = (winner: string) => {
 watch(
   () => puntuation.pl,
   (newVal) => {
-    if (newVal >= 1) {
+    if (newVal >= 5) {
       console.log("¡La puntuación del jugador izquierdo ha llegado a 5!");
       sendPunt(player1 as string);
     }
@@ -66,7 +70,7 @@ watch(
 watch(
   () => puntuation.pr,
   (newVal) => {
-    if (newVal >= 1) {
+    if (newVal >= 5) {
       console.log("¡La puntuación del jugador derecho ha llegado a 5!");
       sendPunt(player2 as string);
     }

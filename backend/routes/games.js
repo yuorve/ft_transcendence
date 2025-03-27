@@ -3,6 +3,14 @@ const { run, get, all } = require('../db'); // Importa las funciones de la base 
 
 async function gamesRoutes(fastify) {
 // Ruta para listar partidas
+  fastify.get('/games', async (request, reply) => {
+    try {
+      const games = await all('SELECT * FROM games');
+      reply.send({ games });
+    } catch (error) {
+      reply.status(500).send({ error: error.message });
+    }
+  });
   fastify.get('/games/:user', async (request, reply) => {
       try {
         const userName = request.params.user;
@@ -15,13 +23,13 @@ async function gamesRoutes(fastify) {
     
     // Ruta para registrar una partida
     fastify.post('/games', async (request, reply) => {
-      const { game, player1, player2, score1, score2 } = request.body;
-      if (!game || !player1 || !player2 || score1 === undefined || score2 === undefined) {
+      const { game, type, player1, player2, score1, score2 } = request.body;
+      if (!game || !type || !player1 || !player2 || score1 === undefined || score2 === undefined) {
         return reply.status(400).send({ error: 'Faltan datos' });
       }
       console.log("guardando partida...")
       try {
-        await run('INSERT INTO games (player1, player2, score1, score2, game) VALUES (?, ?, ?, ?, ?)', [player1, player2, score1, score2, game]);
+        await run('INSERT INTO games (player1, player2, score1, score2, game, type) VALUES (?, ?, ?, ?, ?, ?)', [player1, player2, score1, score2, game, type]);
         reply.send({ message: 'Partida registrada' });
       } catch (error) {
         reply.status(500).send({ error: 'Error al registrar partida' });
@@ -29,10 +37,18 @@ async function gamesRoutes(fastify) {
     });
     
     // Ruta para listar torneos
-    fastify.get('/tournament/:id', async (request, reply) => {
+    fastify.get('/tournaments', async (request, reply) => {
+      try {        
+        const games = await all('SELECT * FROM tournaments');
+        reply.send({ games });
+      } catch (error) {
+        reply.status(500).send({ error: error.message });
+      }
+    });    
+    fastify.get('/tournament/:username', async (request, reply) => {
       try {
-        const userName = request.params.user;
-        const games = await all('SELECT * FROM tournaments, games WHERE tournaments.game = games.id AND tournaments.tournament = ?', [userName]);
+        const username = request.params.username;
+        const games = await all('SELECT * FROM tournaments, games WHERE tournaments.game = games.game AND games.score1 = NULL AND games.score2 = NULL AND (games.player1 = ? OR games.player2 = ?)', [username], [username]);
         reply.send({ games });
       } catch (error) {
         reply.status(500).send({ error: error.message });

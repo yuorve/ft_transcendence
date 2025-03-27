@@ -3,6 +3,7 @@ import { ref, onMounted, inject, computed, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 // import { watch } from "vue";
 
+import { createTournament, createGame, generateId } from "../api";
 // const number = ref<number>(localStorage.getItem("number") ? parseInt(localStorage.getItem("number")!) : 0);
 const ranks = ref<string[][]>([]); // Matriz para guardar los jugadores en cada ronda
 
@@ -12,6 +13,7 @@ const currentUser = auth?.username || "Tú"; // Si no hay usuario, poner "Tú"
 const router = useRouter();
 const receiveRoute = useRoute();
 const winner =  receiveRoute.query.winner || "no winner";
+const idtournament = generateId();
 
 const player1 = computed(() =>{
   return ranks.value.length > 0 && ranks.value[0].length > 0 ? ranks.value[0][0] : auth?.username;
@@ -20,6 +22,7 @@ const player1 = computed(() =>{
 const player2 = computed (() => {
   return ranks.value.length > 0 && ranks.value[0].length > 0 ? ranks.value[0][1] : "Invitado";
 });
+
 
 const redirect = () => {
   if (player1.value && player2.value)
@@ -39,6 +42,11 @@ onMounted(() => {
   const storedTour = localStorage.getItem("TourGroups");
   if (storedTour) {
     ranks.value = JSON.parse(storedTour);
+  }
+  else
+  {
+    // const idtournament = generateId();
+    console.log("id torneo " + idtournament);
   }
   // window.addEventListener("beforeunload", handleBeforeUnload);
 });
@@ -70,12 +78,20 @@ const reset = () => {
 const generateRanks = (count: number) => {
   ranks.value = [];
   
-  // Primera ronda: Jugadores
+    console.log(idtournament);
+    // Primera ronda: Jugadores
   let players: string[] = [currentUser]; // Primero el usuario logeado
   for (let i = 1; i < count; i++) {
     players.push(`Jugador ${i + 1}`);
+    if (i % 2 != 0) 
+    {
+      const idgame = generateId();
+      createGame(idgame, "pong", players[i - 1], players[i], "", "");
+      createTournament(idtournament, idgame, 1);
+    }
   }
   ranks.value.push(players);
+
 
   // Generar rondas eliminatorias (división por 2 en cada ronda)
   while (players.length > 1) {

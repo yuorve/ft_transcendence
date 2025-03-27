@@ -2,13 +2,23 @@ services:
   nginx:
     build: ./nginx
     ports:
-      - '80:80'
+      - '8080:80'
+    networks:
+      - transcendence_net
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+      websocket:
+        condition: service_started
+      frontend:
+        condition: service_healthy
   frontend:
     build: ./frontend
-    ports:
-      - "8080:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     depends_on:
       - backend
     networks:
@@ -16,11 +26,21 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-
+  websocket:
+    build: ./websocket
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    env_file:
+      - .env
+    networks:
+      - transcendence_net
+    volumes:
+      - ./websocket:/app
+      - /app/node_modules
   backend:
     build: ./backend
-    ports:
-      - "4000:4000"
     depends_on:
       - database
     env_file:

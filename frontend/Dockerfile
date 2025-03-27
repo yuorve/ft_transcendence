@@ -1,24 +1,23 @@
 # Usar Node.js como base
-FROM node:18
+FROM node:18-alpine
 
 # Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copiar los archivos del frontend
-COPY package.json package-lock.json ./
+# Copiar los archivos de package.json y package-lock.json
+COPY package*.json ./
+
+# Instalar las dependencias
 RUN npm install
+
+# Instalar curl
+RUN apk add --no-cache curl
 
 # Copiar el resto del código
 COPY . .
 
-# Compilar el frontend con Vite
-RUN npm run build
+# Exponer el puerto en el que Vite corre por defecto
+EXPOSE 5173
 
-# Usar nginx para servir el frontend
-FROM nginx:alpine
-COPY --from=0 /app/dist /usr/share/nginx/html
-
-# Exponer el puerto 80 para servir el frontend
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Comando para ejecutar Vite en modo desarrollo
+CMD ["npm", "run", "dev", "--", "--host"]

@@ -46,10 +46,11 @@ const initializeDatabase = async () => {
     await run(`CREATE TABLE IF NOT EXISTS games (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       game TEXT NOT NULL,
+      type TEXT NOT NULL,
       player1 TEXT NOT NULL,
       player2 TEXT NOT NULL,
-      score1 TEXT NOT NULL,
-      score2 TEXT NOT NULL,
+      score1 TEXT DEFAULT NULL,
+      score2 TEXT DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 

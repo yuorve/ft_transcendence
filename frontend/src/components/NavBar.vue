@@ -26,7 +26,7 @@ const handleLogout = () => {
 
 const updateProfileImage = async () => {
   //const defaultProfileImage = "/assets/default-profile-IFoswpyY.png";
-  const defaultProfileImage = "/assets/default-profile.png";
+  const defaultProfileImage = "/src/assets/default-profile.png";
   if (isAuthenticated.value) {
     try {
       const response = await getProfile();
