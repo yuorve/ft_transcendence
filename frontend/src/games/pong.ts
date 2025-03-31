@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import earcut from "earcut";
 import { reactive } from 'vue';
-import { createGame } from "../api";
+// import { createGame } from "../api";
 
 (window as any).earcut = earcut;
 
@@ -10,11 +10,11 @@ export const puntuation = reactive({
 	pr: 0,
 });
 
-let gameState = 'playing'; // Posibles estados: 'playing', 'gameOver'
-let username = localStorage.getItem("username") || "";
+// let username = localStorage.getItem("username") || "";
 let maxscore = 5; //Máxima puntuación para detener el juego
 
 export default function initPong() {
+	let gameState = 'playing'; // Posibles estados: 'playing', 'gameOver'
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;  //lugar donde se renderiza
 
 	const engine = new BABYLON.Engine(canvas); //motor 3d BABYLON
@@ -178,7 +178,7 @@ export default function initPong() {
 				}
 
 				if (puntuation.pl >= maxscore || puntuation.pr >= maxscore) {
-					// gameState = 'gameOver';
+					gameState = 'gameOver';
 					// // Guardar partida
 					// createGame("pong",username,"Invitado",puntuation.pl,puntuation.pr);
 				}

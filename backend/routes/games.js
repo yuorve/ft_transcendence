@@ -3,18 +3,10 @@ const { run, get, all } = require('../db'); // Importa las funciones de la base 
 
 async function gamesRoutes(fastify) {
 // Ruta para listar partidas
-  fastify.get('/games', async (request, reply) => {
-    try {
-      const games = await all('SELECT * FROM games');
-      reply.send({ games });
-    } catch (error) {
-      reply.status(500).send({ error: error.message });
-    }
-  });
   fastify.get('/games/:user', async (request, reply) => {
       try {
         const userName = request.params.user;
-        const games = await all('SELECT * FROM games WHERE player1 = ?', [userName]);
+        const games = await all('SELECT * FROM games WHERE player1 = ? ORDER BY id ASC', [userName]);
         reply.send({ games });
       } catch (error) {
         reply.status(500).send({ error: error.message });
@@ -35,20 +27,64 @@ async function gamesRoutes(fastify) {
         reply.status(500).send({ error: 'Error al registrar partida' });
       }
     });
+
+    // Ruta para actualizar una partida
+    fastify.put('/games/:id', async (request, reply) => {
+      const { id } = request.params;
+      const { score1, score2 } = request.body;
+      if (score1 === undefined || score2 === undefined) {
+        return reply.status(400).send({ error: "Faltan datos de puntaje" });
+      }
+      try {
+        // Asumiendo que usas una consulta SQL para actualizar
+        await run('UPDATE games SET score1 = ?, score2 = ? WHERE game = ?', [score1, score2, id]);
+        reply.send({ message: 'Partida actualizada correctamente' });
+      } catch (error) {
+        reply.status(500).send({ error: 'Error al actualizar la partida' });
+      }
+    });
     
-    // Ruta para listar torneos
+    // Ruta para listar TODOS torneos
     fastify.get('/tournaments', async (request, reply) => {
-      try {        
-        const games = await all('SELECT * FROM tournaments');
+      try {
+        // Usamos JOIN para unir las tablas de torneos y juegos según el campo "game"
+        const data = await all(`
+          SELECT tournaments.*, games.*
+          FROM tournaments
+          JOIN games ON tournaments.game = games.game
+        `);
+        reply.send({ tournaments: data });
+      } catch (error) {
+        reply.status(500).send({ error: error.message });
+      }
+    });
+    
+    // Ruta para listar toda la info de los torneos en los que participo
+    fastify.get('/mytournaments/:username', async (request, reply) => {
+      try {
+        const username = request.params.username;
+        const games = await all(`
+          SELECT t.*, g.*
+          FROM tournaments t
+          JOIN games g ON t.game = g.game
+          WHERE t.tournament IN (
+            SELECT DISTINCT t2.tournament
+            FROM tournaments t2
+            JOIN games g2 ON t2.game = g2.game
+            WHERE g2.player1 = ? OR g2.player2 = ?
+          )
+        `, [username, username]);
         reply.send({ games });
       } catch (error) {
         reply.status(500).send({ error: error.message });
       }
-    });    
+    });
+
+    // Ruta para listar torneos
     fastify.get('/tournament/:username', async (request, reply) => {
       try {
         const username = request.params.username;
-        const games = await all('SELECT * FROM tournaments, games WHERE tournaments.game = games.game AND games.score1 = NULL AND games.score2 = NULL AND (games.player1 = ? OR games.player2 = ?)', [username], [username]);
+        const games = await all('SELECT * FROM tournaments, games WHERE tournaments.game = games.game AND games.score1 = \'\' AND games.score2 = \'\' AND (games.player1 = ? OR games.player2 = ?)', [username, username]);
         reply.send({ games });
       } catch (error) {
         reply.status(500).send({ error: error.message });
@@ -72,4 +108,3 @@ async function gamesRoutes(fastify) {
   }
 
   module.exports = gamesRoutes;
-      

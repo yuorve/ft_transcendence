@@ -87,7 +87,7 @@ watch(isAuthenticated, async (newValue) => {
       <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white text-center" to="/tournament">{{ t('tournament') }}</RouterLink>
     </div>
     <div class="flex ml-8 items-center w-400" v-else>
-      <RouterLink class="bg-green-600 p-3 rounded-xl text-white" to="/">{{ t('start') }}</RouterLink></div>
+      <RouterLink class="bg-green-600 p-3 rounded-xl text-white" to="/login">{{ t('start') }}</RouterLink></div>
     <details v-if="isAuthenticated" class="flex items-center w-400 sm:hidden relative z-50">
       <summary class="list-none cursor-pointer bg-red-600 p-3 rounded-xl text-white ml-3">
         <p>{{ movSel }}</p>
@@ -128,4 +128,3 @@ watch(isAuthenticated, async (newValue) => {
 
   <RouterView/>
 </template>
-

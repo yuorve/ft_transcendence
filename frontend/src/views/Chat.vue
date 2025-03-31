@@ -65,7 +65,7 @@ function sendChatMessage() {
 
 
 <template>
-  <div class="flex flex-col w-100 justify-center items-center absolute bottom-2 right-2 cursor-pointer" v-if="isAuthenticated">
+  <div class="flex flex-col w-100 justify-center items-center fixed bottom-2 right-2 cursor-pointer z-50" v-if="isAuthenticated">
     <!-- Botón / barra superior del chat -->
     <div class="h-10 content-center bg-amber-200 w-full items-center justify-center flex" :class="isOpen === true ? 'rounded-t-md' : 'rounded-md'" @click="isOpen = !isOpen">
       💬 {{ $t("IRTChat") }}: {{ buddy }}

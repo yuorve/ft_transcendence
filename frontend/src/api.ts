@@ -5,8 +5,8 @@ import axios from "axios";
 // Dirección del backend
 //export const API_URL = "https://80-yuorve-fttranscendence-mwntw4fq46g.ws-eu118.gitpod.io/api";
 //export const API_URL = "https://backend:4000"; 
-//export const API_URL = "http://localhost:8080/api";
-export const API_URL = "http://localhost:4000";
+export const API_URL = "http://localhost:8080/api";
+// export const API_URL = "http://localhost:4000";
 
 export const registerUser = async (formData: FormData) => {
   return axios.post(`${API_URL}/register`, formData, {
@@ -79,7 +79,7 @@ export async function getGames(username: string) {
 }
 
 // Registrar una partida
-export async function createGame(game: string, type: string, player1: string, player2: string, score1: number, score2: number) {
+export async function createGame(game: string, type: string, player1: string, player2: string, score1: string, score2: string) {
   const response = await fetch(`${API_URL}/games`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -88,9 +88,30 @@ export async function createGame(game: string, type: string, player1: string, pl
   return response.json();
 }
 
+// Actualizar una partida
+export async function updateGame(gameId: string, newScore1: string, newScore2: string) {
+  const response = await fetch(`${API_URL}/games/${gameId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ score1: newScore1, score2: newScore2 }),
+  });
+  return response.json();
+}
+
+// Obtener lista de TODOS los torneos
+export async function getAllTournament() {
+  const response = await fetch(`${API_URL}/tournaments`);
+  return response.json();
+}
+
 // Obtener lista de torneos
 export async function getTournament(username: string) {
   const response = await fetch(`${API_URL}/tournament/${username}`);
+  return response.json();
+}
+
+export async function getMyTournament(username: string) {
+  const response = await fetch(`${API_URL}/mytournaments/${username}`);
   return response.json();
 }
 

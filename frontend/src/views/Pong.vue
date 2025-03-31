@@ -4,14 +4,21 @@ import initPong from "../games/pong";
 import { puntuation } from "../games/pong";
 import { Engine, Scene } from "@babylonjs/core";
 import { useRoute, useRouter } from "vue-router";
-import { createGame, generateId } from "../api";
+import { createGame, generateId, updateGame } from "../api";
 
 let scene: Scene | null = null;
 let engine: Engine | null = null;
-const auth = inject<{username: string}>("auth");
+const auth = inject<{ username: string }>("auth");
 const route = useRoute();
+const hasQueryParams = Object.keys(route.query).length > 0;
 const player1 = route.query.player1 || auth?.username;
 const player2 = route.query.player2 || "Invitado";
+const gameid = String(
+  Array.isArray(route.query.gameid)
+    ? route.query.gameid[0]
+    : route.query.gameid || generateId()
+);
+// const gameid = route.query.gameid || generateId();
 
 if (!auth) {
   throw new Error("No se encontró al usuario");
@@ -42,17 +49,18 @@ onUnmounted(() => {
 
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
-  const idgame = generateId();
-  console.log(idgame);
-  createGame(idgame, "pong", player1, player2, puntuation.pl, puntuation.pr);
+  // const idgame = generateId();
+  // console.log(idgame);
+  // createGame(idgame, "pong", player1, player2, puntuation.pl, puntuation.pr);
+  console.log("gameid en pong es " + gameid);
+  updateGame(gameid, String(puntuation.pl), String(puntuation.pr));
+  if (hasQueryParams) {
+    setTimeout(() => {
       sendrouter.push({
-    path: "/Tournament",
-    query: {
-      puntL: puntuation.pl,
-      puntR: puntuation.pr,
-      winner: winner
-    }
-    });
+        path: "/Tournament",
+      });
+    }, 2000);
+  }
 };
 
 // Observa la puntuación del lado izquierdo
@@ -96,6 +104,12 @@ watch(
         <img src="../../space.jpg" alt="" class=" w-25 h-25 rounded-full shadow-2xl border-2">
       </div>
     </div>
+  </div>
+  <div class="absolute w-full h-full text-9xl flex flex-col text-center items-center justify-center pointer-events-none"
+    v-if="puntuation.pr >= 5 || puntuation.pr >= 5">
+    <h1>FIN DE LA PARTIDA</h1>
+    <h2 v-if="puntuation.pl >= 5">GANADOR {{ player1 }}</h2>
+    <h2 v-else>GANADOR {{ player2 }}</h2>
   </div>
 
 </template>

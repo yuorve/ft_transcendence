@@ -1,5 +1,6 @@
+
 # Usar la imagen oficial de Nginx como base
-FROM nginx:latest
+FROM nginx:alpine
 
 # Copiar tu archivo de configuración de Nginx al contenedor
 COPY nginx.conf /etc/nginx/nginx.conf

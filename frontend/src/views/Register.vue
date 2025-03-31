@@ -49,6 +49,9 @@
 	  }
   
 	  await registerUser(formData);
+	  // Mensaje de éxito
+	  alert("Registro completado con éxito.");
+	  
 	  router.push("/login"); // Redirige al login tras registrarse
 	} catch (error) {
 	  console.error("Error en el registro:", error);

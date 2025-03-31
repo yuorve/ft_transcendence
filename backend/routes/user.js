@@ -1,7 +1,10 @@
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 const { JWT_SECRET } = process.env;
 const { run, get, all } = require('../db'); // Importa las funciones de la base de datos
+const path = require('path'); // Para manejar rutas de archivos
+const fs = require("fs");
 
 async function userRoutes(fastify) {
 // Ruta para listar usuarios
@@ -84,14 +87,14 @@ async function userRoutes(fastify) {
 
       // Generar la ruta para guardar la imagen
       const profileImagePath = `/uploads/${username.value}_${Date.now()}_${profileImage.filename}`;
-      const filePath = path.join(__dirname, profileImagePath);
+      const filePath = path.join(__dirname, '..', profileImagePath);
 
       // Escribir el Buffer directamente en el archivo
       fs.writeFileSync(filePath, profileImage._buf);
 
       // Guardar el usuario en la base de datos
       const hashedPassword = await bcrypt.hash(password.value, 10);
-      await db.run(
+      await run(
           "INSERT INTO users (username, email, password, profileImage, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
           [username.value, email.value, hashedPassword, profileImagePath]
       );
@@ -127,7 +130,7 @@ async function userRoutes(fastify) {
       fs.writeFileSync(filePath, profileImage._buf);
 
       // Guardar el usuario en la base de datos
-      await db.run(
+      await run(
           "UPDATE users SET profileImage = ? WHERE id = ?",
           [profileImagePath, user.id]
       );
@@ -154,7 +157,7 @@ async function userRoutes(fastify) {
 
       // Guardar el usuario en la base de datos
       const hashedPassword = await bcrypt.hash(newpassword.value, 10);
-      await db.run(
+      await run(
           "UPDATE users SET password = ? WHERE id = ?",
           [hashedPassword, user.id]
       );
@@ -180,7 +183,7 @@ async function userRoutes(fastify) {
       if (!match) return reply.status(401).send({ error: 'contraseña incorrecta' });
 
       // Elimina el usuario de la base de datos
-      await db.run(
+      await run(
           "DELETE FROM users WHERE id = ?",
           [user.id]
       );

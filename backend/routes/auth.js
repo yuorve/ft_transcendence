@@ -39,6 +39,7 @@ async function authRoutes(fastify) {
     if (!token) {
       return reply.status(400).send({ error: 'Token de Google requerido' });
     }
+    console.log(token);
 
     try {
       // Verificar el token con Google
@@ -51,13 +52,13 @@ async function authRoutes(fastify) {
       const googleId = payload.sub;
       const username = payload.email.split("@")[0];
       const email = payload.email;
-
+      
       // Buscar el usuario en la base de datos
       let user = await get('SELECT * FROM users WHERE username = ?', [username]);
 
       if (!user) {
         // Si el usuario no existe, lo registramos automáticamente
-        await run('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, 'GOOGLE_AUTH'], email);
+        await run('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, 'GOOGLE_AUTH', email]);
         user = await get('SELECT * FROM users WHERE username = ?', [username]);
       }
 

@@ -16,5 +16,8 @@
   "profError": "Error obteniendo perfil",
   "profUser": "Perfil de Usuario",
   "changeImg": "Cambiar imangen",
-  "changeName": "Cambiar nombre"
+  "changeName": "Cambiar nombre",
+
+  "notAcc": "¿No tienes cuenta?",
+  "regHere": "Regístrate aquí"
   }
