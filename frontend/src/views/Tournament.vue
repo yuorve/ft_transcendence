@@ -19,43 +19,6 @@ const player2 = ref("Invitado");
 const gameid = ref("");
 const gameround = ref("0");
 
-// nextRoundMatch = Math.floor(i / 2)
-
-// Donde i es el índice de la partida en la ronda actual. Por ejemplo:
-
-// • Si i = 0 (primera partida) o i = 1 (segunda partida), Math.floor(0/2) = 0 y Math.floor(1/2) = 0, por lo que ambos ganadores irán a la partida 0 de la siguiente ronda (o la primera partida si numeras desde 1, usando la fórmula ajustada).
-
-// • Si i = 2 o i = 3, Math.floor(2/2) = 1 y Math.floor(3/2) = 1, por lo que los ganadores de esas partidas se asignan a la partida 1 de la siguiente ronda.
-
-// Si prefieres numerar partidas desde 1, la fórmula se puede ajustar a:
-
-// nextRoundMatch = Math.floor((currentMatch - 1) / 2) + 1
-
-// Así, por ejemplo, si currentMatch = 1 o 2, entonces: Math.floor((1-1)/2) + 1 = 1 y Math.floor((2-1)/2) + 1 = 1, asignándoles a la primera partida de la siguiente ronda.
-
-// Esta fórmula es muy común para la construcción de llaves de torneos. Con ella, puedes agrupar las partidas de cada ronda y asignar los ganadores a la partida correspondiente en la siguiente ronda.
-// const winnerNextGame = () => {
-//   if (!tournamentData.value || !tournamentData.value.games || tournamentData.value.games.length === 0) {
-//     console.log("No hay datos del torneo");
-//     return;
-//   }
-//   let nextRoundMatch = Math.floor(i / 2);
-// };
-const redirect = () => {
-  if (player1.value && player2.value)
-    router.push({
-      path: "/Pong",
-      query: {
-        gameid: gameid.value,
-        player1: player1.value,
-        player2: player2.value
-      }
-    });
-  else {
-    alert("No hay suficientes jugadores para jugar Pong");
-  }
-};
-
 interface Game {
   game: string;
   type: string;
@@ -71,6 +34,22 @@ interface Game {
 interface TournamentResponse {
   games: Game[];
   created_at: string;
+}
+
+const nextGame = () => {
+  if (!tournamentData.value || !tournamentData.value.games || tournamentData.value.games.length === 0) {
+    console.log("No hay datos del torneo");
+    return;
+  }
+  let i = 0;
+  if (tournamentData.value != null) {
+    while (tournamentData.value.games[i].score1 != "" && tournamentData.value.games[i].score2 != "")
+      i++;
+    player1.value = tournamentData.value.games[i].player1;
+    player2.value = tournamentData.value.games[i].player2;
+    gameid.value = tournamentData.value.games[i].game;
+    gameround.value = tournamentData.value.games[i].round;
+  }
 }
 
 // Variable reactiva para almacenar la respuesta del torneo
@@ -99,6 +78,45 @@ async function checkTournament() {
   }
 }
 
+
+// nextRoundMatch = Math.floor(i / 2)
+
+// Donde i es el índice de la partida en la ronda actual. Por ejemplo:
+
+// • Si i = 0 (primera partida) o i = 1 (segunda partida), Math.floor(0/2) = 0 y Math.floor(1/2) = 0, por lo que ambos ganadores irán a la partida 0 de la siguiente ronda (o la primera partida si numeras desde 1, usando la fórmula ajustada).
+
+// • Si i = 2 o i = 3, Math.floor(2/2) = 1 y Math.floor(3/2) = 1, por lo que los ganadores de esas partidas se asignan a la partida 1 de la siguiente ronda.
+
+// Si prefieres numerar partidas desde 1, la fórmula se puede ajustar a:
+
+// nextRoundMatch = Math.floor((currentMatch - 1) / 2) + 1
+
+// Así, por ejemplo, si currentMatch = 1 o 2, entonces: Math.floor((1-1)/2) + 1 = 1 y Math.floor((2-1)/2) + 1 = 1, asignándoles a la primera partida de la siguiente ronda.
+
+// Esta fórmula es muy común para la construcción de llaves de torneos. Con ella, puedes agrupar las partidas de cada ronda y asignar los ganadores a la partida correspondiente en la siguiente ronda.
+// const winnerNextGame = () => {
+//   if (!tournamentData.value || !tournamentData.value.games || tournamentData.value.games.length === 0) {
+//     console.log("No hay datos del torneo");
+//     return;
+//   }
+//   let nextRoundMatch = Math.floor(i / 2);
+// };
+
+const redirect = () => {
+  if (player1.value && player2.value)
+    router.push({
+      path: "/Pong",
+      query: {
+        gameid: gameid.value,
+        player1: player1.value,
+        player2: player2.value
+      }
+    });
+  else {
+    alert("No hay suficientes jugadores para jugar Pong");
+  }
+};
+
 onMounted( async () => {
   await checkTournament();
   if (tournamentActive.value == true)
@@ -120,7 +138,7 @@ const generateRanks = async (count: number) => {
         k++;
       }
     }
-  
+
     let currentGameCount = Math.floor(count / 2); // Número de partidos en la ronda 1
     let round = 2;
     // Mientras queden más de un partido (es decir, hasta el partido final)
@@ -139,23 +157,6 @@ const generateRanks = async (count: number) => {
   }
   else
     console.log("Error en generateRanks: No hay suficientes jugadores");
-}
-
-const nextGame = () => {
-  if (!tournamentData.value || !tournamentData.value.games || tournamentData.value.games.length === 0) {
-    console.log("No hay datos del torneo");
-    return;
-  }
-  let i = 0;
-  if (tournamentData.value != null)
-  {
-    while(tournamentData.value.games[i].score1 != "" && tournamentData.value.games[i].score2 != "")
-      i++;
-    player1.value = tournamentData.value.games[i].player1;
-    player2.value = tournamentData.value.games[i].player2;
-    gameid.value =  tournamentData.value.games[i].game;
-    gameround.value = tournamentData.value.games[i].round;
-  }
 }
 
 const playerNum = ref(0);
@@ -210,6 +211,7 @@ const sortedRounds = computed(() => {
                <p><strong>Juego:</strong> {{ game.game }}</p>
                <p><strong>Jugador 1:</strong> {{ game.player1 }}</p>
                <p><strong>Jugador 2:</strong> {{ game.player2 }}</p>
+               <p><strong>Ronda:</strong> {{ game.round }}</p>
              </div>
            </div>
          </div>

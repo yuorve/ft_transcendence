@@ -79,11 +79,11 @@ export async function getGames(username: string) {
 }
 
 // Registrar una partida
-export async function createGame(game: string, type: string, player1: string, player2: string, score1: string, score2: string) {
+export async function createGame(game: string, type: string, game_order: number, player1: string, player2: string, score1: string, score2: string) {
   const response = await fetch(`${API_URL}/games`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ game, type, player1, player2, score1, score2 }),
+    body: JSON.stringify({ game, type, game_order, player1, player2, score1, score2 }),
   });
   return response.json();
 }

@@ -12,6 +12,18 @@ async function gamesRoutes(fastify) {
         reply.status(500).send({ error: error.message });
       }
     });
+
+    // Ruta para borrar partidas
+    fastify.get('/delete-game/:id', async (request, reply) => {
+      try {
+        const gameId = request.params.id;
+        console.log("eliminando partida...")        
+        await run('DELETE FROM games WHERE game = ?', [gameId]);
+        reply.send({ message: 'Partida eliminada' });        
+      } catch (error) {
+        reply.status(500).send({ error: error.message });
+      }
+    });
     
     // Ruta para registrar una partida
     fastify.post('/games', async (request, reply) => {
@@ -21,10 +33,11 @@ async function gamesRoutes(fastify) {
       }
       console.log("guardando partida...")
       try {
-        await run('INSERT INTO games (player1, player2, game_order, score1, score2, game, type) VALUES (?, ?, ?, ?, ?, ?, ?)', [player1, player2, game_order, score1, score2, game, type]);
+        await run('INSERT INTO games (game, type, game_order, player1, player2, score1, score2) VALUES (?, ?, ?, ?, ?, ?, ?)', [game, type, game_order, player1, player2, score1, score2]);
         reply.send({ message: 'Partida registrada' });
       } catch (error) {
-        reply.status(500).send({ error: 'Error al registrar partida' });
+        console.error("🔥 ERROR AL GUARDAR PARTIDA:", error);
+        reply.status(500).send({ error: error.message });
       }
     });
 

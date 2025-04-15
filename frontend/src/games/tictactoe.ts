@@ -1,15 +1,12 @@
 import * as BABYLON from '@babylonjs/core'
 import { GUI3DManager } from "@babylonjs/gui";
 import { HolographicButton } from "@babylonjs/gui";
-import { createGame } from "../api";
 import { reactive } from 'vue';
 
 export const puntuation = reactive({
     pl: 0,
     pr: 0,
 });
-
-let username = localStorage.getItem("username") || "";
 
 export default function initTicTacToe() {
     const canvas = document.getElementById('renderCanvas')  as HTMLCanvasElement;  //lugar donde se renderiza

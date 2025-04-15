@@ -43,7 +43,7 @@ onMounted(() => {
         scene = result.scene;
         engine = result.engine;
 		if (!hasQueryParams)
-			createGame(gameid, "TicTacToe", player1 as string, player2 as string, "", "");
+			createGame(gameid, "TicTacToe", 0, player1 as string, player2 as string, "", "");
     } catch (error) {
         console.error("Error al inicializar Tic Tac Toe:", error);
     }

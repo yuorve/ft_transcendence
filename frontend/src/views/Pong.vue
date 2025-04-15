@@ -48,7 +48,10 @@ onMounted(() => {
     scene = result.scene;
     engine = result.engine;
     if (!hasQueryParams)
-      createGame(gameid, "pong", player1 as string, player2 as string, "", "");
+    {
+      console.log("crando juego");
+      createGame(gameid, "pong", 0, player1 as string, player2 as string, "0", "0");
+    }
   } catch (error) {
     console.error("Error al inicializar Pong:", error);
   }
