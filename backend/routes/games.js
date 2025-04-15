@@ -15,13 +15,13 @@ async function gamesRoutes(fastify) {
     
     // Ruta para registrar una partida
     fastify.post('/games', async (request, reply) => {
-      const { game, type, player1, player2, score1, score2 } = request.body;
+      const { game, type, game_order, player1, player2, score1, score2 } = request.body;
       if (!game || !type || !player1 || !player2 || score1 === undefined || score2 === undefined) {
         return reply.status(400).send({ error: 'Faltan datos' });
       }
       console.log("guardando partida...")
       try {
-        await run('INSERT INTO games (player1, player2, score1, score2, game, type) VALUES (?, ?, ?, ?, ?, ?)', [player1, player2, score1, score2, game, type]);
+        await run('INSERT INTO games (player1, player2, game_order, score1, score2, game, type) VALUES (?, ?, ?, ?, ?, ?, ?)', [player1, player2, game_order, score1, score2, game, type]);
         reply.send({ message: 'Partida registrada' });
       } catch (error) {
         reply.status(500).send({ error: 'Error al registrar partida' });
