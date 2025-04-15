@@ -89,7 +89,7 @@ watch(isAuthenticated, async (newValue) => {
     <div class="flex ml-8 items-center w-400" v-else>
       <RouterLink class="bg-green-600 p-3 rounded-xl text-white" to="/login">{{ t('start') }}</RouterLink></div>
     <details v-if="isAuthenticated" class="flex items-center w-400 sm:hidden relative z-50">
-      <summary class="list-none cursor-pointer bg-red-600 p-3 rounded-xl text-white ml-3">
+      <summary class="list-none cursor-pointer bg-red-600 p-3 w-fit rounded-xl text-white ml-3">
         <p>{{ movSel }}</p>
       </summary>
         <div class="absolute top-full left-4 z-50 flex flex-col border-1 p-2 mt-1 w-auto -translate-x-1 gap-2 bg-gray-300 rounded-lg">
@@ -102,11 +102,11 @@ watch(isAuthenticated, async (newValue) => {
     </details>
     <div class="flex flex-1 justify-end items-center sm:gap-5 gap-1">
       <div v-if="isAuthenticated" class="h-12 flex gap-2 sm:pr-2 sm:w-auto items-center bg-red-600 rounded-l-4xl rounded-r-md text-white">
-        <RouterLink class=" h-12 w-12 rounded-full flex justify-center items-center" to="/profile">
+        <RouterLink class="h-12 w-12 rounded-full flex justify-center items-center" to="/profile">
           <img :src="profileImage" alt="Profile image"
-            class="w-12 h-12 rounded-full cursor-pointer border-2 sm:border-0">
+            class="w-12 h-12 rounded-full cursor-pointer border-1">
         </RouterLink>
-        <RouterLink class="hidden sm:block" to="/profile">{{ isLogin }}</RouterLink>
+        <RouterLink class="sm:block" to="/profile">{{ isLogin }}</RouterLink>
         <ul v-if="isAuthenticated"><button @click="handleLogout"> 🚪 </button></ul>
       </div>
       <div v-else class="h-12 flex px-2 w-auto items-center bg-green-600 rounded-xl text-white">

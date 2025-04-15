@@ -42,7 +42,6 @@
 	  const response = await UpdateImage(formData);
 	   if (response.data.success) {
 		alert(response.data.message);
-  
 		router.push("/profile"); // Redirige al profile tras actualizar
 	  } else {
 		alert('Error al actualizar la imagen: ' + respuesta.data.message);

@@ -10,23 +10,25 @@
 		Aún no has jugado ninguna partida.
 	  </div>
   
-	  <table v-else class="table-auto w-full">
+	  <table v-else class="table-auto w-full rounded-2xl">
 		<thead>
 		  <tr>
-			<th class="px-4 py-2">Jugador 1</th>
-			<th class="px-4 py-2">Jugador 2</th>
-			<th class="px-4 py-2">Puntuación 1</th>
-			<th class="px-4 py-2">Puntuación 2</th>
-			<th class="px-4 py-2">Fecha</th>
+			<th class="">Juego</th>
+			<!-- <th class="">Jugador 1</th> -->
+			<th class="">Jugador 2</th>
+			<th class="">Punt 1</th>
+			<th class="">Punt 2</th>
+			<th class="">Fecha</th>
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr v-for="(game, index) in games" :key="game.id" :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-200'">
-			<td class="border px-4 py-2">{{ game.player1 }}</td>
-			<td class="border px-4 py-2">{{ game.player2 }}</td>
-			<td class="border px-4 py-2">{{ game.score1 }}</td>
-			<td class="border px-4 py-2">{{ game.score2 }}</td>
-			<td class="border px-4 py-2">{{ formatDate(game.created_at) }}</td>
+			<td class="border ">{{ game.type }}</td>
+			<!-- <td class="border ">{{ game.player1 }}</td> -->
+			<td class="border ">{{ game.player2 }}</td>
+			<td class="border ">{{ game.score1 }}</td>
+			<td class="border ">{{ game.score2 }}</td>
+			<td class="border ">{{ formatDate(game.created_at) }}</td>
 		  </tr>
 		</tbody>
 	  </table>

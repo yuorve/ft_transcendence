@@ -124,7 +124,7 @@ async function userRoutes(fastify) {
 
       // Generar la ruta para guardar la imagen
       const profileImagePath = `/uploads/${username.value}_${Date.now()}_${profileImage.filename}`;
-      const filePath = path.join(__dirname, profileImagePath);
+      const filePath = path.join(__dirname, '..', profileImagePath);
 
       // Escribir el Buffer directamente en el archivo
       fs.writeFileSync(filePath, profileImage._buf);

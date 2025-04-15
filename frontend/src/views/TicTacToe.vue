@@ -1,13 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, inject, watch } from "vue";
 import initTicTacToe from "../games/tictactoe";
 import { Engine, Scene } from "@babylonjs/core";
-import { getProfile, API_URL } from "../api";
+import { getProfile, API_URL, createGame, generateId, updateGame } from "../api";
+import { useRoute, useRouter } from "vue-router";
+import { puntuation } from "../games/tictactoe";
 
 let scene: Scene | null = null;
 let engine: Engine | null = null;
+const auth = inject<{ username: string }>("auth");
+const route = useRoute();
+const hasQueryParams = Object.keys(route.query).length > 0;
 const profileImage = ref("");
 const username = ref("");
+const player1 = route.query.player1 || auth?.username;
+const player2 = route.query.player2 || "Invitado";
+const gameid = String(
+  Array.isArray(route.query.gameid)
+    ? route.query.gameid[0]
+    : route.query.gameid || generateId()
+);
 
 // Obtener la imagen de perfil desde la API cuando el componente se monta
 onMounted(async () => {
@@ -30,12 +42,28 @@ onMounted(() => {
         const result = initTicTacToe(); // Llamamos la función del juego
         scene = result.scene;
         engine = result.engine;
+		if (!hasQueryParams)
+			createGame(gameid, "TicTacToe", player1 as string, player2 as string, "", "");
     } catch (error) {
         console.error("Error al inicializar Tic Tac Toe:", error);
     }
 });
 
+const sendrouter = useRouter();
+const sendPunt = (winner: string) => {
+  console.log("gameid en tictac es " + gameid);
+  updateGame(gameid, String(puntuation.pl), String(puntuation.pr));
+  if (hasQueryParams) {
+    setTimeout(() => {
+      sendrouter.push({
+        path: "/Tournament",
+      });
+    }, 2000);
+  }
+};
+
 onUnmounted(() => {
+	console.log("desomantando...");
     if (scene) {
         scene.dispose(); // Eliminar la escena de Babylon.js
         scene = null;
@@ -45,6 +73,28 @@ onUnmounted(() => {
         engine = null;
     }
 });
+
+// Observa la puntuación del lado izquierdo
+watch(
+  () => puntuation.pl,
+  (newVal) => {
+    if (newVal >= 1) {
+      console.log("¡La puntuación del jugador izquierdo ha llegado a 1!");
+      sendPunt(player1 as string);
+    }
+  }
+);
+
+// Observa la puntuación del lado derecho
+watch(
+  () => puntuation.pr,
+  (newVal) => {
+    if (newVal >= 1) {
+      console.log("¡La puntuación del jugador derecho ha llegado a 1!");
+      sendPunt(player2 as string);
+    }
+  }
+);
 </script>
 
 <template>

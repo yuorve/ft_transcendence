@@ -2,6 +2,12 @@ import * as BABYLON from '@babylonjs/core'
 import { GUI3DManager } from "@babylonjs/gui";
 import { HolographicButton } from "@babylonjs/gui";
 import { createGame } from "../api";
+import { reactive } from 'vue';
+
+export const puntuation = reactive({
+    pl: 0,
+    pr: 0,
+});
 
 let username = localStorage.getItem("username") || "";
 
@@ -26,14 +32,14 @@ export default function initTicTacToe() {
 
         // CAMERA
         const camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene); //camara
-        camera.attachControl(true);
+        // camera.attachControl(true);
         camera.setPosition(new BABYLON.Vector3(0, 0, -15));
-        camera.lowerBetaLimit = Math.PI / 4; //limite movimiento arriba
-        camera.upperBetaLimit = Math.PI / 1.5; //limite movimiento abajo
-        camera.upperAlphaLimit = -Math.PI / 4; //limite movimiento derecha
-        camera.lowerAlphaLimit = -Math.PI / 1.5; //limite movimiento izquierda
-        camera.lowerRadiusLimit = 2; //zoom maximo
-        camera.upperRadiusLimit = 40; //zoom minimo
+        // camera.lowerBetaLimit = Math.PI / 4; //limite movimiento arriba
+        // camera.upperBetaLimit = Math.PI / 1.5; //limite movimiento abajo
+        // camera.upperAlphaLimit = -Math.PI / 4; //limite movimiento derecha
+        // camera.lowerAlphaLimit = -Math.PI / 1.5; //limite movimiento izquierda
+        // camera.lowerRadiusLimit = 2; //zoom maximo
+        // camera.upperRadiusLimit = 40; //zoom minimo
 
         // VARIABLES
         var frameSize = 12;
@@ -194,7 +200,7 @@ export default function initTicTacToe() {
                                 button.dispose();
                             });
                         });
-                        createGame("tictactoe",username,"Invitado",1,0);
+                        puntuation.pl++;
                         createX(0, 0, -3, butSize);
                     }
                     else if (checkVic() == true && figure == 1) {
@@ -203,7 +209,7 @@ export default function initTicTacToe() {
                                 button.dispose();
                             });
                         });
-                        createGame("tictactoe",username,"Invitado",0,1);
+                        puntuation.pr++;
                         createCircle(0, 0, -3, butSize);
                     }
                 });

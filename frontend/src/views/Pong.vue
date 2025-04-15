@@ -1,16 +1,18 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, onUnmounted, watch } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue";
 import initPong from "../games/pong";
 import { puntuation } from "../games/pong";
 import { Engine, Scene } from "@babylonjs/core";
 import { useRoute, useRouter } from "vue-router";
-import { createGame, generateId, updateGame } from "../api";
+import { API_URL, createGame, generateId, getProfile, updateGame } from "../api";
 
 let scene: Scene | null = null;
 let engine: Engine | null = null;
 const auth = inject<{ username: string }>("auth");
 const route = useRoute();
 const hasQueryParams = Object.keys(route.query).length > 0;
+const profileImage = ref("");
+const username = ref("");
 const player1 = route.query.player1 || auth?.username;
 const player2 = route.query.player2 || "Invitado";
 const gameid = String(
@@ -24,11 +26,29 @@ if (!auth) {
   throw new Error("No se encontró al usuario");
 }
 
+// Obtener la imagen de perfil desde la API cuando el componente se monta
+onMounted(async () => {
+  const defaultProfileImage = "../assets/default-profile.png";
+  try {
+    const profileData = await getProfile(); // Llamada a la API
+    profileImage.value = profileData[0].profileImage
+      ? `${API_URL}${profileData[0].profileImage}` 
+      : defaultProfileImage;
+	  username.value = profileData[0].username;
+  } catch (error) {
+    console.error("Error al obtener la imagen de perfil:", error);
+    profileImage.value = defaultProfileImage;
+	username.value = "Usuario";
+  }
+});
+
 onMounted(() => {
   try {
     const result = initPong(); // Llamamos la función del juego
     scene = result.scene;
     engine = result.engine;
+    if (!hasQueryParams)
+      createGame(gameid, "pong", player1 as string, player2 as string, "", "");
   } catch (error) {
     console.error("Error al inicializar Pong:", error);
   }
@@ -49,9 +69,6 @@ onUnmounted(() => {
 
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
-  // const idgame = generateId();
-  // console.log(idgame);
-  // createGame(idgame, "pong", player1, player2, puntuation.pl, puntuation.pr);
   console.log("gameid en pong es " + gameid);
   updateGame(gameid, String(puntuation.pl), String(puntuation.pr));
   if (hasQueryParams) {
@@ -93,7 +110,7 @@ watch(
     </div>
     <div class="flex justify-center items-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-1/4">
       <div class="w-1/3 h-full flex justify-center gap-5 items-center">
-        <img src="../../space.jpg" alt="" class=" w-30 h-30 rounded-full shadow-2xl border-2">
+        <img :src="profileImage" alt="" class=" w-30 h-30 rounded-full shadow-2xl border-2">
         <p class="text-5xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">{{ player1 }}</p>
       </div>
       <div class="w-1/3 flex justify-around">
