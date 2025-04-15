@@ -47,6 +47,7 @@ const initializeDatabase = async () => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       game TEXT NOT NULL,
       type TEXT NOT NULL,
+      game_order INTEGER,
       player1 TEXT NOT NULL,
       player2 TEXT NOT NULL,
       score1 TEXT DEFAULT NULL,
