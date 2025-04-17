@@ -28,6 +28,18 @@ async function gamesRoutes(fastify) {
       }
     });
 
+    // Ruta para borrar partidas
+    fastify.get('/delete-game/:id', async (request, reply) => {
+      try {
+        const gameId = request.params.id;
+        console.log("eliminando partida...")        
+        await run('DELETE FROM games WHERE game = ?', [gameId]);
+        reply.send({ message: 'Partida eliminada' });        
+      } catch (error) {
+        reply.status(500).send({ error: error.message });
+      }
+    });
+
     // Ruta para actualizar una partida
     fastify.put('/games/:id', async (request, reply) => {
       const { id } = request.params;
