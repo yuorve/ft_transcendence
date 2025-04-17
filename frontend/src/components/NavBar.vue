@@ -14,7 +14,7 @@ const router = useRouter();
 const auth = inject("auth");
 const logout = inject("logout");
 const { locale } = useI18n();
-const profileImage = ref("");
+//const profileImage = ref("");
 
 // Computamos el estado del usuario en tiempo real
 const isAuthenticated = computed(() => !!auth.username);
@@ -24,23 +24,26 @@ const handleLogout = () => {
   router.push("/login");
 };
 
-const updateProfileImage = async () => {
-  //const defaultProfileImage = "/assets/default-profile-IFoswpyY.png";
-  const defaultProfileImage = "/src/assets/default-profile.png";
-  if (isAuthenticated.value) {
-    try {
-      const response = await getProfile();
-      profileImage.value = response[0].profileImage
-        ? `${API_URL}${response[0].profileImage}`
-        : defaultProfileImage;
-    } catch (error) {
-      console.error("Error al obtener la imagen de perfil:", error);
-      profileImage.value = defaultProfileImage;
-    }
-  } else {    
-    profileImage.value = defaultProfileImage;
-  }
-};
+const defaultProfileImage = "/src/assets/default-profile.png";
+const profileImage = inject('profileImage', ref(defaultProfileImage));
+
+// const updateProfileImage = async () => {
+//   //const defaultProfileImage = "/assets/default-profile-IFoswpyY.png";
+//   const defaultProfileImage = "/src/assets/default-profile.png";
+//   if (isAuthenticated.value) {
+//     try {
+//       const response = await getProfile();
+//       profileImage.value = response[0].profileImage
+//         ? `${API_URL}${response[0].profileImage}`
+//         : defaultProfileImage;
+//     } catch (error) {
+//       console.error("Error al obtener la imagen de perfil:", error);
+//       profileImage.value = defaultProfileImage;
+//     }
+//   } else {    
+//     profileImage.value = defaultProfileImage;
+//   }
+// };
 
 const isLogin = computed(() => {
   return isAuthenticated.value ? auth.username : t("login");
@@ -67,14 +70,14 @@ const changeFlag = computed(() => {
 });
 
 // Obtener la imagen de perfil desde la API cuando el componente se monta
-onMounted(async () => {
-  await updateProfileImage();
-});
+// onMounted(async () => {
+//   await updateProfileImage();
+// });
 
 // Cuando isAuthenticated cambie, actualiza la imagen de perfil
-watch(isAuthenticated, async (newValue) => {
-  await updateProfileImage();
-});
+// watch(isAuthenticated, async (newValue) => {
+//   await updateProfileImage();
+// });
 </script>
 
 <template>

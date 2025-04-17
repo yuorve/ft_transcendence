@@ -1,8 +1,9 @@
 <script setup>
-import { onMounted, onUnmounted, reactive, watch, provide } from "vue";
+import { onMounted, onUnmounted, reactive, watch, provide, computed, ref } from "vue";
 import NavBar from "./components/NavBar.vue";
 import chat from "./views/Chat.vue";
 import Profile from "./views/Profile.vue";
+import { getProfile, API_URL } from "./api"
 import { useWebSocket } from './services/websocket';
 
 const auth = reactive({
@@ -10,6 +11,7 @@ const auth = reactive({
   token: localStorage.getItem('token') || "",
 });
 
+const isAuthenticated = computed(() => !!auth.username);
 const { connect, close } = useWebSocket();
 
 watch(
@@ -41,8 +43,54 @@ const logout = () => {
   close();
 };
 
+const defaultProfileImage = "/src/assets/default-profile.png";
+
+// Estado Reactivo para la Imagen de Perfil
+const profileImage = ref(defaultProfileImage);
+
+// Función para CARGAR la imagen de perfil actual
+const loadProfileImage = async () => {
+  if (isAuthenticated.value) {
+    try {
+      const response = await getProfile();
+      if (response && response.length > 0 && response[0].profileImage) {
+        profileImage.value = `${API_URL}${response[0].profileImage}`;
+      } else {
+        profileImage.value = defaultProfileImage;
+      }
+    } catch (error) {
+      console.error("Error al obtener la imagen de perfil:", error);
+      profileImage.value = defaultProfileImage;
+    }
+  } else {
+    profileImage.value = defaultProfileImage;
+  }
+};
+
+// Función para ESTABLECER una NUEVA imagen de perfil
+function setProfileImage(newFullUrl) {
+    if (newFullUrl) {
+        profileImage.value = newFullUrl;
+    } else {
+        profileImage.value = defaultProfileImage;
+    }
+}
+
+// Proporcionar el estado y la función de actualización
+provide('profileImage', profileImage);         // Proporciona la ref reactiva
+provide('setProfileImage', setProfileImage);   // Proporciona la función para actualizar
+
+// Cargar la imagen inicial al montar el componente
+onMounted(() => {
+  loadProfileImage();
+});
+
 onUnmounted(() => {
     close();
+});
+
+watch(isAuthenticated, async (newValue) => {
+   await loadProfileImage();
 });
 
 // Proveemos `auth` y funciones globales
