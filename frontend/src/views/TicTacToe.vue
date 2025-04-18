@@ -52,7 +52,7 @@ onMounted(() => {
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
   console.log("gameid en tictac es " + gameid);
-  updateGame(gameid, String(puntuation.pl), String(puntuation.pr));
+  updateGame(gameid, player1 as string, player2 as string, String(puntuation.pl), String(puntuation.pr));
   if (hasQueryParams) {
     setTimeout(() => {
       sendrouter.push({

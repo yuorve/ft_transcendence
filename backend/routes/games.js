@@ -42,21 +42,53 @@ async function gamesRoutes(fastify) {
     });
 
     // Ruta para actualizar una partida
-    fastify.put('/games/:id', async (request, reply) => {
-      const { id } = request.params;
-      const { score1, score2 } = request.body;
-      if (score1 === undefined || score2 === undefined) {
-        return reply.status(400).send({ error: "Faltan datos de puntaje" });
-      }
-      try {
-        // Asumiendo que usas una consulta SQL para actualizar
-        await run('UPDATE games SET score1 = ?, score2 = ? WHERE game = ?', [score1, score2, id]);
-        reply.send({ message: 'Partida actualizada correctamente' });
-      } catch (error) {
-        reply.status(500).send({ error: 'Error al actualizar la partida' });
-      }
-    });
-    
+    // Ruta para actualizar una partida
+fastify.put('/games/:id', async (request, reply) => {
+  const { id } = request.params;
+  // Desestructura TODO lo que vas a actualizar
+  const { player1, player2, score1, score2 } = request.body;
+
+  // Valida que no falte nada
+  if (
+    typeof player1 !== 'string' ||
+    typeof player2 !== 'string' ||
+    typeof score1 !== 'string' ||
+    typeof score2 !== 'string'
+  ) {
+    return reply
+      .status(400)
+      .send({ error: 'Faltan datos: player1, player2, score1 o score2' });
+  }
+
+  try {
+    // Actualiza TODOS los campos que envías
+    await run(`UPDATE games SET player1 = ?, player2 = ?, score1   = ?, score2   = ? WHERE game = ?`, [player1, player2, score1, score2, id] );
+    reply.send({ message: 'Partida actualizada correctamente' });
+  } catch (error) {
+    console.error('🔥 ERROR al actualizar partida:', error);
+    reply.status(500).send({ error: error.message });
+  }
+});
+
+fastify.get('/game/:id', async (request, reply) => {
+  const { id } = request.params
+  try {
+    // SELECT * de la fila cuya columna `game` coincide con id
+    const game = await get(
+      'SELECT * FROM games WHERE game = ?',
+      [id]
+    )
+    if (!game) {
+      return reply.status(404).send({ error: 'Partida no encontrada' })
+    }
+    // Envío el objeto completo
+    reply.send({ game })
+  } catch (err) {
+    console.error('Error al leer partida:', err)
+    reply.status(500).send({ error: err.message })
+  }
+})
+
     // Ruta para listar TODOS torneos
     fastify.get('/tournaments', async (request, reply) => {
       try {

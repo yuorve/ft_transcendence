@@ -88,12 +88,19 @@ export async function createGame(game: string, type: string, game_order: number,
   return response.json();
 }
 
+// Obtener una partida concreta por su ID de juego
+export async function getGame(gameId: string) {
+  const response = await fetch(`${API_URL}/game/${gameId}`)
+  // asume que responde { game: Game }
+  return response.json()
+}
+
 // Actualizar una partida
-export async function updateGame(gameId: string, newScore1: string, newScore2: string) {
+export async function updateGame(gameId: string, newPlayer1: string, newPlayer2: string, newScore1: string, newScore2: string) {
   const response = await fetch(`${API_URL}/games/${gameId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ score1: newScore1, score2: newScore2 }),
+    body: JSON.stringify({ player1: newPlayer1, player2: newPlayer2, score1: newScore1, score2: newScore2 }),
   });
   return response.json();
 }
@@ -194,3 +201,17 @@ export async function getUser(id: number) {
 export function generateId() {
   return Math.random().toString(36).substring(2, 15);
 }
+
+export interface Game {
+  game: string;
+  type: string;
+  game_order: string;
+  player1: string;
+  player2: string;
+  score1: string;
+  score2: string;
+  round: string;
+  created_at: string;
+}
+
+export const noPlayer = "???";

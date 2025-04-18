@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, inject, computed } from "vue";
 import { useRouter } from "vue-router";
-// import { watch } from "vue";
 
-import { getMyTournament, createTournament, createGame, generateId } from "../api";
+import { getMyTournament, createTournament, createGame, generateId, noPlayer } from "../api";
+import type { Game } from "../api";
 // import type { int } from "@babylonjs/core";
-// const number = ref<number>(localStorage.getItem("number") ? parseInt(localStorage.getItem("number")!) : 0);
 
 // 🚀 Obtener el usuario actual del sistema (debe estar en `provide` en `App.vue`)
 const auth = inject<{ username: string }>("auth");
@@ -18,18 +17,7 @@ const player1 = ref(auth?.username || "Jugador 1");
 const player2 = ref("Invitado");
 const gameid = ref("");
 const gameround = ref("0");
-
-interface Game {
-  game: string;
-  type: string;
-  order: string;
-  player1: string;
-  player2: string;
-  score1: string;
-  score2: string;
-  round: string;
-  created_at: string;
-}
+const gameorder = ref("0");
 
 interface TournamentResponse {
   games: Game[];
@@ -41,17 +29,18 @@ const nextGame = () => {
     console.log("No hay datos del torneo");
     return;
   }
-  let i = 0;
-  if (tournamentData.value != null) {
-    while (tournamentData.value.games[i].score1 != "" && tournamentData.value.games[i].score2 != "")
-      i++;
-    player1.value = tournamentData.value.games[i].player1;
-    player2.value = tournamentData.value.games[i].player2;
-    gameid.value = tournamentData.value.games[i].game;
-    gameround.value = tournamentData.value.games[i].round;
+  const next = tournamentData.value.games.find(g => g.score1 === "" && g.score2 === "")
+  if(next)
+  {
+    gameid.value = next.game;
+    player1.value = next.player1;
+    player2.value = next.player2;
+    gameround.value = next.round;
+    gameorder.value = next.game_order;
   }
+  else
+      console.log("ganador del torneo ");   //hacer variable, que la guarde en la BBDD, ocultar boton de jugar partida y anular nextwinnergame
 }
-
 // Variable reactiva para almacenar la respuesta del torneo
 const tournamentData = ref<TournamentResponse | null>(null);
 async function fetchTournament() {
@@ -79,28 +68,32 @@ async function checkTournament() {
 }
 
 
-// nextRoundMatch = Math.floor(i / 2)
 
-// Donde i es el índice de la partida en la ronda actual. Por ejemplo:
+const nextWinnerGame = (): string => {
+  if (!tournamentData.value) return "";
 
-// • Si i = 0 (primera partida) o i = 1 (segunda partida), Math.floor(0/2) = 0 y Math.floor(1/2) = 0, por lo que ambos ganadores irán a la partida 0 de la siguiente ronda (o la primera partida si numeras desde 1, usando la fórmula ajustada).
+  let winnerGame = Math.floor(Number(gameorder.value) / 2);
+  let i = 0;
 
-// • Si i = 2 o i = 3, Math.floor(2/2) = 1 y Math.floor(3/2) = 1, por lo que los ganadores de esas partidas se asignan a la partida 1 de la siguiente ronda.
+  // Avanza hasta encontrar una partida en una ronda mayor
+  while (i < tournamentData.value.games.length && tournamentData.value.games[i].round <= gameround.value) {
+    i++;
+  }
 
-// Si prefieres numerar partidas desde 1, la fórmula se puede ajustar a:
+  // Avanza hasta encontrar la partida con el orden deseado
+  while (i < tournamentData.value.games.length && Number(tournamentData.value.games[i].game_order) < winnerGame) {
+    i++;
+  }
 
-// nextRoundMatch = Math.floor((currentMatch - 1) / 2) + 1
+  if (i < tournamentData.value.games.length) {
+    console.log("id del juego del ganador encontrado es " + tournamentData.value.games[i].game);
+    return tournamentData.value.games[i].game;
+  }
 
-// Así, por ejemplo, si currentMatch = 1 o 2, entonces: Math.floor((1-1)/2) + 1 = 1 y Math.floor((2-1)/2) + 1 = 1, asignándoles a la primera partida de la siguiente ronda.
-
-// Esta fórmula es muy común para la construcción de llaves de torneos. Con ella, puedes agrupar las partidas de cada ronda y asignar los ganadores a la partida correspondiente en la siguiente ronda.
-// const winnerNextGame = () => {
-//   if (!tournamentData.value || !tournamentData.value.games || tournamentData.value.games.length === 0) {
-//     console.log("No hay datos del torneo");
-//     return;
-//   }
-//   let nextRoundMatch = Math.floor(i / 2);
-// };
+  // Si no se encontró una partida adecuada, devuelve un valor por defecto
+  console.warn("No se encontró partida ganadora siguiente.");
+  return "";
+};
 
 const redirect = () => {
   if (player1.value && player2.value)
@@ -108,8 +101,7 @@ const redirect = () => {
       path: "/Pong",
       query: {
         gameid: gameid.value,
-        player1: player1.value,
-        player2: player2.value
+        gameidWinner: nextWinnerGame() // (tener cuidado de no pisar al ganador anterior)
       }
     });
   else {
@@ -138,17 +130,17 @@ const generateRanks = async (count: number) => {
         k++;
       }
     }
-
     let currentGameCount = Math.floor(count / 2); // Número de partidos en la ronda 1
     let round = 2;
     // Mientras queden más de un partido (es decir, hasta el partido final)
     while (currentGameCount > 1) {
+      k = 0;
       // Calculamos cuántos partidos tendrá la siguiente ronda (la mitad)
       currentGameCount = Math.floor(currentGameCount / 2);
       for (let i = 0; i < currentGameCount; i++) {
         const idgame = generateId();
         // Se crea un partido "vacío" (sin jugadores asignados) para esta ronda
-        await createGame(idgame, "pong", k, "???", "???", "", "");
+        await createGame(idgame, "pong", k, noPlayer, noPlayer, "", "");
         await createTournament(idtournament, idgame, round);
         k++;
       }
@@ -182,7 +174,7 @@ const sortedRounds = computed(() => {
 
 <template>
    <!-- v-if="tournamentActive === false" -->
-  <div class="bg-violet-700 h-fit w-full flex flex-col items-center gap-10">
+  <div class="bg-violet-700 h-fit w-full flex flex-col items-center gap-10" v-if="tournamentActive === false">
     <p>Selecciona el número de jugadores</p>
     <div class="flex items-center justify-center gap-10">
       <!-- <button @click="reset" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">reset</button> -->
@@ -212,6 +204,7 @@ const sortedRounds = computed(() => {
                <p><strong>Jugador 1:</strong> {{ game.player1 }}</p>
                <p><strong>Jugador 2:</strong> {{ game.player2 }}</p>
                <p><strong>Ronda:</strong> {{ game.round }}</p>
+               <p><strong>orden:</strong> {{ game.game_order }}</p>
              </div>
            </div>
          </div>
