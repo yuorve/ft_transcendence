@@ -61,40 +61,100 @@ function sendChatMessage() {
 
   message.value = "";
 }
+
+function toggleChat() {
+	isOpen.value = !isOpen.value;
+}
+
 </script>
 
 
 <template>
-  <div class="flex flex-col w-100 justify-center items-center fixed bottom-2 right-2 cursor-pointer z-50" v-if="isAuthenticated">
-    <!-- Botón / barra superior del chat -->
-    <div class="h-10 content-center bg-amber-200 w-full items-center justify-center flex" :class="isOpen === true ? 'rounded-t-md' : 'rounded-md'" @click="isOpen = !isOpen">
-      💬 {{ $t("IRTChat") }}: {{ buddy }}
-    </div>
-    
-      <!-- Contenedor del chat que se muestra o se oculta -->
-      <div v-show="isOpen"
-        class="chat-container bg-amber-200 w-100 h-100 justify-center items-center flex flex-col rounded-b-md">
-        <div class="chat-box border shadow-md h-80 w-90 justify-items-center bg-amber-50 rounded-md">
-          <p v-for="(msg, index) in messages" :key="index">
-            <strong v-if="msg.system" style="color: gray">{{ msg.message }}</strong>
-            <span v-else><strong>{{ msg.username }}:</strong> {{ msg.message }}</span>
-          </p>
-        </div>
-        <div class="flex justify-around h-15 w-90">
-          <div class="w-3/4 flex">
-            <input
-              class="px-auto my-3 border border-gray-400 shadow-md bg-white focus:outline-1 focus:outline-gray-700 rounded-md"
-              v-model="message" :placeholder="$t('message')" @keyup.enter="sendChatMessage" />
-          </div>
-          <div class="flex-grow justify-center flex">
-            <button
-              class="my-2 px-3 shadow-md active:translate-y-0.5 focus-none bg-green-300 active:bg-green-400 border-1 border-green-600 rounded-xl"
-              @click="sendChatMessage">
-              Enviar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+	<!-- Botón flotante para abrir el chat -->
+	<button v-show="!isOpen"
+		@click="isOpen = true"
+		class="z-50 fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition">
+			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+			viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+			<path stroke-linecap="round" stroke-linejoin="round"
+			d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 3.866-3.582 7-8 7a8.22 8.22 0 01-3.313-.7L3 21l1.7-4.054A6.997 6.997 0 013 12c0-3.866 3.582-7 8-7s8 3.134 8 7z" />
+			</svg>
+	</button>
+
+	<div id="chatWrapper" class="relative w-full h-full">
+		<!-- Contenedor de chats minimizados -->
+		<div id="minimizedChatsContainer"
+			class="hidden absolute z-50 left-0 top-0 
+			w-full max-w-lg md:max-w-xl lg:max-w-2xl 
+			flex overflow-x-auto space-x-2 px-2 py-1 
+			bg-red backdrop-blur-sm transition-all duration-300">
+		</div>
+
+		<!-- Contenedor del chat global -->
+		<div v-show="isOpen" id="liveChatContainer"
+			class="z-40 fixed bottom-4 right-4 
+			w-11/12 max-w-lg md:max-w-xl lg:max-w-2xl 
+			bg-white shadow-md rounded-lg 
+			flex flex-col overflow-hidden 
+			h-[80vh] md:h-3/5">
+
+			<!-- Encabezado del chat -->
+			<div class="bg-blue-500 text-white p-3 font-semibold flex justify-between items-center">
+				<span class="text-lg md:text-xl">Live Chat</span>
+				<button @click="toggleChat" class="text-lg md:text-xl cursor-pointer focus:outline-none">−</button>
+			</div>
+
+			<!-- Contenedor principal de chat -->
+			<div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+				<!-- Lista de Usuarios (izquierda) -->
+				<div id="userListContainer"
+					class="hidden md:block bg-white p-4 w-full md:w-1/3 max-w-xs h-full border-r border-gray-300 overflow-y-auto">
+					<h3 class="text-xs font-semibold text-gray-800 mb-4 border-b border-gray-800 pb-2">Usuarios</h3>
+					<ul id="userList" class="space-y-2 w-full text-xs"></ul>
+				</div>
+
+				<!-- Botón para Toggle en móviles -->
+				<button id="toggleUserListButton"
+					class="md:hidden border-t border-b border-gray-500 bg-blue-300 text-black p-2 text-center">
+					Mostrar Usuarios
+				</button>
+
+				<!-- Chat principal -->
+				<div id="chatContainer" class="relative w-full h-full flex flex-col">
+					<div id="chatBox"
+						class="flex-1 overflow-y-auto p-3 space-y-3 bg-white text-sm md:text-base max-h-[60vh]">
+						<div
+							v-for="(msg, index) in messages"
+							:key="index"
+							class="p-2 rounded-md bg-gray-100 shadow text-black"
+						>
+							<strong>{{ msg.from }}:</strong> {{ msg.message }}
+						</div>
+					</div>
+					<!-- Chats privados -->
+					<div id="privateChatsContainer" 
+						class="absolute top-0 right-0 w-full md:w-[350px] h-[70vh] overflow-visible pointer-events-none z-0">
+					</div>
+
+				</div>
+			</div>
+
+			<!-- Input de mensajes -->
+			<div id="chatInputContainer" class="flex p-2 bg-white">
+				<textarea
+					id="chatInput"
+					placeholder="Escribe un mensaje..."
+					v-model="message"
+					class="flex-1 border border-gray-200 rounded-l-lg p-2 outline-none focus:ring-2 focus:ring-blue-400 text-black text-sm md:text-base resize-none"
+					rows="2"
+				></textarea>
+				<button id="sendChatBtn"
+					@click="sendChatMessage"
+					class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 transition duration-200">
+					Enviar
+				</button>
+			</div>
+		</div>
+	</div>
 </template>
 
