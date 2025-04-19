@@ -1,8 +1,11 @@
 services:
   nginx:
     build: ./nginx
+    volumes:
+      - ./nginx/certs:/etc/ssl/certs:ro
     ports:
       - '8080:80'
+      - '8443:443'
     networks:
       - transcendence_net
     depends_on:

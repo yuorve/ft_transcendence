@@ -2,7 +2,7 @@
 import { ref, onMounted, inject, computed } from "vue";
 import { useRouter } from "vue-router";
 
-import { getMyTournament, createTournament, createGame, generateId, noPlayer } from "../api";
+import { getMyTournament, createTournament, createGame, generateId, noPlayer, updateChampion } from "../api";
 import type { Game } from "../api";
 // import type { int } from "@babylonjs/core";
 
@@ -21,9 +21,12 @@ const gameorder = ref("0");
 
 interface TournamentResponse {
   games: Game[];
-  created_at: string;
+  tournament: string;
+  champion: string | null;
+  created_at: string | null;
 }
 
+const tournamentData = ref<TournamentResponse | null>(null);
 const nextGame = () => {
   if (!tournamentData.value || !tournamentData.value.games || tournamentData.value.games.length === 0) {
     console.log("No hay datos del torneo");
@@ -38,26 +41,41 @@ const nextGame = () => {
     gameround.value = next.round;
     gameorder.value = next.game_order;
   }
-  else
-      console.log("ganador del torneo ");   //hacer variable, que la guarde en la BBDD, ocultar boton de jugar partida y anular nextwinnergame
+   else
+   {
+     // Ningún juego pendiente: torneo terminado
+     const last = tournamentData.value.games[tournamentData.value.games.length - 1]
+     last.score1 !== "" && Number(last.score1) > Number(last.score2)
+     ? updateChampion(tournamentData.value.tournament, last.player1)
+     : updateChampion(tournamentData.value.tournament, last.player2)
+     console.log(`Torneo finalizado, campeón: ${tournamentData.value.champion}`)   // ocultar boton de jugar partida y anular nextwinnergame
+   }
 }
 // Variable reactiva para almacenar la respuesta del torneo
-const tournamentData = ref<TournamentResponse | null>(null);
 async function fetchTournament() {
   try {
-    // Llamamos a getTournament y guardamos el resultado
-    tournamentData.value = await getMyTournament(currentUser);
+    const data = await getMyTournament(currentUser)
+    tournamentData.value = {
+      games: data.games,
+      tournament: data.tournament,
+      champion: data.champion,
+      created_at: data.created_at
+    }
+    // 3) Controla si hay torneo
+    tournamentActive.value = Array.isArray(data.games) && data.games.length > 0
+    if (tournamentActive.value)
     nextGame();
-    console.log("Datos del torneo:", tournamentData.value);
-  } catch (error) {
-    console.error("Error al obtener los datos del torneo:", error);
+  }
+  catch (err) {
+    console.error('Error al cargar el torneo:', err)
+    tournamentActive.value = false
+    tournamentData.value   = null
   }
 }
 
 const tournamentActive = ref(false);
 async function checkTournament() {
   const tournament = await getMyTournament(currentUser);
-  // Verificamos si tournament tiene propiedades (por ejemplo, en el caso de que sea un objeto)
   if (tournament && Array.isArray(tournament.games) && tournament.games.length > 0) {
     console.log("Torneo en marcha detectado");
     tournamentActive.value = true;
@@ -193,8 +211,9 @@ const sortedRounds = computed(() => {
   <!-- v-else class="bg-violet-700 h-fit w-full" -->
    <!-- ahora mismo mezcla todos los torneos en los que participa el jugador -->
    <div>
-     <div v-if="tournamentData" class="w-auto">
-       <h2 class="text-center font-bold text-xl mb-4">Datos del Torneo</h2>
+     <div v-if="tournamentData" class="w-auto bg-amber-300">
+       <h2 class="text-center font-bold text-xl mb-4">Datos del Torneo {{ tournamentData.tournament }}</h2>
+       <h2 class="text-center font-bold text-xl mb-4">{{ tournamentData.champion ||"Nadie"}}</h2>
        <div v-if="sortedRounds.length" class="flex flex-col gap-4">
          <div v-for="roundGroup in sortedRounds" :key="roundGroup.round" class="flex flex-col items-center">
            <h3 class="mb-2">Ronda {{ roundGroup.round }}</h3>

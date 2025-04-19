@@ -7,6 +7,7 @@ import axios from "axios";
 //export const API_URL = "https://backend:4000"; 
 export const API_URL = "http://localhost:8080/api";
 // export const API_URL = "http://localhost:4000";
+// export const API_URL = "https://localhost:8443/api";
 
 export const registerUser = async (formData: FormData) => {
   return axios.post(`${API_URL}/register`, formData, {
@@ -129,6 +130,23 @@ export async function createTournament(id: string, game: string, round: number) 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, game, round }),
   });
+  return response.json();
+}
+
+
+// Actualiza al ganador del troneo
+export async function updateChampion(tournamentId: string, champion: string): Promise<{ message: string }> {
+  const url = `${API_URL}/tournaments/${encodeURIComponent(tournamentId)}/champion`;
+  console.log("Torneo: " + tournamentId + " Campeon: " + champion);
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ champion })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(`Error ${response.status} actualizando campeón: ${err.error || response.statusText}`);
+  }
   return response.json();
 }
 

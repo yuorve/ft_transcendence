@@ -42,13 +42,10 @@ async function gamesRoutes(fastify) {
     });
 
     // Ruta para actualizar una partida
-    // Ruta para actualizar una partida
 fastify.put('/games/:id', async (request, reply) => {
   const { id } = request.params;
-  // Desestructura TODO lo que vas a actualizar
   const { player1, player2, score1, score2 } = request.body;
 
-  // Valida que no falte nada
   if (
     typeof player1 !== 'string' ||
     typeof player2 !== 'string' ||
@@ -108,22 +105,83 @@ fastify.get('/game/:id', async (request, reply) => {
     fastify.get('/mytournaments/:username', async (request, reply) => {
       try {
         const username = request.params.username;
-        const games = await all(`
-          SELECT t.*, g.*
+        const rows = await all(`
+          SELECT
+            t.tournament               AS tournament_id,
+            t.champion,
+            t.created_at              AS tournament_created_at,
+            t.round                   AS round,              -- <- éste es t.round
+            g.game,
+            g.type,
+            g.game_order,
+            g.player1,
+            g.player2,
+            g.score1,
+            g.score2,
+            g.created_at              AS game_created_at
           FROM tournaments t
-          JOIN games g ON t.game = g.game
+          JOIN games      g ON t.game = g.game
           WHERE t.tournament IN (
             SELECT DISTINCT t2.tournament
             FROM tournaments t2
-            JOIN games g2 ON t2.game = g2.game
+            JOIN games      g2 ON t2.game = g2.game
             WHERE g2.player1 = ? OR g2.player2 = ?
           )
+          ORDER BY t.round ASC, g.game_order ASC         -- <- usa t.round, no g.round
         `, [username, username]);
-        reply.send({ games });
-      } catch (error) {
-        reply.status(500).send({ error: error.message });
+    
+        if (rows.length === 0) {
+          return reply.send({
+            tournament: null,
+            games:       [],
+            champion:    null,
+            created_at:  null
+          });
+        }
+    
+        const { tournament_id, champion, tournament_created_at, round } = rows[0];
+    
+        const games = rows.map(r => ({
+          game:       r.game,
+          type:       r.type,
+          game_order: r.game_order,
+          player1:    r.player1,
+          player2:    r.player2,
+          score1:     r.score1,
+          score2:     r.score2,
+          round:      r.round,           // <- aquí también usas el alias de t.round
+          created_at: r.game_created_at
+        }));
+    
+        reply.send({
+          tournament:  tournament_id,
+          games,
+          champion,
+          created_at:  tournament_created_at
+        });
+      } catch (err) {
+        reply.status(500).send({ error: err.message });
       }
     });
+    // fastify.get('/mytournaments/:username', async (request, reply) => {
+    //   try {
+    //     const username = request.params.username;
+    //     const games = await all(`
+    //       SELECT t.*, g.*
+    //       FROM tournaments t
+    //       JOIN games g ON t.game = g.game
+    //       WHERE t.tournament IN (
+    //         SELECT DISTINCT t2.tournament
+    //         FROM tournaments t2
+    //         JOIN games g2 ON t2.game = g2.game
+    //         WHERE g2.player1 = ? OR g2.player2 = ?
+    //       )
+    //     `, [username, username]);
+    //     reply.send({ games });
+    //   } catch (error) {
+    //     reply.status(500).send({ error: error.message });
+    //   }
+    // });
 
     // Ruta para listar torneos
     fastify.get('/tournament/:username', async (request, reply) => {
@@ -133,6 +191,23 @@ fastify.get('/game/:id', async (request, reply) => {
         reply.send({ games });
       } catch (error) {
         reply.status(500).send({ error: error.message });
+      }
+    });
+
+    fastify.patch('/tournaments/:tournamentId/champion', async (request, reply) => {
+      const { tournamentId } = request.params;
+      const { champion } = request.body;
+      if (typeof champion !== 'string') {
+        return reply.status(400).send({ error: 'Falta el nombre del campeón' });
+      }
+      try {
+        await run(
+          'UPDATE tournaments SET champion = ? WHERE tournament = ?',
+          [champion, tournamentId]
+        );
+        reply.send({ message: 'Campeón actualizado' });
+      } catch (err) {
+        reply.status(500).send({ error: err.message });
       }
     });
     

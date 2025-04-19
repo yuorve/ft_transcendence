@@ -58,6 +58,7 @@ const initializeDatabase = async () => {
     await run(`CREATE TABLE IF NOT EXISTS tournaments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       tournament TEXT NOT NULL,
+      champion TEXT DEFAULT NULL,
       game TEXT NOT NULL,
       round TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
