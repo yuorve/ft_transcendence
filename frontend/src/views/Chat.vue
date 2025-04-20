@@ -22,30 +22,49 @@ const isAuthenticated = computed(() => !!auth.username);
 if (!username.value) {
   router.push("/login");
 } else {
-  onMounted(async () => {
-    try {
-      // const response = await getFriends(username.value);
-      // const friend = response.friends.find(friend => friend.buddy === buddy.value);
-      // if (!friend) {
-      //   router.push("/friends");
-      //   return;
-      // }    //al recargar la pagina redirige a friends
+	let socket;
 
-      chatId.value = friend.id;
+	function sendChatMessage() {
+		if (socket && socket.readyState === WebSocket.OPEN) {
+			const msg = {
+				from: "Usuario", // puedes reemplazar por un valor real
+				message: message.value,
+			};
+			socket.send(JSON.stringify(msg));
+			message.value = '';
+		}
+	}
 
-      const initialChats = await getChats(friend.id);
-      messages.value = initialChats.chat.map(msg => ({
-        username: msg.sender,
-        message: msg.message
-      }));
+	function toggleChat() {
+		isOpen.value = !isOpen.value;
+	}
 
-      connectWebSocket(token, chatId.value, (msg) => {
-        messages.value.push(msg);
-      });
-    } catch (error) {
-      console.error("Error al cargar los chats:", error);
-    }
-  });
+	onMounted(() => {
+		socket = new WebSocket('ws://localhost:3000'); // o el host real si estás en producción
+
+		socket.onopen = () => {
+			console.log('Conectado al WebSocket');
+		};
+
+		socket.onmessage = (event) => {
+			try {
+				const data = JSON.parse(event.data);
+				messages.value.push(data);
+			} catch (err) {
+				console.error('Error al parsear mensaje', err);
+			}
+		};
+
+		socket.onclose = () => {
+			console.log('WebSocket cerrado');
+		};
+	});
+
+	onUnmounted(() => {
+		if (socket && socket.readyState === WebSocket.OPEN) {
+			socket.close();
+		}
+	});
 }
 
 function sendChatMessage() {
