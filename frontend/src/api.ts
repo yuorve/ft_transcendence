@@ -69,8 +69,14 @@ export async function getProfile() {
     method: "GET",
     headers: { "Authorization": `Bearer ${token}` },
   });
-  const data = await response.json();
-  return data.user;
+
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || "Error al obtener perfil");
+  }
+
+  // data.user es un array; devolvemos solo el primer objeto
+  return payload.user[0];
 }
 
 // Obtener lista de partidas
@@ -85,6 +91,14 @@ export async function createGame(game: string, type: string, game_order: number,
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ game, type, game_order, player1, player2, score1, score2 }),
+  });
+  return response.json();
+}
+
+// Borrar una partida
+export async function deleteGame(gameId: string) {
+  const response = await fetch(`${API_URL}/delete-game/${gameId}`, {
+    method: 'GET',
   });
   return response.json();
 }

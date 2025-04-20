@@ -1,53 +1,9 @@
-<script>
-import { ref, onMounted } from "vue";
-import { getProfile, API_URL } from "../api";
-import defaultProfileImage from "../assets/default-profile.png"; // Imagen predeterminada en caso de que no haya foto
-import { useI18n } from "vue-i18n";
-import { RouterLink } from "vue-router";
-
-export default {
-  data() {
-    return {
-      user: {
-        username: "",
-        email: "",
-        profileImage: "",
-        createdAt: "",
-      },
-      defaultProfileImage,
-    };
-  },
-  async created() {
-    try {
-      const response = await getProfile();
-      this.user = response[0];
-      // console.log(this.user);
-      // Asegurar que la URL de la imagen sea accesible desde el frontend
-      this.user.profileImage = this.user.profileImage
-        ? `${API_URL}${this.user.profileImage}` 
-        : this.defaultProfileImage; 
-        //console.log(this.user);
-    } catch (error) {
-      console.error("Error al cargar el perfil:", error);
-    }
-  },
-  methods: {
-    formatDate(dateString) {
-      if (!dateString) return "Fecha desconocida";
-      const options = { year: "numeric", month: "long", day: "numeric" };
-      return new Date(dateString).toLocaleDateString("es-ES", options);
-    },
-  },
-};
-</script>
-
 <template>
-  <div class="flex justify-center items-center h-full w-full">
+  <div class="flex justify-center items-center h-full w-full" v-if="user">
     <div class="w-180 h-auto flex flex-col justify-center bg-gray-500 items-center rounded-4xl p-4">
       <div class="flex w-full">
         <div class="w-1/2 h-80 flex gap-8 flex-col justify-center items-center">
-          <img :src=user.profileImage alt="Profile image" class="text-center items-center rounded-full w-30 h-30">
-          <!-- <button class="bg-blue-700 mt-0 m-10 p-3 rounded-2xl shadow-md active:bg-blue-800 active:translate-y-0.5">{{ $t('changeImg') }}</button> -->
+          <img :src="imageSrc" alt="Profile image" class="text-center items-center rounded-full w-30 h-30">
           <RouterLink to="/update" class="bg-blue-700 text-center mt-0 m-10 p-3 rounded-2xl shadow-md active:bg-blue-800 active:translate-y-0.5">{{ $t('changeImg') }}</RouterLink>
         </div>
         <div class="w-1/2 flex gap-8 flex-col justify-center items-center">
@@ -68,8 +24,53 @@ export default {
           <RouterLink class="bg-gray-600 p-2 rounded-full" to="/games">Partidas Jugadas</RouterLink>
           <RouterLink class="bg-gray-600 p-2 rounded-full" to="/">Borrar cuenta</RouterLink>
         </div>
-        <p class="text-gray-50 text-sm">🕒 Registrado el: {{ formatDate(user.created_at) }}</p>
+        <p class="text-gray-50 text-sm">🕒 Registrado el: {{ formattedDate }}</p>
       </div>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { getProfile, API_URL } from '../api';
+
+const router = useRouter();
+// user arranca en null para controlar con v-if
+const user = ref<{ username: string; email: string; profileImage: string; created_at: string } | null>(null);
+
+// Fallback mientras no hay imagen propia
+const defaultProfileImage = '/src/assets/default-profile.png';
+// Aquí guardaremos la URL final (API_URL+profileImage o fallback)
+const imageSrc = ref(defaultProfileImage);
+
+const formattedDate = computed(() => {
+  if (!user.value) return '';
+  return new Date(user.value.created_at).toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+});
+
+onMounted(async () => {
+  try {
+    // getProfile() ya devuelve directamente el objeto usuario
+    const me = await getProfile();
+    user.value = me;
+
+    // Construimos la URL de la imagen o usamos el fallback
+    imageSrc.value = me.profileImage
+      ? `${API_URL}${me.profileImage}`
+      : defaultProfileImage;
+  } catch (err) {
+    console.error('Error al cargar perfil:', err);
+    // Si no está autenticado, redirigimos
+    router.push('/login');
+  }
+});
+</script>
+
+<style scoped>
+/* Tus estilos aquí */
+</style>
