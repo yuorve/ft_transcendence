@@ -3,17 +3,17 @@
     <div class="border-b-3 border-b-gray-700 h-3/4">
       <canvas id="renderCanvas" class="w-full h-full outline-none"></canvas>
     </div>
-    <div class="flex justify-center items-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-1/4">
+    <div class="flex items-center justify-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-1/4 p-2">
       <div class="w-1/3 h-full flex justify-center gap-5 items-center">
-        <img :src="profileImage" alt="Profile image" class="w-30 h-30 rounded-full shadow-2xl border-2" />
-        <p class="text-5xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">{{ player1 }}</p>
+        <img :src="profileImage" alt="Profile image" class="w-30 h-30 rounded-full shadow-2xl border-2 hidden sm:block" />
+        <p class="sm:text-5xl text-2xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">{{ player1 }}</p>
       </div>
       <div class="w-1/3 flex justify-around">
-        <h1 class="sm:text-8xl text-6xl">{{ puntuation.pl }} - {{ puntuation.pr }}</h1>
+        <h1 class=" sm:text-8xl text-4xl">{{ puntuation.pl }} - {{ puntuation.pr }}</h1>
       </div>
       <div class="w-1/3 h-full flex justify-center gap-5 items-center">
-        <p class="text-5xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md">{{ player2 }}</p>
-        <img src="../../space.jpg" alt="" class="w-25 h-25 rounded-full shadow-2xl border-2" />
+        <p class="sm:text-5xl text-2xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md">{{ player2 }}</p>
+        <img :src="defaultProfile" alt="2nd player" class="w-25 h-25 rounded-full shadow-2xl border-2 hidden sm:block" />
       </div>
     </div>
   </div>

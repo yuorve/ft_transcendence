@@ -5,9 +5,9 @@ import axios from "axios";
 // Dirección del backend
 //export const API_URL = "https://80-yuorve-fttranscendence-mwntw4fq46g.ws-eu118.gitpod.io/api";
 //export const API_URL = "https://backend:4000"; 
-export const API_URL = "http://localhost:8080/api";
+//export const API_URL = "http://localhost:8080/api";
 // export const API_URL = "http://localhost:4000";
-// export const API_URL = "https://localhost:8443/api";
+export const API_URL = "https://localhost:8443/api";
 
 export const registerUser = async (formData: FormData) => {
   return axios.post(`${API_URL}/register`, formData, {

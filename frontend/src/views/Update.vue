@@ -14,14 +14,14 @@
   </template>
   
   <script setup>
-  import { ref, computed, watch } from "vue";
+  import { ref, computed, watch, inject } from "vue";
   import { useRouter } from "vue-router";
   import { UpdateImage } from "../api";
   
   const router = useRouter();
   const username = ref(localStorage.getItem("username") || "");
   const profileImage = ref(null);
-  
+  const setProfileImage = inject('setProfileImage');
   const isFormValid = computed(() => {
 	return (
 	  profileImage.value instanceof File
@@ -41,7 +41,9 @@
   
 	  const response = await UpdateImage(formData);
 	   if (response.data.success) {
-		alert(response.data.message);
+		   alert(response.data.message);
+		   alert(response.data.profilePicture);
+		   setProfileImage(response.data.profilePicture);
 		router.push("/profile"); // Redirige al profile tras actualizar
 	  } else {
 		alert('Error al actualizar la imagen: ' + respuesta.data.message);
