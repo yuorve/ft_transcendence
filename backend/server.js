@@ -41,8 +41,8 @@ fastify.register(friendsRoutes);
 fastify.register(chatsRoutes);
 
 // Importar y configurar WebSocket
-const setupWebSocket = require('./ws');
-setupWebSocket(fastify.server);
+/* const setupWebSocket = require('./ws');
+setupWebSocket(fastify.server); */
 
 // Iniciar el servidor
 fastify.listen({ port: process.env.PORT, host: '0.0.0.0' }, (err, address) => {

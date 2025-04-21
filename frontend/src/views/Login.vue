@@ -26,8 +26,6 @@ async function handleGoogleSuccess(response) {
       setUsername(data.username, data.token);
       message.value = "Inicio de sesión exitoso con Google!";
 
-      connectWebSocket(data.username);
-
       // Esperar un poco antes de redirigir
       setTimeout(() => {
         router.push("/profile");
@@ -57,8 +55,6 @@ async function handleLogin() {
       localStorage.setItem("username", username.value);
       setUsername(username.value, data.token);
       message.value = "Inicio de sesión exitoso!";
-      
-      connectWebSocket(username.value);
 
       setTimeout(() => {
         router.push("/profile");

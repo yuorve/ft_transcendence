@@ -3,7 +3,7 @@ import { ref, onMounted, computed, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { getFriends, getChats, getUser, saveMessage } from "../api";
-import { connectWebSocket } from "../ws"; // ajusta la ruta si es necesario
+import { useWebSocket } from "../services/websocket"
 
 
 const route = useRoute();
@@ -18,31 +18,14 @@ const isOpen = ref(false); // ← para controlar si se muestra el chat
 const messages = ref<{ from: string; message: string }[]>([]);
 const message = ref("");
 const isAuthenticated = computed(() => !!auth.username);
+const { connect, close } = useWebSocket();
 
 if (!username.value) {
   router.push("/login");
 } else {
 	onMounted(() => {
-		if (!username.value) return;
-		connectWebSocket(username.value);
-
-		onMessage("message", (data) => {
-			messages.value.push({ from: data.user, message: data.message });
-		});
+		connect(token);
 	});
-
-	onBeforeUnmount(() => {
-		closeWebSocket();
-	});
-
-
-}
-
-function send() {
-	if (message.value.trim()) {
-		sendMessage(message.value.trim(), username.value);
-		message.value = "";
-	}
 }
 
 function toggleChat() {
