@@ -41,7 +41,8 @@ fastify.register(friendsRoutes);
 fastify.register(chatsRoutes);
 
 // Importar y configurar WebSocket
-//const setupWebSocket = require('./ws');
+const setupWebSocket = require('./ws');
+setupWebSocket(fastify.server);
 
 // Iniciar el servidor
 fastify.listen({ port: process.env.PORT, host: '0.0.0.0' }, (err, address) => {
@@ -50,5 +51,4 @@ fastify.listen({ port: process.env.PORT, host: '0.0.0.0' }, (err, address) => {
         process.exit(1);
     }
     console.log(`Backend corriendo en ${address}`);
-    //setupWebSocket(fastify.server);
 });

@@ -1,9 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, computed, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { connectWebSocket, sendMessage } from "../ws";
 import { getFriends, getChats, getUser, saveMessage } from "../api";
+import { connectWebSocket } from "../ws"; // ajusta la ruta si es necesario
+
 
 const route = useRoute();
 const router = useRouter();
@@ -13,84 +14,46 @@ const auth = inject("auth");
 const token = localStorage.getItem("token") || "";
 const username = ref(localStorage.getItem("username") || "");
 const buddy = ref(route.params.buddy);
-const chatId = ref("");
-const message = ref("");
-const messages = ref([]);
 const isOpen = ref(false); // ← para controlar si se muestra el chat
+const messages = ref<{ from: string; message: string }[]>([]);
+const message = ref("");
 const isAuthenticated = computed(() => !!auth.username);
 
 if (!username.value) {
   router.push("/login");
 } else {
-	let socket;
-
-	function sendChatMessage() {
-		if (socket && socket.readyState === WebSocket.OPEN) {
-			const msg = {
-				from: "Usuario", // puedes reemplazar por un valor real
-				message: message.value,
-			};
-			socket.send(JSON.stringify(msg));
-			message.value = '';
-		}
-	}
-
-	function toggleChat() {
-		isOpen.value = !isOpen.value;
-	}
-
 	onMounted(() => {
-		socket = new WebSocket('ws://localhost:3000'); // o el host real si estás en producción
+		if (!username.value) return;
+		connectWebSocket(username.value);
 
-		socket.onopen = () => {
-			console.log('Conectado al WebSocket');
-		};
-
-		socket.onmessage = (event) => {
-			try {
-				const data = JSON.parse(event.data);
-				messages.value.push(data);
-			} catch (err) {
-				console.error('Error al parsear mensaje', err);
-			}
-		};
-
-		socket.onclose = () => {
-			console.log('WebSocket cerrado');
-		};
+		onMessage("message", (data) => {
+			messages.value.push({ from: data.user, message: data.message });
+		});
 	});
 
-	onUnmounted(() => {
-		if (socket && socket.readyState === WebSocket.OPEN) {
-			socket.close();
-		}
+	onBeforeUnmount(() => {
+		closeWebSocket();
 	});
+
+
 }
 
-function sendChatMessage() {
-  if (!message.value.trim()) return;
-
-  sendMessage(chatId.value, username.value, message.value);
-  saveMessage(chatId.value, username.value, message.value);
-
-  messages.value.push({
-    username: t("you"),
-    message: message.value
-  });
-
-  message.value = "";
+function send() {
+	if (message.value.trim()) {
+		sendMessage(message.value.trim(), username.value);
+		message.value = "";
+	}
 }
 
 function toggleChat() {
 	isOpen.value = !isOpen.value;
 }
-
 </script>
 
 
 <template>
 	<!-- Botón flotante para abrir el chat -->
-	<button v-show="!isOpen"
+	<button v-if="isAuthenticated" v-show="!isOpen"
 		@click="isOpen = true"
 		class="z-50 fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition">
 			<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
@@ -167,8 +130,7 @@ function toggleChat() {
 					class="flex-1 border border-gray-200 rounded-l-lg p-2 outline-none focus:ring-2 focus:ring-blue-400 text-black text-sm md:text-base resize-none"
 					rows="2"
 				></textarea>
-				<button id="sendChatBtn"
-					@click="sendChatMessage"
+				<button @click="send" id="sendChatBtn"
 					class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 transition duration-200">
 					Enviar
 				</button>

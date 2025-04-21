@@ -3,6 +3,7 @@ import { ref, inject } from "vue";
 import { useRouter } from "vue-router";
 import { googleTokenLogin } from "vue3-google-login";
 import { login, loginWithGoogle } from "../api";
+import { connectWebSocket } from "../ws";
 
 const message = ref("");
 const username = ref("");
@@ -24,6 +25,8 @@ async function handleGoogleSuccess(response) {
       localStorage.setItem("username", data.username);
       setUsername(data.username, data.token);
       message.value = "Inicio de sesión exitoso con Google!";
+
+      connectWebSocket(data.username);
 
       // Esperar un poco antes de redirigir
       setTimeout(() => {
@@ -54,6 +57,8 @@ async function handleLogin() {
       localStorage.setItem("username", username.value);
       setUsername(username.value, data.token);
       message.value = "Inicio de sesión exitoso!";
+      
+      connectWebSocket(username.value);
 
       setTimeout(() => {
         router.push("/profile");
