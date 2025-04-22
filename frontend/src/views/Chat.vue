@@ -2,14 +2,13 @@
 import { ref, onMounted, computed, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { getFriends, getChats, getUser, saveMessage } from "../api";
-import { useWebSocket } from "../services/websocket"
-
+import { useWebSocket, websocketState} from "../services/websocket";
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
-const auth = inject("auth");
+const auth = inject<{ username: string }>("auth");
+const logoutFunc = inject("logout");
 
 const token = localStorage.getItem("token") || "";
 const username = ref(localStorage.getItem("username") || "");
@@ -17,8 +16,8 @@ const buddy = ref(route.params.buddy);
 const isOpen = ref(false); // ← para controlar si se muestra el chat
 const messages = ref<{ from: string; message: string }[]>([]);
 const message = ref("");
-const isAuthenticated = computed(() => !!auth.username);
-const { connect, close } = useWebSocket();
+const isAuthenticated = computed(() => auth ? !!auth.username : false);
+const { connect, send, close } = useWebSocket();
 
 if (!username.value) {
   router.push("/login");
@@ -32,7 +31,6 @@ function toggleChat() {
 	isOpen.value = !isOpen.value;
 }
 </script>
-
 
 <template>
 	<!-- Botón flotante para abrir el chat -->
