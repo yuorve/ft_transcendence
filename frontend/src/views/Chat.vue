@@ -44,7 +44,7 @@ function toggleChat() {
 			</svg>
 	</button>
 
-	<div id="chatWrapper" class="relative w-full h-full">
+	<div v-if="isAuthenticated" id="chatWrapper" class="relative w-full h-full">
 		<!-- Contenedor de chats minimizados -->
 		<div id="minimizedChatsContainer"
 			class="hidden absolute z-50 left-0 top-0 
