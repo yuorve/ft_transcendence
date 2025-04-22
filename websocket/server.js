@@ -56,36 +56,24 @@ wss.on('connection', (ws, request) => {
     ws.on('message', message => {
         try {
             const data = JSON.parse(message);
-            if (data.type === 'chat') {
-                if (!data.recipientId || !data.message) {
-                    console.warn("Mensaje inválido recibido:", message);
-                    return;
-                }
-                // Gestión del Chat
-                console.log(`Mensaje de ${id} a ${data.recipientId}: ${data.message}`);
-                const clientsArray = Array.from(wss.clients);
-                const recipientSocket = clientsArray.find(client => client.id === data.recipientId);
-                const senderSocket = clientsArray.find(client => client.id === id);
-                if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-                    recipientSocket.send(JSON.stringify({
-                        senderId: id,
-                        message: data.message,
-                    }));
-                } else {
-                    console.log(`Usuario ${data.recipientId} no conectado o no disponible.`);
-                    if (senderSocket && senderSocket.readyState === WebSocket.OPEN) {
-                        senderSocket.send(JSON.stringify({
-                            system: true,
-                            message: `Usuario no conectado`,
-                        }));
+            if (data.type === 'globalChat') {
+                console.log(`Mensaje global de ${ws.username}: ${data.message}`);
+                
+                // Crear objeto de mensaje con toda la información necesaria
+                const chatMessage = {
+                    type: 'globalChat',
+                    senderId: id,
+                    username: ws.username || players[id].username,
+                    message: data.message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Enviar a todos los clientes (incluido el remitente)
+                wss.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify(chatMessage));
                     }
-                }
-                if (senderSocket && senderSocket.readyState === WebSocket.OPEN && data.senderId !== data.recipientId) {
-                    senderSocket.send(JSON.stringify({
-                        senderId: id,
-                        message: data.message,
-                    }));
-                }
+                });
             }
             if (data.type === 'newGame') {
                 // Creación de la partida
