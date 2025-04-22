@@ -45,13 +45,6 @@ function toggleChat() {
 	</button>
 
 	<div v-if="isAuthenticated" id="chatWrapper" class="relative w-full h-full">
-		<!-- Contenedor de chats minimizados -->
-		<div id="minimizedChatsContainer"
-			class="hidden absolute z-50 left-0 top-0 
-			w-full max-w-lg md:max-w-xl lg:max-w-2xl 
-			flex overflow-x-auto space-x-2 px-2 py-1 
-			bg-red backdrop-blur-sm transition-all duration-300">
-		</div>
 
 		<!-- Contenedor del chat global -->
 		<div v-show="isOpen" id="liveChatContainer"
@@ -94,10 +87,6 @@ function toggleChat() {
 							<strong>{{ msg.from }}:</strong> {{ msg.message }}
 						</div>
 					</div>
-					<!-- Chats privados -->
-					<div id="privateChatsContainer" 
-						class="absolute top-0 right-0 w-full md:w-[350px] h-[70vh] overflow-visible pointer-events-none z-0">
-					</div>
 
 				</div>
 			</div>
@@ -111,7 +100,7 @@ function toggleChat() {
 					class="flex-1 border border-gray-200 rounded-l-lg p-2 outline-none focus:ring-2 focus:ring-blue-400 text-black text-sm md:text-base resize-none"
 					rows="2"
 				></textarea>
-				<button @click="send" id="sendChatBtn"
+				<button id="sendChatBtn"
 					class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600 transition duration-200">
 					Enviar
 				</button>
