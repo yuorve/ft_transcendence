@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, inject, watch, nextTick } from "vue";
+import { ref, onMounted, computed, inject, watch, nextTick, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useWebSocket, websocketState } from "../services/websocket";
@@ -44,6 +44,15 @@ function updatePlayersList() {
   }
 }
 
+// Función para hacer scroll al último mensaje
+function scrollToBottom() {
+  nextTick(() => {
+    if (chatBoxRef.value) {
+      chatBoxRef.value.scrollTop = chatBoxRef.value.scrollHeight;
+    }
+  });
+}
+
 // Manejar los mensajes recibidos del WebSocket
 function handleWebSocketMessages() {
   console.log("Procesando mensajes WebSocket, total:", websocketState.messages.length);
@@ -63,11 +72,7 @@ function handleWebSocketMessages() {
         });
         
         // Hacer scroll hasta el último mensaje
-        nextTick(() => {
-          if (chatBoxRef.value) {
-            chatBoxRef.value.scrollTop = chatBoxRef.value.scrollHeight;
-          }
-        });
+        scrollToBottom();
       } 
       // Actualizar lista de jugadores
       else if (data.type === 'currentPlayers') {
@@ -89,17 +94,26 @@ function sendMessage() {
       message: message.value
     });
     message.value = ""; // Limpiar el campo después de enviar
+    // Hacer scroll después de enviar mensaje
+    scrollToBottom();
   }
 }
 
 // Alternar visibilidad del chat
 function toggleChat() {
   isOpen.value = !isOpen.value;
+  if (isOpen.value) {
+    scrollToBottom();
+  }
 }
 
 // Alternar visibilidad de la lista de usuarios (para móvil)
 function toggleUserList() {
   showUserList.value = !showUserList.value;
+  // Necesitamos hacer scroll automático después de cambiar la vista
+  nextTick(() => {
+    scrollToBottom();
+  });
 }
 
 // Observar cambios en los mensajes WebSocket
@@ -127,8 +141,22 @@ onMounted(() => {
     
     // Procesar mensajes existentes
     handleWebSocketMessages();
+	// Realizar scroll inicial
+	scrollToBottom();
+	
+    window.addEventListener('resize', () => {
+      isDesktop.value = window.innerWidth >= 768;
+    });
+
   }
 });
+
+onUnmounted(() => {
+  window.removeEventListener('resize', () => {
+    isDesktop.value = window.innerWidth >= 768;
+  });
+});
+
 </script>
 
 <template>
@@ -162,35 +190,36 @@ onMounted(() => {
       <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
         <!-- Lista de Usuarios (izquierda) - visible en escritorio o cuando se solicita en móvil -->
         <div id="userListContainer"
-          :class="{'hidden md:block': !showUserList}"
-          class="bg-white p-4 w-full md:w-1/3 max-w-xs h-full border-r border-gray-300 overflow-y-auto">
-          <h3 class="text-xs font-semibold text-gray-800 mb-4 border-b border-gray-800 pb-2">Usuarios conectados</h3>
-          <ul id="userList" class="space-y-2 w-full text-xs">
-            <li v-for="(player, id) in players" :key="id" 
-                class="p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center">
-              <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-              {{ player.username || 'Usuario sin nombre' }}
-            </li>
-          </ul>
-        </div>
+			:class="{
+				'hidden': !showUserList && !isDesktop, 
+				'block': showUserList || isDesktop,
+				'w-full': !isDesktop,
+				'md:w-1/3': isDesktop
+			}"
+			class="bg-white p-4 max-w-xs h-full border-r border-gray-300 overflow-y-auto">
+			<h3 class="text-xs font-semibold text-gray-800 mb-4 border-b border-gray-800 pb-2">Usuarios conectados</h3>
+			<ul id="userList" class="space-y-2 w-full text-xs">
+				<li v-for="(player, id) in players" :key="id" 
+					class="p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center">
+				<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+				{{ player.username }}
+				</li>
+			</ul>
+		</div>
 
         <!-- Botón para Toggle en móviles -->
-        <button id="toggleUserListButton"
-          @click="toggleUserList"
-          class="md:hidden border-t border-b border-gray-500 bg-blue-300 text-black p-2 text-center">
-          {{ showUserList ? 'Ocultar Usuarios' : 'Mostrar Usuarios' }}
-        </button>
+		<button id="toggleUserListButton"
+			@click="toggleUserList"
+			class="md:hidden border-t border-b border-gray-500 bg-blue-300 text-black p-2 text-center">
+			{{ showUserList ? 'Ocultar Usuarios' : 'Mostrar Usuarios' }}
+		</button>
 
         <!-- Chat principal -->
         <div id="chatContainer" class="relative w-full h-full flex flex-col">
           <div id="chatBox"
             ref="chatBoxRef"
+			:class="{'w-full': !showUserList || isDesktop, 'hidden': showUserList && !isDesktop}"
             class="flex-1 overflow-y-auto p-3 space-y-3 bg-white text-sm md:text-base max-h-[60vh]">
-            
-            <div v-if="messages.length === 0" class="text-gray-500 text-center p-4">
-              No hay mensajes aún
-            </div>
-            
             <div
               v-for="(msg, index) in messages"
               :key="index"
