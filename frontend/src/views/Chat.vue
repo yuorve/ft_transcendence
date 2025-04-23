@@ -131,7 +131,7 @@ watch(() => websocketState.messages.length, (newLength, oldLength) => {
   }
 });
 
-// Inicializar cuando se monta el componente
+// Inicializar cuando se monta el componentes
 onMounted(() => {
   console.log("Componente Chat montado");
   
