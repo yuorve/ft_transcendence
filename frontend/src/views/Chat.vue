@@ -23,12 +23,16 @@ const message = ref("");
 const isAuthenticated = computed(() => auth ? !!auth.username : false);
 const isDesktop = ref(window.innerWidth >= 768);
 const chatBoxRef = ref<HTMLElement | null>(null);
-
 const { connect, send, close } = useWebSocket();
 
-// Detectar cambios en el tamaño de la ventana para el diseño responsivo
-window.addEventListener('resize', () => {
-  isDesktop.value = window.innerWidth >= 768;
+//Para limpiar el chat global en cada inicio de sesion
+watch(isAuthenticated, (newVal) => {
+  if (!newVal) {
+    // Usuario cerró sesión → limpiamos el chat
+    messages.value = [];
+    websocketState.messages = [];
+    websocketState.processedMessages = 0;
+  }
 });
 
 // Actualizar la lista de jugadores desde el localStorage
@@ -118,7 +122,6 @@ function toggleUserList() {
 
 // Observar cambios en los mensajes WebSocket
 watch(() => websocketState.messages.length, (newLength, oldLength) => {
-  console.log(`Cambio en mensajes WebSocket: ${oldLength} -> ${newLength}`);
   if (newLength > oldLength) {
     handleWebSocketMessages();
   }
@@ -130,7 +133,8 @@ onMounted(() => {
   
   if (!username.value) {
     router.push("/login");
-  } else {
+  } 
+  else {
     connect(token);
     updatePlayersList();
     
@@ -141,13 +145,12 @@ onMounted(() => {
     
     // Procesar mensajes existentes
     handleWebSocketMessages();
-	// Realizar scroll inicial
-	scrollToBottom();
+	  // Realizar scroll inicial
+  	scrollToBottom();
 	
     window.addEventListener('resize', () => {
       isDesktop.value = window.innerWidth >= 768;
     });
-
   }
 });
 
@@ -187,39 +190,53 @@ onUnmounted(() => {
       </div>
 
       <!-- Contenedor principal de chat -->
-      <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-        <!-- Lista de Usuarios (izquierda) - visible en escritorio o cuando se solicita en móvil -->
-        <div id="userListContainer"
-			:class="{
-				'hidden': !showUserList && !isDesktop, 
-				'block': showUserList || isDesktop,
-				'w-full': !isDesktop,
-				'md:w-1/3': isDesktop
-			}"
-			class="bg-white p-4 max-w-xs h-full border-r border-gray-300 overflow-y-auto">
-			<h3 class="text-xs font-semibold text-gray-800 mb-4 border-b border-gray-800 pb-2">Usuarios conectados</h3>
-			<ul id="userList" class="space-y-2 w-full text-xs">
-				<li v-for="(player, id) in players" :key="id" 
-					class="p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center">
-				<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-				{{ player.username }}
-				</li>
-			</ul>
-		</div>
+      <div class="flex flex-col md:flex-row flex-1 h-full overflow-hidden">
+        <!-- Lista de Usuarios -->
+        <div
+          id="userListContainer"
+          :class="{
+            'hidden': !showUserList && !isDesktop,
+            'flex flex-col': showUserList && !isDesktop,
+            'block': isDesktop,
+            'md:w-1/3': isDesktop,
+            'w-full': !isDesktop
+          }"
+          class="bg-white p-4 border-b md:border-b-0 md:border-r border-gray-300 overflow-y-auto"
+          :style="{ height: !isDesktop && showUserList ? '50%' : 'auto' }"
+        >
+          <h3 class="text-xs font-semibold text-gray-800 mb-4 border-b border-gray-800 pb-2">Usuarios conectados</h3>
+          <ul id="userList" class="space-y-2 w-full text-xs">
+            <li
+              v-for="(player, id) in players"
+              :key="id"
+              class="p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center"
+            >
+              <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+              {{ player.username }}
+            </li>
+          </ul>
+        </div>
 
-        <!-- Botón para Toggle en móviles -->
-		<button id="toggleUserListButton"
-			@click="toggleUserList"
-			class="md:hidden border-t border-b border-gray-500 bg-blue-300 text-black p-2 text-center">
-			{{ showUserList ? 'Ocultar Usuarios' : 'Mostrar Usuarios' }}
-		</button>
+        <!-- Botón para toggle en móviles -->
+        <button
+          id="toggleUserListButton"
+          @click="toggleUserList"
+          class="md:hidden border-t border-b border-gray-500 bg-blue-300 text-black p-2 text-center"
+        >
+          {{ showUserList ? 'Ocultar Usuarios' : 'Mostrar Usuarios' }}
+        </button>
 
-        <!-- Chat principal -->
-        <div id="chatContainer" class="relative w-full h-full flex flex-col">
-          <div id="chatBox"
+        <!-- Chat -->
+        <div
+          id="chatContainer"
+          class="relative w-full flex-1 flex flex-col overflow-hidden"
+          :style="{ height: !isDesktop && showUserList ? '50%' : '100%' }"
+        >
+          <div
+            id="chatBox"
             ref="chatBoxRef"
-			:class="{'w-full': !showUserList || isDesktop, 'hidden': showUserList && !isDesktop}"
-            class="flex-1 overflow-y-auto p-3 space-y-3 bg-white text-sm md:text-base max-h-[60vh]">
+            class="flex-1 overflow-y-auto p-3 space-y-3 bg-white text-sm md:text-base"
+          >
             <div
               v-for="(msg, index) in messages"
               :key="index"
@@ -229,7 +246,7 @@ onUnmounted(() => {
               <div class="flex justify-between items-center mb-1">
                 <strong class="text-xs">{{ msg.from }}</strong>
                 <span v-if="msg.timestamp" class="text-xs text-gray-500">
-                  {{ new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }}
+                  {{ new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
                 </span>
               </div>
               <div>{{ msg.message }}</div>
