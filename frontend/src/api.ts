@@ -126,15 +126,26 @@ export async function getAllTournament() {
   return response.json();
 }
 
-// Obtener lista de torneos
-export async function getTournament(username: string) {
-  const response = await fetch(`${API_URL}/tournament/${username}`);
+export async function getTournament(tournamentId: string): Promise<TournamentResponse> {
+  const response = await fetch(`${API_URL}/tournament/${tournamentId}`);
+  if (!response.ok) {
+    throw new Error(`Error al cargar el torneo ${tournamentId}: ${response.statusText}`);
+  }
   return response.json();
 }
 
-export async function getMyTournament(username: string) {
-  const response = await fetch(`${API_URL}/mytournaments/${username}`);
-  return response.json();
+export interface MyTournamentsResponse {
+  tournaments: TournamentResponse[];
+}
+
+export async function getMyTournament(
+  username: string
+): Promise<MyTournamentsResponse> {
+  const res = await fetch(`${API_URL}/mytournaments/${username}`);
+  if (!res.ok) {
+    throw new Error(`Error al cargar mis torneos: ${res.statusText}`);
+  }
+  return res.json();
 }
 
 // Registrar un torneo
@@ -244,6 +255,12 @@ export interface Game {
   score2: string;
   round: string;
   created_at: string;
+}
+export interface TournamentResponse {
+  games: Game[];
+  tournament: string;
+  champion: string | null;
+  created_at: string | null;
 }
 
 export const noPlayer = "???";

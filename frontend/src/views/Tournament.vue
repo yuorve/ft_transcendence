@@ -3,10 +3,10 @@ import { ref, onMounted, inject, computed } from "vue";
 import { useRouter } from "vue-router";
 
 import { getMyTournament, createTournament, createGame, generateId, noPlayer, updateChampion } from "../api";
-import type { Game } from "../api";
+import type { Game, MyTournamentsResponse, TournamentResponse } from "../api";
 // import type { int } from "@babylonjs/core";
 
-// 🚀 Obtener el usuario actual del sistema (debe estar en `provide` en `App.vue`)
+// Obtener el usuario actual del sistema (debe estar en `provide` en `App.vue`)
 const auth = inject<{ username: string }>("auth");
 const currentUser = auth?.username || "Tú"; // Si no hay usuario, poner "Tú"
 const router = useRouter();
@@ -19,69 +19,52 @@ const gameid = ref("");
 const gameround = ref("0");
 const gameorder = ref("0");
 
-interface TournamentResponse {
-  games: Game[];
-  tournament: string;
-  champion: string | null;
-  created_at: string | null;
-}
-
 const tournamentData = ref<TournamentResponse | null>(null);
-const nextGame = () => {
-  if (!tournamentData.value || !tournamentData.value.games || tournamentData.value.games.length === 0) {
-    console.log("No hay datos del torneo");
-    return;
-  }
-  const next = tournamentData.value.games.find(g => g.score1 === "" && g.score2 === "")
-  if(next)
-  {
+const tournamentActive = ref(false);
+const myTournaments = ref<MyTournamentsResponse>({ tournaments: [] });
+
+// Obtiene la siguiente partida o finaliza el torneo
+const nextGame = async () => {
+  if (!tournamentData.value) return;
+  const games = tournamentData.value.games;
+  const next = games.find((g: Game) => g.score1 === "" || g.score2 === "");
+  if (next) {
     gameid.value = next.game;
     player1.value = next.player1;
     player2.value = next.player2;
     gameround.value = next.round;
     gameorder.value = next.game_order;
-  }
-   else
-   {
-     // Ningún juego pendiente: torneo terminado
-     const last = tournamentData.value.games[tournamentData.value.games.length - 1]
-     last.score1 !== "" && Number(last.score1) > Number(last.score2)
-     ? updateChampion(tournamentData.value.tournament, last.player1)
-     : updateChampion(tournamentData.value.tournament, last.player2)
-     console.log(`Torneo finalizado, campeón: ${tournamentData.value.champion}`)   // ocultar boton de jugar partida y anular nextwinnergame
-   }
-}
-// Variable reactiva para almacenar la respuesta del torneo
-async function fetchTournament() {
-  try {
-    const data = await getMyTournament(currentUser)
-    tournamentData.value = {
-      games: data.games,
-      tournament: data.tournament,
-      champion: data.champion,
-      created_at: data.created_at
-    }
-    // 3) Controla si hay torneo
-    tournamentActive.value = Array.isArray(data.games) && data.games.length > 0
-    if (tournamentActive.value)
-    nextGame();
-  }
-  catch (err) {
-    console.error('Error al cargar el torneo:', err)
-    tournamentActive.value = false
-    tournamentData.value   = null
-  }
-}
-
-const tournamentActive = ref(false);
-async function checkTournament() {
-  const tournament = await getMyTournament(currentUser);
-  if (tournament && Array.isArray(tournament.games) && tournament.games.length > 0) {
-    console.log("Torneo en marcha detectado");
-    tournamentActive.value = true;
   } else {
-    console.log("No hay torneo en marcha");
+    const last = games[games.length - 1];
+    const winner =
+      last.score1 !== "" && Number(last.score1) > Number(last.score2)
+        ? last.player1
+        : last.player2;
+    await updateChampion(tournamentData.value.tournament, winner);
     tournamentActive.value = false;
+    tournamentData.value = null;
+    myTournaments.value = { tournaments: [] };
+  }
+};
+
+// Comprueba torneos activos del usuario
+async function checkTournament() {
+  try {
+    const data = await getMyTournament(currentUser);
+    myTournaments.value = data;
+    const active = data.tournaments.find((t) => !t.champion);
+    if (active) {
+      tournamentData.value = active;
+      tournamentActive.value = true;
+      nextGame();
+    } else {
+      tournamentActive.value = false;
+      tournamentData.value = null;
+    }
+  } catch (err) {
+    console.error("Error al cargar torneos:", err);
+    tournamentActive.value = false;
+    tournamentData.value = null;
   }
 }
 
@@ -127,10 +110,8 @@ const redirect = () => {
   }
 };
 
-onMounted( async () => {
+onMounted(async () => {
   await checkTournament();
-  if (tournamentActive.value == true)
-    fetchTournament();
 });
 
 const players = ref<string[]>([currentUser]);
@@ -191,7 +172,7 @@ const sortedRounds = computed(() => {
 
 
 <template>
-   <!-- v-if="tournamentActive === false" -->
+  <!-- v-if="tournamentActive === false" -->
   <div class="bg-violet-700 h-fit w-full flex flex-col items-center gap-10" v-if="tournamentActive === false">
     <p>Selecciona el número de jugadores</p>
     <div class="flex items-center justify-center gap-10">
@@ -201,39 +182,40 @@ const sortedRounds = computed(() => {
       <button @click="playerNum = 8" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">8</button>
     </div>
     <div class="flex gap-4">
-      <div v-for="(index) in Array.from({ length: playerNum }, (_, index) => index)" :key="index" class="flex bg-gray-300">
+      <div v-for="(index) in Array.from({ length: playerNum }, (_, index) => index)" :key="index"
+        class="flex bg-gray-300">
         <input v-model="players[index]" type="text" :placeholder="`Jugador ${index + 1}`" class="border p-2 my-1" />
       </div>
     </div>
     <button @click="generateRanks(playerNum)" class="cursor-pointer bg-blue-300 rounded-md">crear torneo</button>
   </div>
   <!-- Sección para mostrar los datos del torneo en forma de pirámide -->
-  <!-- v-else class="bg-violet-700 h-fit w-full" -->
-   <!-- ahora mismo mezcla todos los torneos en los que participa el jugador -->
-   <div>
-     <div v-if="tournamentData" class="w-auto bg-amber-300">
-       <h2 class="text-center font-bold text-xl mb-4">Datos del Torneo {{ tournamentData.tournament }}</h2>
-       <h2 class="text-center font-bold text-xl mb-4">{{ tournamentData.champion ||"Nadie"}}</h2>
-       <div v-if="sortedRounds.length" class="flex flex-col gap-4">
-         <div v-for="roundGroup in sortedRounds" :key="roundGroup.round" class="flex flex-col items-center">
-           <h3 class="mb-2">Ronda {{ roundGroup.round }}</h3>
-           <div class="flex justify-center bg-gray-300">
-             <div v-for="game in roundGroup.games" :key="game.game" class="bg-green-400 p-3 m-1">
-               <p><strong>Juego:</strong> {{ game.game }}</p>
-               <p><strong>Jugador 1:</strong> {{ game.player1 }}</p>
-               <p><strong>Jugador 2:</strong> {{ game.player2 }}</p>
-               <p><strong>Ronda:</strong> {{ game.round }}</p>
-               <p><strong>orden:</strong> {{ game.game_order }}</p>
-             </div>
-           </div>
-         </div>
-       </div>
-     </div>
-     <div class="flex items-center justify-center m-3" v-if="tournamentActive === true">
-       <button
-         class="p-2 bg-gradient-to-b from-red-400 to-red-800 w-fit cursor-pointer rounded-md border-2 border-red-400 text-2xl text-white"
-         @click="redirect"> jugar pong con {{ player1 }} y {{ player2 }} la partida {{ gameid }}</button>
-     </div>
-
-   </div>
+  <div>
+    <div v-if="tournamentData" class="w-auto bg-amber-300">
+      <h2 class="text-center font-bold text-xl mb-4">Datos del Torneo {{ tournamentData.tournament }}</h2>
+      <h2 class="text-center font-bold text-xl mb-4">{{ tournamentData.champion || "Nadie" }}</h2>
+      <div v-if="sortedRounds.length" class="flex flex-col gap-4">
+        <div v-for="roundGroup in sortedRounds" :key="roundGroup.round" class="flex flex-col items-center">
+          <h3 class="mb-2">Ronda {{ roundGroup.round }}</h3>
+          <div class="flex justify-center bg-gray-300">
+            <div v-for="game in roundGroup.games" :key="game.game" class="bg-green-400 p-3 m-1">
+              <p><strong>Juego:</strong> {{ game.game }}</p>
+              <p><strong>Jugador 1:</strong> {{ game.player1 }}</p>
+              <p><strong>Jugador 2:</strong> {{ game.player2 }}</p>
+              <p><strong>Ronda:</strong> {{ game.round }}</p>
+              <p><strong>orden:</strong> {{ game.game_order }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center justify-center m-3" v-if="tournamentActive === true">
+      <button v-if="!tournamentData?.champion"
+        class="p-2 bg-gradient-to-b from-red-400 to-red-800 w-fit cursor-pointer rounded-md border-2 border-red-400 text-2xl text-white"
+        @click="redirect"> jugar pong con {{ player1 }} y {{ player2 }} la partida {{ gameid }}</button>
+        <button v-else
+        class="p-2 bg-gradient-to-b from-red-400 to-red-800 w-fit cursor-pointer rounded-md border-2 border-red-400 text-2xl text-white"
+        @click="redirect">Nuevo torneo</button>
+    </div>
+  </div>
 </template>

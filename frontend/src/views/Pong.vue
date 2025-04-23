@@ -5,15 +5,18 @@
     </div>
     <div class="flex items-center justify-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-1/4 p-2">
       <div class="w-1/3 h-full flex justify-center gap-5 items-center">
-        <img :src="profileImage" alt="Profile image" class="w-30 h-30 rounded-full shadow-2xl border-2 hidden sm:block" />
+        <img :src="profileImage" alt="Profile image"
+          class="w-30 h-30 rounded-full shadow-2xl border-2 hidden sm:block" />
         <p class="sm:text-5xl text-2xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">{{ player1 }}</p>
       </div>
       <div class="w-1/3 flex justify-around">
         <h1 class=" sm:text-8xl text-4xl">{{ puntuation.pl }} - {{ puntuation.pr }}</h1>
       </div>
       <div class="w-1/3 h-full flex justify-center gap-5 items-center">
-        <p class="sm:text-5xl text-2xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md">{{ player2 }}</p>
-        <img :src="defaultProfile" alt="2nd player" class="w-25 h-25 rounded-full shadow-2xl border-2 hidden sm:block" />
+        <p class="sm:text-5xl text-2xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md">{{ player2 }}
+        </p>
+        <img :src="defaultProfile" alt="2nd player"
+          class="w-25 h-25 rounded-full shadow-2xl border-2 hidden sm:block" />
       </div>
     </div>
   </div>
@@ -69,15 +72,15 @@ onMounted(async () => {
   // 2. Determinar gameid y gameidWinner a partir de la query
   const raw = route.query.gameid;
   if (typeof raw === "string") {
-  gameid.value = raw;
-  isTournament.value = true;
-} else if (Array.isArray(raw) && raw[0]) {
-  gameid.value = raw[0];
-  isTournament.value = true;
-} else {
-  gameid.value = generateId();
-  isTournament.value = false;
-}
+    gameid.value = raw;
+    isTournament.value = true;
+  } else if (Array.isArray(raw) && raw[0]) {
+    gameid.value = raw[0];
+    isTournament.value = true;
+  } else {
+    gameid.value = generateId();
+    isTournament.value = false;
+  }
 
   const rawW = route.query.gameidWinner;
   if (typeof rawW === "string") {
@@ -94,7 +97,7 @@ onMounted(async () => {
       await createGame(
         gameid.value,
         "pong",
-        0,
+        -1,
         username.value,      // YA tenemos username cargado
         player2.value,
         "",
@@ -145,10 +148,10 @@ onUnmounted(() => {
   if (scene) scene.dispose()
   if (engine) engine.dispose()
   if (!isTournament.value && puntuation.pl < 5 && puntuation.pr < 5) {
-    console.log("pl es " + puntuation.pl + " pr es " +puntuation.pr + " al destruir la partida");
-      deleteGame(gameid.value)
-        .then(() => console.log('Partida eliminada al salir sin terminar'))
-        .catch(err => console.error('Error al eliminar partida:', err))
+    console.log("pl es " + puntuation.pl + " pr es " + puntuation.pr + " al destruir la partida");
+    deleteGame(gameid.value)
+      .then(() => console.log('Partida eliminada al salir sin terminar'))
+      .catch(err => console.error('Error al eliminar partida:', err))
   } else {
     console.log("Partida no eliminada (terminada o de torneo)")
   }
