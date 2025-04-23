@@ -120,6 +120,10 @@ function toggleUserList() {
   });
 }
 
+window.addEventListener('resize', () => {
+      isDesktop.value = window.innerWidth >= 768;
+});
+
 // Observar cambios en los mensajes WebSocket
 watch(() => websocketState.messages.length, (newLength, oldLength) => {
   if (newLength > oldLength) {
