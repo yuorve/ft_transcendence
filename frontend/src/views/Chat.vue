@@ -41,7 +41,6 @@ function updatePlayersList() {
     const storedPlayers = localStorage.getItem("players");
     if (storedPlayers) {
       players.value = JSON.parse(storedPlayers);
-      console.log("Lista de jugadores actualizada:", players.value);
     }
   } catch (error) {
     console.error("Error al analizar datos de jugadores:", error);
@@ -63,11 +62,10 @@ function handleWebSocketMessages() {
   
   websocketState.messages.forEach((data, index) => {
     if (index >= websocketState.processedMessages) {
-      console.log("Procesando mensaje:", data);
-      
+      console.log("Mensaje recibido:", data);
+      console.log("Mi playerId:", playerId.value);    
       // Manejar mensajes de chat global
       if (data.type === 'globalChat') {
-        console.log("Añadiendo mensaje de chat:", data);
         messages.value.push({
           from: data.username,
           senderId: data.senderId,
@@ -95,7 +93,7 @@ function sendMessage() {
     console.log("Enviando mensaje:", message.value);
     send({
       type: 'globalChat',
-      message: message.value
+      message: message.value,
     });
     message.value = ""; // Limpiar el campo después de enviar
     // Hacer scroll después de enviar mensaje
@@ -239,21 +237,28 @@ onUnmounted(() => {
           <div
             id="chatBox"
             ref="chatBoxRef"
-            class="flex-1 overflow-y-auto p-3 space-y-3 bg-white text-sm md:text-base"
-          >
+            class="flex-1 overflow-y-auto p-3 space-y-3 bg-white text-sm md:text-base">
             <div
               v-for="(msg, index) in messages"
               :key="index"
-              class="p-2 rounded-md mb-2"
-              :class="msg.senderId === playerId ? 'bg-blue-100 ml-auto max-w-[80%]' : 'bg-gray-100 max-w-[80%]'"
-            >
-              <div class="flex justify-between items-center mb-1">
-                <strong class="text-xs">{{ msg.from }}</strong>
-                <span v-if="msg.timestamp" class="text-xs text-gray-500">
+              class="flex flex-col max-w-full"
+              :class="msg.from === auth?.username ? 'items-end' : 'items-start'">
+              <div
+                class="rounded-lg px-3 py-2 text-sm md:text-base break-words"
+                :class="msg.from === auth?.username
+                ? 'bg-blue-100 text-black self-end'
+                : 'bg-green-100 text-black self-start'"
+                style="max-width: 80%; word-break: break-word;">
+                <div class="text-xs font-semibold mb-1">
+                  {{ msg.from }}
+                </div>
+                <div class="whitespace-pre-wrap break-words">
+                  {{ msg.message}}
+                </div>
+                <div v-if="msg.timestamp" class="text-[10px] text-gray-500 text-right mt-1">
                   {{ new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
-                </span>
+                </div>
               </div>
-              <div>{{ msg.message }}</div>
             </div>
           </div>
         </div>

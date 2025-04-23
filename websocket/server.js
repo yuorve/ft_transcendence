@@ -57,8 +57,6 @@ wss.on('connection', (ws, request) => {
         try {
             const data = JSON.parse(message);
             if (data.type === 'globalChat') {
-                console.log(`Mensaje global de ${ws.username}: ${data.message}`);
-                
                 // Crear objeto de mensaje con toda la información necesaria
                 const chatMessage = {
                     type: 'globalChat',
