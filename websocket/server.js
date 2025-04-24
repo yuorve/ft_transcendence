@@ -168,10 +168,10 @@ wss.on('connection', (ws, request) => {
                     console.log("Enviado a: ", player2.username);
                 }
                 if (games[data.gameId].player1) {
-                    players[games[data.gameId].player1].gameId = "";
+                    players[games[data.gameId].player1].gameId = null;
                 }
                 if (games[data.gameId].player2) {
-                    players[games[data.gameId].player2].gameId = "";
+                    players[games[data.gameId].player2].gameId = null;
                 }
                 delete games[data.gameId]; // Elimina la partida
                 console.log("Partida eliminada:", data.gameId);
@@ -229,7 +229,7 @@ wss.on('connection', (ws, request) => {
                 oponente.send(JSON.stringify({ type: 'opponentDisconnected' }));
             }
             if (oponenteId) {
-                players[oponenteId].gameId = "";
+                players[oponenteId].gameId = null;
             }
             delete games[gameId]; // Elimina la partida
             console.log("Partida eliminada:", gameId);
