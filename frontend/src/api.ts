@@ -192,6 +192,12 @@ export async function getUser(id: number) {
   return response.json();
 }
 
+// Obtener imagen de usuario
+export async function getUserImage(user: string) {
+  const response = await fetch(`${API_URL}/user-image/${user}`);
+  return response.json();
+}
+
 export function generateId() {
   return Math.random().toString(36).substring(2, 15);
 }

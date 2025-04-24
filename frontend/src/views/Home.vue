@@ -2,8 +2,10 @@
   <div>
     <div class="justify-items-center bg-amber-300 text-center">
       <h1 class="text-green-600">Bienvenido a FT-Transcendence</h1>
-      <p><router-link :to="{ name: 'PongOnline', params: { game: 'new' } }">Nueva Partida de Pong en Línea</router-link>
+      <p>
+        <router-link :to="{ name: 'PongOnline', params: { game: 'newGame' } }">Nueva Partida de Pong en Línea</router-link>
       </p>
+      <p><router-link :to="{ name: 'TTTOnline', params: { game: 'newGame' } }">Nueva Partida de TicTacToe en Línea</router-link></p>
     </div>
     <div class="flex items-center justify-center gap-3 m-3">
       <div class="container mx-auto p-4 border-2 bg-amber-300 rounded-xl">
@@ -57,7 +59,7 @@
               <td class="border px-4 py-2" v-if="game.player1">{{ game.player1 }}</td>
               <td class="border px-4 py-2" v-if="game.player2">{{ game.player2 }}</td>
               <td class="border px-4 py-2" v-if="!game.player1 || !game.player2"><router-link
-                  :to="{ name: 'PongOnline', params: { game: game.id } }">Unirse</router-link></td>
+                  :to="{ name: 'TTTOnline', params: { game: 'joinGame' }, query: { gameid: game.id } }">Unirse</router-link></td>
             </tr>
           </tbody>
         </table>
@@ -71,6 +73,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { getFriends, getBlocked } from '../api';
+import { useWebSocket } from '../services/websocket';
 
 interface Player {
   id: string;
@@ -105,40 +108,40 @@ const blocked = ref<string[]>([]);
 
 const updatePlayers = async () => {
   const playersString = localStorage.getItem('players');
-  let players = {};
-  let tempPlayersArray = [];
+  // let players = {};
+  // let tempPlayersArray = [];
 
-  if (playersString) {
-    try {
-      players = JSON.parse(playersString);
-      tempPlayersArray = Object.entries(players).map(([id, playerDataRaw]) => {
-        const playerData = playerDataRaw as { username: string };
-        return {
-          id,
-          username: playerData.username,
-          isFriend: false,
-        };
-      });
-      try {
-        const friendsResponse = await getFriends(username);
-        const blockedResponse = await getBlocked(username);
+  // if (playersString) {
+  //   try {
+  //     players = JSON.parse(playersString);
+  //     tempPlayersArray = Object.entries(players).map(([id, playerDataRaw]) => {
+  //       const playerData = playerDataRaw as { username: string };
+  //       return {
+  //         id,
+  //         username: playerData.username,
+  //         isFriend: false,
+  //       };
+  //     });
+  //     try {
+  //       const friendsResponse = await getFriends(username);
+  //       const blockedResponse = await getBlocked(username);
 
-        friends.value = friendsResponse?.friends?.map((friend: Friends) => friend.buddy) || [];
-        blocked.value = blockedResponse?.blocked?.map((blockedUser: BlockedUser) => blockedUser.buddy) || [];
+  //       friends.value = friendsResponse?.friends?.map((friend: Friends) => friend.buddy) || [];
+  //       blocked.value = blockedResponse?.blocked?.map((blockedUser: BlockedUser) => blockedUser.buddy) || [];
 
-      } catch (error) {
-        console.error("Error fetching friends or blocked:", error);
-      }
-      playersArray.value = tempPlayersArray.filter(player => !blocked.value.includes(player.username)).map(player => ({
-        ...player,
-        isFriend: friends.value.includes(player.username),
-      }));
-    } catch (error) {
-      console.error("Error parsing players from localStorage:", error);
-    }
-  } else {
-    playersArray.value = [];
-  }
+  //     } catch (error) {
+  //       console.error("Error fetching friends or blocked:", error);
+  //     }
+  //     playersArray.value = tempPlayersArray.filter(player => !blocked.value.includes(player.username)).map(player => ({
+  //       ...player,
+  //       isFriend: friends.value.includes(player.username),
+  //     }));
+  //   } catch (error) {
+  //     console.error("Error parsing players from localStorage:", error);
+  //   }
+  // } else {
+  //   playersArray.value = [];
+  // }
 };
 
 const updateGames = () => {
@@ -165,25 +168,31 @@ const updateGames = () => {
   }
 };
 
-const storageChangeHandler = (event: StorageEvent) => {
-  console.log("storageChangeHandler ejecutado:", event);
-  console.log("Clave del evento:", event.key);
-  console.log("Actualizando...");
-  if (event.key === 'players') {
-    updatePlayers();
-  } else if (event.key === 'games') {
-    updateGames();
-  }
+
+// Uso del websocket
+const token = localStorage.getItem("token") || "";
+const { websocketState: { socket } } = useWebSocket(token || '');
+
+if (socket) {
+  socket.addEventListener('message', event => {
+        const data = JSON.parse(event.data);
+        console.log(data);
+        if (data.type === 'currentPlayers') {
+            localStorage.setItem('players', JSON.stringify(data.players));
+            updatePlayers();            
+            console.log('Players stored:', data.players);
+        }
+        if (data.type === 'currentGames') {
+            localStorage.setItem('games', JSON.stringify(data.games));
+            updateGames();
+            console.log('Games stored:', data.games);
+        }
+  });
 };
 
 onMounted(() => {
   updatePlayers();
   updateGames();
-  window.addEventListener('storage', storageChangeHandler);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('storage', storageChangeHandler);
 });
 
 </script>

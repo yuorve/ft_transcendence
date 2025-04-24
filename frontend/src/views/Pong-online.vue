@@ -35,6 +35,7 @@ onMounted(async () => {
 onMounted(() => {
   try {
     if (socket) {
+      console.log(socket);
       const result = initPong(game.value, socket); // Llamamos la función del juego    
       scene = result.scene;
       engine = result.engine;

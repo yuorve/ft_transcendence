@@ -14,6 +14,7 @@ export const websocketState = reactive({
 
 export function useWebSocket() {
     const connect = (token: string) => {
+        console.log(token);
         const url = `${WS_URL}?token=${token}`;
         websocketState.socket = new WebSocket(url);
 

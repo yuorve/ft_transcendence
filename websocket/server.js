@@ -21,35 +21,36 @@ function getUserFromRequest(request) {
   
 const wss = new WebSocket.Server({ port: process.env.PORT });
 
-let games = {};
-let players = {};
-let ball = { x: 0, y: 0, dx: 0.1, dy: 0.1 };
+let games = {}; //Partidas Activas
+let players = {}; //Jugadores en Línea
+let ball = { x: 0, y: 0, dx: 0.1, dy: 0.1 }; //Necesario para pong?
 
 wss.on('connection', (ws, request) => {
-    const username = getUserFromRequest(request);   
+    const username = getUserFromRequest(request);
     if (username) {
         wss.clients.forEach(client => {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
                 if (client.username === username) {
                     //client.send(JSON.stringify({ type: 'connectionReplaced' }));
-                    //client.close()
-                    console.log(`Usuario con ID ${username} YA conectado`);
+                    console.log(`Usuario ${username} YA conectado`);
+                    client.close()
                 }
             }
         });
         ws.username = username;
-        console.log(`Usuario con ID ${username} conectado`);
+        console.log(`Usuario ${username} conectado`);
     } else {
         ws.close();
         return;
     }
 
-    const id = generatePlayerId();
-    ws.id = id; // Añadir el id al objeto ws
-    players[id] = { username: ws.username }; 
-    console.log('User connected', id);
-
-    ws.send(JSON.stringify({ type: 'playerId', id: id }));
+    players[username] = { gameId: null };
+    //const id = generatePlayerId();
+    //ws.id = id; // Añadir el id al objeto ws
+    //players[id] = { username: ws.username }; 
+    //console.log('User connected', id);
+ 
+    //ws.send(JSON.stringify({ type: 'playerId', id: id }));
     broadcast(JSON.stringify({ type: 'currentPlayers', players }));
     broadcast(JSON.stringify({ type: 'currentGames', games }));
 
@@ -89,30 +90,29 @@ wss.on('connection', (ws, request) => {
             }
             if (data.type === 'newGame') {
                 // Creación de la partida
-                const gameId = generateGameId();
+                const gameId = data.id;
                 console.log("Nueva Partida creada:", gameId);
-                players[id].gameId = gameId;
-                players[id].username = data.player;
+                console.log("Partida creada por:", data.player);
+                players[data.player].gameId = gameId;
+                console.log("Asignando partida");
+                //players[id].username = data.player;
                 if (!games[gameId]) {
                     games[gameId] = {
                         game: data.game,
-                        player1: id,
-                        name1: data.player,
+                        player1: data.player,
                         player2: null,
-                        name2: null,
                     };
                 }
-                ws.send(JSON.stringify({ type: 'gameId', id: gameId }));
+                //ws.send(JSON.stringify({ type: 'gameId', id: gameId }));
+                broadcast(JSON.stringify({ type: 'currentPlayers', players }), ws);
                 broadcast(JSON.stringify({ type: 'currentGames', games }), ws);
             }
             if (data.type === 'joinGame') {
                 console.log("Nuevo jugador en la Partida:", data.id);
-                players[id].gameId = data.id;
-                players[id].username = data.player;
+                players[data.player].gameId = data.id;
                 if (games[data.id]) {
                     if (!games[data.id].player2) {
-                        games[data.id].player2 = id;
-                        games[data.id].name2 = data.player;
+                        games[data.id].player2 = data.player;
                         if (data.game === 'pong') {
                             games[data.id].ball = { x: 0.0, y: 0.0, dx: 0.0, dy: 0.0 };
                         }
@@ -121,15 +121,13 @@ wss.on('connection', (ws, request) => {
                 
                         // Avisa a los jugadores de la nueva partida
                         const clientsArray = Array.from(wss.clients);                        
-                        const player1 = clientsArray.find(client => client.id === games[data.id].player1);
-                        const player2 = clientsArray.find(client => client.id === games[data.id].player2);                        
-                        const namePlayer1 = players[games[data.id].player1].username;
-                        const namePlayer2= players[games[data.id].player2].username;                        
+                        const player1 = clientsArray.find(client => client.username === games[data.id].player1);
+                        const player2 = clientsArray.find(client => client.username === games[data.id].player2);                        
                         if (player1 && player1.readyState === WebSocket.OPEN) {
-                            player1.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player2, name: namePlayer2 }));
+                            player1.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player2 }));
                         }
                         if (player2 && player2.readyState === WebSocket.OPEN) {
-                            player2.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player1, name: namePlayer1 }));
+                            player2.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player1 }));
                         }
                     }
                 }
@@ -147,22 +145,53 @@ wss.on('connection', (ws, request) => {
                 //broadcast(JSON.stringify({type:'scoreUpdate', playerId: id}));
             }
             if(data.type === "gameOver"){
-                console.log("Partida Finalizada:",data.gameId);
-                delete games[gameId]; // Elimina la partida
+                console.log("Partida Finalizada:", data.gameId);
+                players[games[data.gameId].player1].gameId = "";
+                players[games[data.gameId].player2].gameId = "";
+                delete games[data.gameId]; // Elimina la partida
+                broadcast(JSON.stringify({ type: 'currentPlayers', players }), ws);
                 broadcast(JSON.stringify({ type: 'currentGames', games }), ws);;
+            }
+            if (data.type === 'gameAborted') {
+                console.log("Partida: ", data.gameId);
+                console.log("Abandono de: ", ws.username);
+                const clientsArray = Array.from(wss.clients);                
+                const player1 = clientsArray.find(client => client.username === games[data.gameId].player1);
+                const player2 = clientsArray.find(client => client.username === games[data.gameId].player2);
+                // Avisa al oponente del abandono
+                if (games[data.gameId].player2 === ws.username && player1 && player1.readyState === WebSocket.OPEN) {
+                    player1.send(JSON.stringify({ type: 'opponentDisconnected', x: 0 }));
+                    console.log("Enviado a: ", player1.username);
+                }
+                if (games[data.gameId].player1 === ws.username && player2 && player2.readyState === WebSocket.OPEN) {
+                    player2.send(JSON.stringify({ type: 'opponentDisconnected', x: 0 }));
+                    console.log("Enviado a: ", player2.username);
+                }
+                if (games[data.gameId].player1) {
+                    players[games[data.gameId].player1].gameId = "";
+                }
+                if (games[data.gameId].player2) {
+                    players[games[data.gameId].player2].gameId = "";
+                }
+                delete games[data.gameId]; // Elimina la partida
+                console.log("Partida eliminada:", data.gameId);
+                broadcast(JSON.stringify({ type: 'currentPlayers', players }), ws);
+                broadcast(JSON.stringify({ type: 'currentGames', games }), ws);
             }
             if (data.type === 'opponentMove') {
                 console.log("Partida: ", data.gameId);
-                console.log("Jugador: ", ws.id);
-                const clientsArray = Array.from(wss.clients);
-                const player1 = clientsArray.find(client => client.id === games[data.gameId].player1);
-                const player2 = clientsArray.find(client => client.id === games[data.gameId].player2);
+                console.log("Movimiento de: ", ws.username);
+                const clientsArray = Array.from(wss.clients);                
+                const player1 = clientsArray.find(client => client.username === games[data.gameId].player1);
+                const player2 = clientsArray.find(client => client.username === games[data.gameId].player2);
                 // Avisa al oponente del movimiento
-                if (games[data.gameId].player2 === ws.id && player1 && player1.readyState === WebSocket.OPEN) {
+                if (games[data.gameId].player2 === ws.username && player1 && player1.readyState === WebSocket.OPEN) {
                     player1.send(JSON.stringify({ type: 'opponentMove', x: data.x }));
+                    console.log("Enviado a: ", player1.username);
                 }
-                if (games[data.gameId].player1 === ws.id && player2 && player2.readyState === WebSocket.OPEN) {
+                if (games[data.gameId].player1 === ws.username && player2 && player2.readyState === WebSocket.OPEN) {
                     player2.send(JSON.stringify({ type: 'opponentMove', x: data.x }));
+                    console.log("Enviado a: ", player2.username);
                 }
             }
             if (data.type === 'ballUpdate') {              
@@ -177,28 +206,30 @@ wss.on('connection', (ws, request) => {
             }
         } catch (error) {            
             console.error("Error al analizar JSON:", error.message);
-            console.log("Mensaje no JSON ignorado:", message);            
         }
     });
 
     ws.on('close', () => {
-        delete players[id];
-        console.log('User disconnected', id);
+        delete players[username];
+        console.log('User disconnected', username);
         let gameId = null;
         // Buscamos la partida del jugador desconectado
         for (const idgame in games) {
-            if (games[idgame].player1 === ws.id || games[idgame].player2 === ws.id) {
+            if (games[idgame].player1 === ws.username || games[idgame].player2 === ws.username) {
                 gameId = idgame;
                 break;
             }
         }
         if (gameId) {
             console.log("Partida encontrada:", gameId);
-            const oponenteId = games[gameId].player1 === ws.id ? games[gameId].player2 : games[gameId].player1;
+            const oponenteId = games[gameId].player1 === ws.username ? games[gameId].player2 : games[gameId].player1;
             const clientsArray = Array.from(wss.clients);
-            const oponente = clientsArray.find(client => client.id === oponenteId);
+            const oponente = clientsArray.find(client => client.username === oponenteId);
             if (oponente && oponente.readyState === WebSocket.OPEN) {
                 oponente.send(JSON.stringify({ type: 'opponentDisconnected' }));
+            }
+            if (oponenteId) {
+                players[oponenteId].gameId = "";
             }
             delete games[gameId]; // Elimina la partida
             console.log("Partida eliminada:", gameId);
