@@ -106,13 +106,13 @@ onMounted(async () => {
     }
   }
 
-  // 6. Inicializar la escena de Pong
+  // 6. Inicializar la escena de 3 en raya
   try {
     const { scene: s, engine: eng } = initTicTacToe();
     scene = s;
     engine = eng;
   } catch (e) {
-    console.error("Error initializing Pong:", e);
+    console.error("Error initializing tictactoe:", e);
   }
 });
 
@@ -156,7 +156,7 @@ const sendPunt = async (winner: string) => {
 
   setTimeout(() => {
     if (Object.keys(route.query).length > 0) {
-      sendRouter.push({ path: "/Tournament" })
+      sendRouter.push({ path: "/Tournament", query:{ isTournament: "true"} })
     }
   }, 2000)
 }
@@ -176,7 +176,7 @@ watch(
     <div class="w-1/6 flex flex-col bg-gradient-to-b from-blue-400 to-transparent">
       <div class="w-full h-80 flex flex-col gap-10 justify-center items-center">
         <img :src="profileImage" alt="Profile Image" class=" w-30 h-30 rounded-full shadow-2xl border-2">
-        <p class="bg-blue-200 border-1 border-blue-700 shadow-2xl rounded-md p-1">{{ username }}</p>
+        <p class="bg-blue-200 border-1 border-blue-700 shadow-2xl rounded-md p-1">{{ player1 }}</p>
       </div>
       <div class="border-3 w-full flex-1 flex justify-center">stadistics</div>
     </div>
@@ -191,7 +191,7 @@ watch(
     <div class="w-1/6 flex flex-col bg-gradient-to-b from-amber-400 to-transparent ">
       <div class="w-full h-80 flex flex-col gap-10 justify-center items-center">
         <img src="../assets/default-profile.png" alt="Guest Image" class=" w-30 h-30 rounded-full shadow-2xl border-2">
-        <p class="bg-amber-200 border-1 border-amber-700 shadow-2xl rounded-md p-1">Invitado</p>
+        <p class="bg-amber-200 border-1 border-amber-700 shadow-2xl rounded-md p-1">{{ player2 }}</p>
       </div>
       <div class="border-3 w-full flex-1 flex justify-center">stadistics</div>
     </div>

@@ -65,7 +65,7 @@
 					<details>
 						<summary
 							class="cursor-pointer px-4 py-2 bg-blue-100 font-semibold flex justify-between items-center">
-							<span>Torneo {{ torneo.tournament }}</span>
+							<span>Torneo {{ torneo.tournament }} - juego {{ torneo.games[0].type }}</span>
 							<span class="text-green-700">
 								Ganador: {{ torneo.champion || 'Pendiente' }}
 							</span>

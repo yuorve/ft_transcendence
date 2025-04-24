@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, inject, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { getMyTournament, createTournament, createGame, generateId, noPlayer, updateChampion } from "../api";
 import type { Game, MyTournamentsResponse, TournamentResponse } from "../api";
@@ -10,8 +10,11 @@ import type { Game, MyTournamentsResponse, TournamentResponse } from "../api";
 const auth = inject<{ username: string }>("auth");
 const currentUser = auth?.username || "Tú"; // Si no hay usuario, poner "Tú"
 const router = useRouter();
-
+const route = useRoute();
+const fromPong = computed(() => route.query.isTournament === 'true');
 const idtournament = generateId();
+
+const game = ref("");
 
 const player1 = ref(auth?.username || "Jugador 1");
 const player2 = ref("Invitado");
@@ -41,9 +44,7 @@ const nextGame = async () => {
         ? last.player1
         : last.player2;
     await updateChampion(tournamentData.value.tournament, winner);
-    tournamentActive.value = false;
-    tournamentData.value = null;
-    myTournaments.value = { tournaments: [] };
+    tournamentData.value.champion = winner;
   }
 };
 
@@ -52,21 +53,38 @@ async function checkTournament() {
   try {
     const data = await getMyTournament(currentUser);
     myTournaments.value = data;
-    const active = data.tournaments.find((t) => !t.champion);
-    if (active) {
-      tournamentData.value = active;
-      tournamentActive.value = true;
-      nextGame();
-    } else {
-      tournamentActive.value = false;
-      tournamentData.value = null;
+    // Buscamos torneo activo
+    let selected = data.tournaments.find(t => !t.champion);
+
+    if (!selected && data.tournaments.length > 0) {
+      // Si no hay activos, elegimos el último creado
+      selected = data.tournaments
+        .slice()
+        .sort((a, b) => {
+          const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return tb - ta;
+        })[0];
     }
+
+    if (selected) {
+      tournamentData.value = selected;
+      tournamentActive.value = !selected.champion;
+      if (tournamentActive.value) nextGame();
+    } else {
+      // no hay torneos
+      tournamentData.value = null;
+      tournamentActive.value = false;
+    }
+    console.log("Torneo en check es " + tournamentData.value?.tournament)
+
   } catch (err) {
     console.error("Error al cargar torneos:", err);
-    tournamentActive.value = false;
     tournamentData.value = null;
+    tournamentActive.value = false;
   }
 }
+
 
 
 
@@ -96,19 +114,34 @@ const nextWinnerGame = (): string => {
   return "";
 };
 
+const selectGame = computed(() =>
+  tournamentData.value?.games[0].type === 'TicTacToe' ? '/tictactoe' : '/pong'
+);
+
 const redirect = () => {
-  if (player1.value && player2.value)
+  if (player1.value && player2.value) {
+    console.log("game es " + tournamentData.value?.games[0].type + " asi que se redirige a " + selectGame.value);
     router.push({
-      path: "/Pong",
+      path: selectGame.value,
       query: {
         gameid: gameid.value,
         gameidWinner: nextWinnerGame() // (tener cuidado de no pisar al ganador anterior)
       }
     });
+  }
   else {
-    alert("No hay suficientes jugadores para jugar Pong");
+    alert("No hay suficientes jugadores para jugar la partida");
   }
 };
+
+// Instancia un nuevo torneo: apaga la bandera y refresca la vista
+function startNewTournament() {
+  tournamentActive.value = false;
+  tournamentData.value = null;
+  myTournaments.value = { tournaments: [] };
+  router.replace({ path: '/Tournament', query: {} });
+}
+;
 
 onMounted(async () => {
   await checkTournament();
@@ -118,13 +151,19 @@ const players = ref<string[]>([currentUser]);
 // Función para generar los participantes del torneo
 const generateRanks = async (count: number) => {
   console.log("ID torneo:", idtournament);
+  const duplicates = players.value.filter((v, i, a) => a.indexOf(v) !== i);
+  if (duplicates.length > 0) {
+    const uniqueDupes = [...new Set(duplicates)];
+    alert(`Nombres duplicados detectados: ${uniqueDupes.join(', ')}. Por favor, usa nombres únicos.`);
+    return;
+  }
   let k = 0;
   if (players.value.length == playerNum.value) {
     // Recorremos el array players desde el segundo elemento (índice 1) hasta count - 1
     for (let i = 1; i < count; i++) {
       if (i % 2 !== 0) {
         const idgame = generateId();
-        await createGame(idgame, "pong", k, players.value[i - 1], players.value[i], "", "");
+        await createGame(idgame, game.value, k, players.value[i - 1], players.value[i], "", "");
         await createTournament(idtournament, idgame, 1);
         k++;
       }
@@ -139,7 +178,7 @@ const generateRanks = async (count: number) => {
       for (let i = 0; i < currentGameCount; i++) {
         const idgame = generateId();
         // Se crea un partido "vacío" (sin jugadores asignados) para esta ronda
-        await createGame(idgame, "pong", k, noPlayer, noPlayer, "", "");
+        await createGame(idgame, game.value, k, noPlayer, noPlayer, "", "");
         await createTournament(idtournament, idgame, round);
         k++;
       }
@@ -172,8 +211,22 @@ const sortedRounds = computed(() => {
 
 
 <template>
-  <!-- v-if="tournamentActive === false" -->
-  <div class="bg-violet-700 h-fit w-full flex flex-col items-center gap-10" v-if="tournamentActive === false">
+  <div class="bg-violet-700 h-fit w-full flex flex-col items-center gap-10"
+    v-if="tournamentActive === false && !fromPong">
+    <p>Selecciona el juego</p>
+    <button @click="() => {
+      game = 'pong';
+      console.log('Has pulsado el botón Pong y game es ' + game);
+    }" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">
+      Pong
+    </button>
+
+    <button @click="() => {
+      game = 'TicTacToe';
+      console.log('Has pulsado el botón 3 en raya y game es ' + game);
+    }" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">
+      3 en raya
+    </button>
     <p>Selecciona el número de jugadores</p>
     <div class="flex items-center justify-center gap-10">
       <!-- <button @click="reset" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">reset</button> -->
@@ -191,7 +244,7 @@ const sortedRounds = computed(() => {
   </div>
   <!-- Sección para mostrar los datos del torneo en forma de pirámide -->
   <div>
-    <div v-if="tournamentData" class="w-auto bg-amber-300">
+    <div v-if="(tournamentData && tournamentActive) || (tournamentData && fromPong)" class="w-auto bg-amber-300">
       <h2 class="text-center font-bold text-xl mb-4">Datos del Torneo {{ tournamentData.tournament }}</h2>
       <h2 class="text-center font-bold text-xl mb-4">{{ tournamentData.champion || "Nadie" }}</h2>
       <div v-if="sortedRounds.length" class="flex flex-col gap-4">
@@ -209,13 +262,13 @@ const sortedRounds = computed(() => {
         </div>
       </div>
     </div>
-    <div class="flex items-center justify-center m-3" v-if="tournamentActive === true">
-      <button v-if="!tournamentData?.champion"
+    <div class="flex items-center justify-center m-3">
+      <button v-if="!tournamentData?.champion && tournamentData"
         class="p-2 bg-gradient-to-b from-red-400 to-red-800 w-fit cursor-pointer rounded-md border-2 border-red-400 text-2xl text-white"
         @click="redirect"> jugar pong con {{ player1 }} y {{ player2 }} la partida {{ gameid }}</button>
-        <button v-else
+      <button v-else-if="tournamentActive === true"
         class="p-2 bg-gradient-to-b from-red-400 to-red-800 w-fit cursor-pointer rounded-md border-2 border-red-400 text-2xl text-white"
-        @click="redirect">Nuevo torneo</button>
+        @click="startNewTournament">Nuevo torneo</button>
     </div>
   </div>
 </template>
