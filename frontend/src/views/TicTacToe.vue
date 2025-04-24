@@ -20,6 +20,8 @@ const gameid = String(
     ? route.query.gameid[0]
     : route.query.gameid || generateId()
 );
+const game = route.query.game;
+console.log("game:", game);
 
 // Obtener la imagen de perfil desde la API cuando el componente se monta
 onMounted(async () => {

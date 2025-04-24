@@ -18,8 +18,10 @@ const gameid = String(
     ? route.query.gameid[0]
     : route.query.gameid || generateId()
 );
+
+//const game = ref(route.params.game as string);
+const gameMode = route.query.mode;
 const defaultProfileImage = "/src/assets/default-profile.png";
-const game = ref(route.params.game as string);
 
 const player1 = ref<string>(String(route.query.player1 || "Jugador1"));
 const player2 = ref<string>(String(route.query.player2 || "Jugador2"));
@@ -43,13 +45,13 @@ const token = localStorage.getItem("token") || "";
 const { websocketState: { socket } } = useWebSocket(token || '');
 
 if (socket) {
-    socket.send(JSON.stringify({ type: game.value, game: 'TicTacToe', id: gameid, player: username }));
+    socket.send(JSON.stringify({ type: gameMode, game: 'TicTacToe', id: gameid, player: username }));
     socket.addEventListener('message', event => {
         const data = JSON.parse(event.data);
         console.log(data);
         if (data.type === 'newPlayer') {
             console.log("Nuevo Jugador");
-            if ( game.value === 'newGame' ) {
+            if ( gameMode === 'newGame' ) {
                 player1.value = auth?.username || 'ErrorUser';;
                 player2.value = data.id;
                 puntuation.playerTurn = 1;
@@ -76,7 +78,7 @@ if (socket) {
 onMounted(() => {
     try {
         //Si queremos que sea aleatorio --> Math.random() > 0.5 ? 1 : 2;
-        if (game.value === 'newGame') {            
+        if (gameMode === 'newGame') {            
             puntuation.playerFigure = 1;
         } else {
             puntuation.playerFigure = 2;
@@ -103,7 +105,7 @@ const sendPunt = (winner: string) => {
   if (hasQueryParams) {
     setTimeout(() => {
       sendrouter.push({
-        path: "/Tournament",
+        path: "/",
       });
     }, 2000);
   }

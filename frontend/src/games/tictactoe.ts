@@ -8,8 +8,8 @@ import { useWebSocket } from '../services/websocket';
 export const puntuation = reactive({
     pl: 0,
     pr: 0,
-    playerTurn: 0,
-    playerFigure: 0,
+    playerTurn: 1,
+    playerFigure: 1,
     gameOver: 0,
     online: 0,
 });
@@ -168,15 +168,10 @@ export default function initTicTacToe() {
         function createFigure(positionX: number, positionY: number, positionZ: number) {
             if (figure == 1) {
                 createX(positionX, positionY, positionZ, 1);
-                if (puntuation.online === 0) {
-                    figure = 2;
-                }
-            }
-            else {
+                //figure = 2;
+            } else {
                 createCircle(positionX, positionY, positionZ, 1);
-                if (puntuation.online === 0) {
-                    figure = 1;
-                }
+                //figure = 1;
             }
         }
 
@@ -244,6 +239,7 @@ export default function initTicTacToe() {
                 buttons[i][x].onPointerUpObservable.add(() => {
                     // CHECKING TURN
                     if (puntuation.playerTurn == 1 || puntuation.online === 0) {
+                        console.log("Crea figura");
                         createFigure(buttons[i][x].position.x, buttons[i][x].position.y, 0);
                         matriz.value[i][x] = figure;
                         buttons[i][x].dispose();
@@ -270,6 +266,9 @@ export default function initTicTacToe() {
                         puntuation.pr++;
                         createCircle(0, 0, -3, butSize);
                         puntuation.gameOver = 1;
+                    }
+                    if (puntuation.online === 0) {
+                        figure = (figure === 1) ? 2 : 1;
                     }
                 });
             }

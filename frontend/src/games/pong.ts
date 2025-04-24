@@ -13,6 +13,10 @@ export const puntuation = reactive({
 // let username = localStorage.getItem("username") || "";
 let maxscore = 5; //Máxima puntuación para detener el juego
 
+function triangleWave(step, amplitude, start, slope) {
+	return Math.abs((amplitude - start - slope * step) % (2 * amplitude) - amplitude)
+}
+
 export default function initPong() {
 	let gameState = 'playing'; // Posibles estados: 'playing', 'gameOver'
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;  //lugar donde se renderiza
@@ -147,6 +151,11 @@ export default function initPong() {
 		// MOVEMENT
 		scene.onBeforeRenderObservable.add(function () {
 			if (gameState === 'playing') {
+				//
+				// Formula guay
+				// 
+				//
+				//
 				sphere.position.x += ballInitDir.x;
 				sphere.position.y += ballInitDir.y;
 				sphere.rotation.x += ballInitDir.x;
