@@ -209,13 +209,35 @@ onUnmounted(() => {
           <h3 class="text-xs font-semibold text-gray-800 mb-4 border-b border-gray-800 pb-2">Usuarios conectados</h3>
           <ul id="userList" class="space-y-2 w-full text-xs">
             <li
-              v-for="(player, id) in players"
-              :key="id"
-              class="p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center"
-            >
-              <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-              {{ player.username }}
-            </li>
+			v-for="(player, id) in players"
+			:key="id"
+			class="relative group p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center"
+			>
+			<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+			{{ player.username }}
+
+			<!-- Tooltip -->
+			<div
+				class="absolute z-50 hidden group-hover:flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs w-40 top-full left-0 mt-1">
+				<div class="font-semibold text-sm text-gray-800 mb-1">{{ player.username }}</div>
+				<button
+					class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded text-left"
+					@click="() => alert(`Mensaje a ${player.username}`)">
+						💬 Mensaje
+				</button>
+				<button
+					class="w-full bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded text-left"
+					@click="() => alert(`Bloquear a ${player.username}`)">
+						🚫 Bloquear
+				</button>
+				<button
+					class="w-full bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left"
+					@click="() => alert(`Invitar a ${player.username}`)">
+						🎮 Invitar
+				</button>
+			</div>
+			</li>
+
           </ul>
         </div>
 
@@ -242,7 +264,7 @@ onUnmounted(() => {
               v-for="(msg, index) in messages"
               :key="index"
               class="flex flex-col max-w-full"
-              :class="msg.from === auth?.username ? 'items-end' : 'items-start'">
+              :class="msg.from === auth?.username ? 'items-end' : 'items-end'">
               <div
                 class="rounded-lg px-3 py-2 text-sm md:text-base break-words"
                 :class="msg.from === auth?.username
