@@ -2,12 +2,12 @@
   <div>
     <div class="justify-items-center bg-amber-300 text-center">
       <h1 class="text-green-600">Bienvenido a FT-Transcendence</h1>
-      <p>
-        <router-link :to="{ name: 'PongOnline', params: { game: 'newGame' } }">Nueva Partida de Pong en Línea</router-link>
-      </p>
-      <p><router-link :to="{ name: 'TTTOnline', params: { game: 'newGame' } }">Nueva Partida de TicTacToe en Línea</router-link></p>
     </div>
-    <div class="flex items-center justify-center gap-3 m-3">
+    <div class="flex items-top justify-center gap-3 m-3">
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/pong-online?mode=newGame">Nueva Partida de Pong en Línea</RouterLink>
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/tictactoe-online?mode=newGame">Nueva Partida de 3 en Raya en Línea</RouterLink>
+    </div>
+    <div class="flex items-top justify-center gap-3 m-3">
       <div class="container mx-auto p-4 border-2 bg-amber-300 rounded-xl">
         <h1 class="text-2xl font-bold mb-4">Usuarios Conectados</h1>
 
@@ -15,7 +15,7 @@
           Cargando usuarios...
         </div>
 
-        <div v-else-if="playersArray.length === 0" class="text-gray-600">
+        <div v-else-if="playersArray.length === 1" class="text-gray-600">
           Aún no hay nadie conectado.
         </div>
 
@@ -59,7 +59,7 @@
               <td class="border px-4 py-2" v-if="game.player1">{{ game.player1 }}</td>
               <td class="border px-4 py-2" v-if="game.player2">{{ game.player2 }}</td>
               <td class="border px-4 py-2" v-if="!game.player1 || !game.player2"><router-link
-                  :to="{ name: 'TTTOnline', params: { game: 'joinGame' }, query: { gameid: game.id } }">Unirse</router-link></td>
+                  :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link></td>
             </tr>
           </tbody>
         </table>
@@ -71,6 +71,7 @@
 </template>
 
 <script setup lang="ts">
+import { RouterLink } from "vue-router";
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { getFriends, getBlocked } from '../api';
 import { useWebSocket } from '../services/websocket';
@@ -108,6 +109,25 @@ const blocked = ref<string[]>([]);
 
 const updatePlayers = async () => {
   const playersString = localStorage.getItem('players');
+  let players = {};
+
+  if (playersString) {
+    try {
+      players = JSON.parse(playersString);
+      playersArray.value = Object.entries(players).map(([username, playerDataRaw]) => {        
+        const playerData = playerDataRaw as { username: string };
+        return {
+          username,
+          gameId: playerData.gameId,
+          isFriend: false,
+        };
+      });
+    } catch (error) {
+      console.error("Error parsing games from localStorage:", error);
+    }
+  } else {
+    playersArray.value = [];
+  }
   // let players = {};
   // let tempPlayersArray = [];
 
