@@ -124,6 +124,7 @@ const redirect = () => {
     router.push({
       path: selectGame.value,
       query: {
+        isTournament: "true",
         gameid: gameid.value,
         gameidWinner: nextWinnerGame() // (tener cuidado de no pisar al ganador anterior)
       }

@@ -155,7 +155,7 @@ const sendPunt = async (winner: string) => {
   }
 
   setTimeout(() => {
-    if (Object.keys(route.query).length > 0) {
+    if (route.query.isTournament === "true") {
       sendRouter.push({ path: "/Tournament", query:{ isTournament: "true"} })
     }
   }, 2000)

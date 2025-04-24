@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col m-0 p-0 h-full">
+  <div class="flex flex-col m-0 p-0 h-full w-full">
     <!-- VENTANA DE SETUP -->
-    <div v-if="showSetup" class="setup-overlay">
+    <div v-if="showSetup" class="flex flex-col h-3/4 items-center justify-center  bg-amber-300">
       <h2>Preparar partida</h2>
       <label>
         Nombre del contrincante:
@@ -13,16 +13,16 @@
     </div>
 
     <!-- Lienzo de Pong, solo se inserta tras pulsar “Iniciar partida” -->
-    <div v-else class="border-b-3 border-b-gray-700 h-3/4">
-
-      <div >
-        <canvas id="renderCanvas" class="w-full h-full outline-none"></canvas>
-      </div>
-      <div class="flex items-center justify-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-1/4 p-2">
+    <div v-else class="flex flex-col m-0 p-0 h-3/4 w-full items-center justify-center">
+      <canvas id="renderCanvas" class="m-0 p-0 h-full w-full outline-none"></canvas>
+    </div>
+    <div class="w-full h-1/4 align-bottom">
+      <div class="flex items-center justify-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-full p-2">
         <div class="w-1/3 h-full flex justify-center gap-5 items-center">
           <img :src="profileImage" alt="Profile image"
             class="w-30 h-30 rounded-full shadow-2xl border-2 hidden sm:block" />
-          <p class="sm:text-5xl text-2xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">{{ player1 }}</p>
+          <p class="sm:text-5xl text-2xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">{{ player1 }}
+          </p>
         </div>
         <div class="w-1/3 flex justify-around">
           <h1 class=" sm:text-8xl text-4xl">{{ puntuation.pl }} - {{ puntuation.pr }}</h1>
@@ -35,13 +35,14 @@
         </div>
       </div>
     </div>
-    <div class="absolute w-full h-full text-9xl flex flex-col text-center items-center justify-center pointer-events-none"
+    <div
+      class="absolute w-full h-full text-9xl flex flex-col text-center items-center justify-center pointer-events-none"
       v-if="puntuation.pl >= 5 || puntuation.pr >= 5">
       <h1>FIN DE LA PARTIDA</h1>
       <h2 v-if="puntuation.pl >= 5">GANADOR {{ player1 }}</h2>
       <h2 v-else>GANADOR {{ player2 }}</h2>
     </div>
-    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -213,7 +214,7 @@ const sendPunt = async (winner: string) => {
   }
 
   setTimeout(() => {
-    if (Object.keys(route.query).length > 0) {
+    if (route.query.isTournament === "true") {
       sendRouter.push({ path: "/Tournament", query: { isTournament: "true" } })
     }
   }, 2000)
