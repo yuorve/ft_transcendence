@@ -8,7 +8,6 @@ const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const auth = inject<{ username: string }>("auth");
-const logoutFunc = inject("logout");
 
 // Referencias básicas
 const token = localStorage.getItem("token") || "";
@@ -153,6 +152,7 @@ onMounted(() => {
     window.addEventListener('resize', () => {
       isDesktop.value = window.innerWidth >= 768;
     });
+	document.addEventListener("click", handleClickOutside);
   }
 });
 
@@ -160,7 +160,30 @@ onUnmounted(() => {
   window.removeEventListener('resize', () => {
     isDesktop.value = window.innerWidth >= 768;
   });
+  document.removeEventListener("click", handleClickOutside);
+  close();
 });
+
+const selectedUser = ref<string | null>(null);
+const tooltipRefs = ref<Record<string, HTMLElement | null>>({});
+
+function toggleTooltip(username: string) {
+  selectedUser.value = selectedUser.value === username ? null : username;
+}
+
+// Cierra el tooltip si se hace clic fuera
+function handleClickOutside(event: MouseEvent) {
+  if (selectedUser.value && tooltipRefs.value[selectedUser.value]) {
+    const tooltip = tooltipRefs.value[selectedUser.value];
+    if (tooltip && !tooltip.contains(event.target as Node)) {
+      selectedUser.value = null;
+    }
+  }
+}
+
+function argo(username : string) {
+  alert("Hola " + username);
+}
 
 </script>
 
@@ -183,7 +206,7 @@ onUnmounted(() => {
         w-11/12 max-w-lg md:max-w-xl lg:max-w-2xl 
         bg-white shadow-md rounded-lg 
         flex flex-col overflow-hidden 
-        h-[80vh] md:h-3/5">
+        h-[80vh] md:h-3/5 max-h-[calc(100vh-2rem)] overflow-y-auto">
 
       <!-- Encabezado del chat -->
       <div class="bg-blue-500 text-white p-3 font-semibold flex justify-between items-center">
@@ -204,39 +227,56 @@ onUnmounted(() => {
             'w-full': !isDesktop
           }"
           class="bg-white p-4 border-b md:border-b-0 md:border-r border-gray-300 overflow-y-auto"
-          :style="{ height: !isDesktop && showUserList ? '50%' : 'auto' }"
+          :style="{ height: !isDesktop && showUserList ? '40%' : 'auto' }"
         >
           <h3 class="text-xs font-semibold text-gray-800 mb-4 border-b border-gray-800 pb-2">Usuarios conectados</h3>
           <ul id="userList" class="space-y-2 w-full text-xs">
-            <li
-			v-for="(player, id) in players"
-			:key="id"
-			class="relative group p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center"
-			>
-			<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-			{{ player.username }}
+        	<li
+  v-for="(player, id) in players"
+  :key="id"
+  class="relative p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center"
+  @click.stop="toggleTooltip(player.username)"
+>
+  <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+  {{ player.username }}
 
-			<!-- Tooltip -->
-			<div
-				class="absolute z-50 hidden group-hover:flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs w-40 top-full left-0 mt-1">
-				<div class="font-semibold text-sm text-gray-800 mb-1">{{ player.username }}</div>
-				<button
-					class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded text-left"
-					@click="() => alert(`Mensaje a ${player.username}`)">
-						💬 Mensaje
-				</button>
-				<button
-					class="w-full bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded text-left"
-					@click="() => alert(`Bloquear a ${player.username}`)">
-						🚫 Bloquear
-				</button>
-				<button
-					class="w-full bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left"
-					@click="() => alert(`Invitar a ${player.username}`)">
-						🎮 Invitar
-				</button>
-			</div>
-			</li>
+  <!-- Tooltip -->
+  <div
+    v-show="selectedUser === player.username"
+    ref="el => tooltipRefs.value[player.username] = el"
+    class="absolute z-50 flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs w-40 top-full left-0 mt-1 items-center"
+  >
+    <img
+      :src="player.profilePicture || '/default-avatar.png'"
+      alt="Avatar"
+      class="w-12 h-12 rounded-full border border-gray-300"
+    />
+    <div class="font-semibold text-sm text-gray-800 text-center">
+      {{ player.username }}
+    </div>
+    <button
+      v-if="player.username !== auth?.username"
+      class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded text-left"
+      @click.stop="argo(player.username)"
+    >
+      💬 Mensaje
+    </button>
+    <button
+      v-if="player.username !== auth?.username"
+      class="w-full bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded text-left"
+      @click.stop="argo(player.username)"
+    >
+      🚫 Bloquear
+    </button>
+    <button
+      v-if="player.username !== auth?.username"
+      class="w-full bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left"
+      @click.stop="argo(player.username)"
+    >
+      🎮 Invitar
+    </button>
+  </div>
+</li>
 
           </ul>
         </div>
@@ -268,8 +308,8 @@ onUnmounted(() => {
               <div
                 class="rounded-lg px-3 py-2 text-sm md:text-base break-words"
                 :class="msg.from === auth?.username
-                ? 'bg-blue-100 text-black self-end'
-                : 'bg-green-100 text-black self-start'"
+                ? 'bg-blue-100 text-black self-start'
+                : 'bg-green-100 text-black self-end'"
                 style="max-width: 80%; word-break: break-word;">
                 <div class="text-xs font-semibold mb-1">
                   {{ msg.from }}
