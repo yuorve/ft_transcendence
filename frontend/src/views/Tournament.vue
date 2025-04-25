@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, inject, computed } from "vue";
+import { ref, onMounted, inject, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { getMyTournament, createTournament, createGame, generateId, noPlayer, updateChampion } from "../api";
+import { getMyTournament, createTournament, createGame, generateId, noPlayer, updateChampion, getUsers } from "../api";
 import type { Game, MyTournamentsResponse, TournamentResponse } from "../api";
 // import type { int } from "@babylonjs/core";
 
@@ -149,17 +149,39 @@ onMounted(async () => {
 });
 
 const players = ref<string[]>([currentUser]);
+
 // Función para generar los participantes del torneo
 const generateRanks = async (count: number) => {
-  console.log("ID torneo:", idtournament);
-  const duplicates = players.value.filter((v, i, a) => a.indexOf(v) !== i);
-  if (duplicates.length > 0) {
-    const uniqueDupes = [...new Set(duplicates)];
-    alert(`Nombres duplicados detectados: ${uniqueDupes.join(', ')}. Por favor, usa nombres únicos.`);
-    return;
-  }
-  let k = 0;
   if (players.value.length == playerNum.value) {
+    console.log("ID torneo:", idtournament);
+    const normalized = players.value.map(p =>
+      p.trim().toLocaleLowerCase());
+    console.log("normalized players:", normalized);
+
+    // 2) Construir el Set de usuarios de la API
+    const res = await getUsers();
+    const validUsernames = new Set(
+      (res.users || []).map((u: { username: string; }) =>
+        u.username.trim().toLocaleLowerCase()
+      )
+    );
+    console.log("validUsernames from API:", Array.from(validUsernames));
+
+    // 3) Validar existencia solo sobre índices >= 1
+    for (let i = 1; i < normalized.length; i++) {
+      const name = normalized[i];
+      // si usas un placeholder para rondas vacías:
+      if (name === noPlayer.trim().toLocaleLowerCase()) continue;
+
+      // **** aquí va la alerta solo si NO está en el Set ****
+      if (validUsernames.has(name)) {
+        alert(`El usuario “${players.value[i].trim()}” existe.`);
+        return;
+      }
+    }
+
+    let k = 0;
+
     // Recorremos el array players desde el segundo elemento (índice 1) hasta count - 1
     for (let i = 1; i < count; i++) {
       if (i % 2 !== 0) {
@@ -168,23 +190,25 @@ const generateRanks = async (count: number) => {
         await createTournament(idtournament, idgame, 1);
         k++;
       }
-    }
-    let currentGameCount = Math.floor(count / 2); // Número de partidos en la ronda 1
-    let round = 2;
-    // Mientras queden más de un partido (es decir, hasta el partido final)
-    while (currentGameCount > 1) {
-      k = 0;
-      // Calculamos cuántos partidos tendrá la siguiente ronda (la mitad)
-      currentGameCount = Math.floor(currentGameCount / 2);
-      for (let i = 0; i < currentGameCount; i++) {
-        const idgame = generateId();
-        // Se crea un partido "vacío" (sin jugadores asignados) para esta ronda
-        await createGame(idgame, game.value, k, noPlayer, noPlayer, "", "");
-        await createTournament(idtournament, idgame, round);
-        k++;
+      let currentGameCount = Math.floor(count / 2);
+      let round = 2;
+      // Mientras queden más de un partido (es decir, hasta el partido final)
+      while (currentGameCount > 1) {
+        k = 0;
+        // Calculamos cuántos partidos tendrá la siguiente ronda (la mitad)
+        currentGameCount = Math.floor(currentGameCount / 2);
+        for (let i = 0; i < currentGameCount; i++) {
+          const idgame = generateId();
+          // Se crea un partido "vacío" (sin jugadores asignados) para esta ronda
+          await createGame(idgame, game.value, k, noPlayer, noPlayer, "", "");
+          await createTournament(idtournament, idgame, round);
+          k++;
+        }
+        round++;
       }
-      round++;
     }
+    checkTournament();
+    tournamentActive.value = true;
   }
   else
     console.log("Error en generateRanks: No hay suficientes jugadores");
@@ -208,26 +232,34 @@ const sortedRounds = computed(() => {
       games: rounds[round]
     }));
 });
+
+watch(playerNum, (newCount) => {
+  if (players.value.length > newCount) {
+    // splice borra desde el índice newCount hasta el final
+    players.value.splice(newCount);
+  }
+});
 </script>
 
 
 <template>
   <div class="bg-violet-700 h-fit w-full flex flex-col items-center gap-10"
     v-if="tournamentActive === false && !fromPong">
-    <p>Selecciona el juego</p>
-    <button @click="() => {
-      game = 'pong';
-      console.log('Has pulsado el botón Pong y game es ' + game);
-    }" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">
-      Pong
-    </button>
-
-    <button @click="() => {
-      game = 'TicTacToe';
-      console.log('Has pulsado el botón 3 en raya y game es ' + game);
-    }" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">
-      3 en raya
-    </button>
+    <div id="GameSelector">
+      <p>Selecciona el juego</p>
+      <button :class="game === 'pong' ? 'bg-red-500' : 'bg-amber-300'" @click="() => {
+        game = 'pong';
+        console.log('Has pulsado el botón Pong y game es ' + game);
+      }" class="cursor-pointer transition py-1 px-3 rounded-md">
+        Pong
+      </button>
+      <button :class="game === 'TicTacToe' ? 'bg-red-500' : 'bg-amber-300'" @click="() => {
+        game = 'TicTacToe';
+        console.log('Has pulsado el botón 3 en raya y game es ' + game);
+      }" class="cursor-pointer transition py-1 px-3 rounded-md">
+        3 en raya
+      </button>
+    </div>
     <p>Selecciona el número de jugadores</p>
     <div class="flex items-center justify-center gap-10">
       <!-- <button @click="reset" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">reset</button> -->
@@ -235,10 +267,17 @@ const sortedRounds = computed(() => {
       <button @click="playerNum = 4" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">4</button>
       <button @click="playerNum = 8" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">8</button>
     </div>
-    <div class="flex gap-4">
-      <div v-for="(index) in Array.from({ length: playerNum }, (_, index) => index)" :key="index"
-        class="flex bg-gray-300">
-        <input v-model="players[index]" type="text" :placeholder="`Jugador ${index + 1}`" class="border p-2 my-1" />
+    <div class="flex flex-wrap gap-4 w-full h-full items-center justify-center">
+      <div v-for="(index) in Array.from({ length: playerNum }, (_, index) => index)" :key="index" class="">
+        <p v-if="players[0] === currentUser && index === 0" class="bg-white rounded gap-3 p-1"> {{ players[0] }}</p>
+        <div v-else class="bg-white rounded gap-3 p-1">
+          <input v-model="players[index]" type="text" :placeholder="`Jugador ${index + 1}`"
+            class="border rounded p-2 my-1" />
+          <button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">
+            Invitar
+          </button>
+        </div>
+
       </div>
     </div>
     <button @click="generateRanks(playerNum)" class="cursor-pointer bg-blue-300 rounded-md">crear torneo</button>

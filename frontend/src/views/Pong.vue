@@ -1,37 +1,51 @@
 <template>
-  <div class="flex flex-col m-0 p-0 h-full w-full">
+  <div class="flex flex-col h-screen w-full m-0 p-0 leading-none overflow-hidden">
     <!-- VENTANA DE SETUP -->
-    <div v-if="showSetup" class="flex flex-col h-3/4 items-center justify-center  bg-amber-300">
-      <h2>Preparar partida</h2>
-      <label>
-        Nombre del contrincante:
-        <input v-model="player2" placeholder="Escribe su nombre" />
-      </label>
-      <button :disabled="!player2" @click="showSetup = false; initGame();">
-        Iniciar partida
-      </button>
-    </div>
+    <div class="w-full h-3/4 m-0 p-0 border-red-600">
+      <div v-if="showSetup" class="w-full h-full flex items-center justify-center">
+        <div class="flex flex-col items-center w-[80%] md:w-1/2 lg:w-1/3 h-3/4
+    transition-[width] duration-500 ease-in-out justify-center gap-6 landscape:flex-row">
+          <h2 class="text-5xl bg-white p-4 rounded-2xl">Preparar partida</h2>
+          <div class="bg-white w-fit h-fit p-4 flex flex-col items-center justify-center rounded-2xl gap-4">
+            <label class="text-3xl">
+              Nombre del contrincante:
+            </label>
+            <input v-if="!isTournament" class="text-center border rounded w-full p-2 bg-gray-200" v-model="player2"
+              placeholder="Escribe su nombre" />
+            <p v-else class="text-center p-2 text-2xl">{{ player2 }}</p>
+          </div>
+          <button class="text-white rounded-2xl bg-gradient-to-b from-red-600 to-red-900 p-4 text-2xl"
+            :disabled="!player2" @click="showSetup = false; initGame();">
+            Iniciar partida
+          </button>
+        </div>
 
-    <!-- Lienzo de Pong, solo se inserta tras pulsar “Iniciar partida” -->
-    <div v-else class="flex flex-col m-0 p-0 h-3/4 w-full items-center justify-center">
-      <canvas id="renderCanvas" class="m-0 p-0 h-full w-full outline-none"></canvas>
+      </div>
+      <!-- Lienzo de Pong, solo se inserta tras pulsar “Iniciar partida” -->
+      <div v-else class="w-full h-full flex items-center justify-center">
+        <canvas id="renderCanvas" class="block w-full h-full outline-none"></canvas>
+      </div>
     </div>
-    <div class="w-full h-1/4 align-bottom">
+    <div class="w-full h-1/4 m-0 p-0">
       <div class="flex items-center justify-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-full p-2">
         <div class="w-1/3 h-full flex justify-center gap-5 items-center">
           <img :src="profileImage" alt="Profile image"
-            class="w-30 h-30 rounded-full shadow-2xl border-2 hidden sm:block" />
-          <p class="sm:text-5xl text-2xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md">{{ player1 }}
+            class="md:h-[80%] aspect-square rounded-full shadow-2xl border-2 hidden md:block" />
+          <p
+            class="md:text-3xl lg:text-5xl text-2xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md max-w-lg truncate">
+            {{ player1 }}
           </p>
         </div>
         <div class="w-1/3 flex justify-around">
-          <h1 class=" sm:text-8xl text-4xl">{{ puntuation.pl }} - {{ puntuation.pr }}</h1>
+          <h1 class="text-5xl lg:text-8xl">{{ puntuation.pl }} - {{ puntuation.pr }}</h1>
         </div>
         <div class="w-1/3 h-full flex justify-center gap-5 items-center">
-          <p class="sm:text-5xl text-2xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md">{{ player2 }}
+          <p
+            class="md:text-3xl lg:text-5xl text-2xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md max-w-lg truncate">
+            {{ player2 }}
           </p>
           <img :src="defaultProfile" alt="2nd player"
-            class="w-25 h-25 rounded-full shadow-2xl border-2 hidden sm:block" />
+            class="md:h-[80%] aspect-square rounded-full shadow-2xl border-2 hidden md:block" />
         </div>
       </div>
     </div>
@@ -214,7 +228,7 @@ const sendPunt = async (winner: string) => {
   }
 
   setTimeout(() => {
-    if (route.query.isTournament === "true") {
+    if (isTournament.value === true) {
       sendRouter.push({ path: "/Tournament", query: { isTournament: "true" } })
     }
   }, 2000)

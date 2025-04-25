@@ -23,6 +23,7 @@ const initializeDatabase = async () => {
       password TEXT NOT NULL,  -- La contraseña se almacenará encriptada con bcrypt
       profileImage TEXT DEFAULT NULL, -- URL o ruta de la imagen del usuario
       status TEXT DEFAULT NULL,
+      favlang TEXT DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 

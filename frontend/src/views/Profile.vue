@@ -1,10 +1,12 @@
 <template>
   <div class="flex justify-center items-center h-full w-full" v-if="user">
-    <div class="w-180 h-auto flex flex-col justify-center bg-gray-500 items-center rounded-4xl p-4">
+    <div class="w-180 h-auto flex flex-col justify-center bg-red-600 items-center rounded-4xl p-4">
       <div class="flex w-full">
         <div class="w-1/2 h-80 flex gap-8 flex-col justify-center items-center">
           <img :src="imageSrc" alt="Profile image" class="text-center items-center rounded-full w-30 h-30">
-          <RouterLink to="/update" class="bg-blue-700 text-center mt-0 m-10 p-3 rounded-2xl shadow-md active:bg-blue-800 active:translate-y-0.5">{{ $t('changeImg') }}</RouterLink>
+          <RouterLink to="/update"
+            class="bg-blue-700 text-center mt-0 m-10 p-3 rounded-2xl shadow-md active:bg-blue-800 active:translate-y-0.5">
+            {{ $t('changeImg') }}</RouterLink>
         </div>
         <div class="w-1/2 flex gap-8 flex-col justify-center items-center">
           <p class="text-2xl">{{ user.username }}</p>
@@ -18,13 +20,27 @@
         </div>
         <div class="flex justify-around m-2">
           <div class="flex w-50 justify-center items-center bg-gray-600 rounded-md p-2">contraseña ****</div>
-          <RouterLink class="flex w-50 justify-center items-center bg-gray-600 rounded-full p-2" to="/password">Actualizar Contraseña</RouterLink>
+          <RouterLink class="flex w-50 justify-center items-center bg-gray-600 rounded-full p-2" to="/password">
+            Actualizar Contraseña</RouterLink>
         </div>
         <div class="flex items-center justify-around">
           <RouterLink class="bg-gray-600 p-2 rounded-full" to="/games">Partidas Jugadas</RouterLink>
           <RouterLink class="bg-gray-600 p-2 rounded-full" to="/">Borrar cuenta</RouterLink>
         </div>
-        <p class="text-gray-50 text-sm">🕒 Registrado el: {{ formattedDate }}</p>
+
+
+        <!-- Selector de idioma favorito
+        <div class="flex items-center space-x-2">
+          <label for="favlang" class="font-semibold">Idioma favorito:</label>
+          <select id="favlang" v-model="favLang" @change="onFavLangChange" class="border rounded p-1">
+            <option v-for="lang in languages" :key="lang.value" :value="lang.value">
+              {{ lang.label }}
+            </option>
+          </select>
+        </div> -->
+
+
+        <p class=" text-sm">🕒 Registrado el: {{ formattedDate }}</p>
       </div>
     </div>
   </div>

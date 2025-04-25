@@ -15,7 +15,7 @@
 				</button>
 			</div>
 			<!-- Botones de acción -->
-			<div class="flex gap-2">
+			<div v-if="username !== auth?.username" class="flex gap-2">
 				<button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">
 					Añadir amigo
 				</button>
@@ -140,14 +140,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, inject } from 'vue'
 import { getGames, getMyTournament } from '../api'
 import type { Game, MyTournamentsResponse } from '../api'
 import VueApexCharts from 'vue3-apexcharts'
+import { useRoute } from 'vue-router'
+
+const route = useRoute();
+const auth = inject<{ username: string }>("auth");
 
 const tabs = ['Pong', '3 en raya', 'Torneos', 'Estadísticas']
 const activeTab = ref<string>(tabs[0])
-const username = localStorage.getItem('username') || ''
+const username = route.query.username as string || localStorage.getItem('username')
 
 // Estado de partidas y torneos
 const allGames = ref<Game[]>([])
