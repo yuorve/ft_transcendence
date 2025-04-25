@@ -17,7 +17,7 @@ const buddy = ref(route.params.buddy);
 const isOpen = ref(false);
 const showUserList = ref(false);
 const players = ref({});
-const messages = ref<{ from: string; senderId: string; message: string; timestamp?: string }[]>([]);
+const messages = ref<{ from: string; senderId: string; message: string; profileImage?: string; timestamp?: string }[]>([]);
 const message = ref("");
 const isAuthenticated = computed(() => auth ? !!auth.username : false);
 const isDesktop = ref(window.innerWidth >= 768);
@@ -35,17 +35,18 @@ watch(isAuthenticated, (newVal) => {
 });
 
 // Actualizar la lista de jugadores desde el localStorage
+// Actualizar la lista de jugadores desde el localStorage
 function updatePlayersList() {
   try {
     const storedPlayers = localStorage.getItem("players");
     if (storedPlayers) {
       players.value = JSON.parse(storedPlayers);
+      console.log("Jugadores actualizados:", players.value); // Añade este log
     }
   } catch (error) {
     console.error("Error al analizar datos de jugadores:", error);
   }
 }
-
 // Función para hacer scroll al último mensaje
 function scrollToBottom() {
   nextTick(() => {
@@ -62,7 +63,6 @@ function handleWebSocketMessages() {
   websocketState.messages.forEach((data, index) => {
     if (index >= websocketState.processedMessages) {
       console.log("Mensaje recibido:", data);
-      console.log("Mi playerId:", playerId.value);    
       // Manejar mensajes de chat global
       if (data.type === 'globalChat') {
         messages.value.push({
@@ -231,52 +231,52 @@ function argo(username : string) {
         >
           <h3 class="text-xs font-semibold text-gray-800 mb-4 border-b border-gray-800 pb-2">Usuarios conectados</h3>
           <ul id="userList" class="space-y-2 w-full text-xs">
-        	<li
-				v-for="(player, id) in players"
-				:key="id"
-				class="relative p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center"
-				@click.stop="toggleTooltip(player.username)"
-			>
-				<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-				{{ player.username }}
+            <li
+              v-for="(player, id) in players"
+              :key="id"
+              class="relative p-2 hover:bg-gray-100 rounded cursor-pointer flex items-center"
+              @click.stop="toggleTooltip(player.username)"
+            >
+              <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+              {{ player.username }}
 
-				<!-- Tooltip -->
-				<div
-					v-show="selectedUser === player.username"
-					ref="el => tooltipRefs.value[player.username] = el"
-					class="absolute z-50 flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs w-40 top-full left-0 mt-1 items-center"
-				>
-					<img
-						:src="player.profilePicture || '/default-avatar.png'"
-						alt="Avatar"
-						class="w-12 h-12 rounded-full border border-gray-300"
-					/>
-					<div class="font-semibold text-sm text-gray-800 text-center">
-						{{ player.username }}
-					</div>
-					<button
-						v-if="player.username !== auth?.username"
-						class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded text-left"
-						@click.stop="argo(player.username)"
-					>
-						💬 Mensaje
-					</button>
-					<button
-						v-if="player.username !== auth?.username"
-						class="w-full bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded text-left"
-						@click.stop="argo(player.username)"
-					>
-						🚫 Bloquear
-					</button>
-					<button
-						v-if="player.username !== auth?.username"
-						class="w-full bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left"
-						@click.stop="argo(player.username)"
-					>
-						🎮 Invitar
-					</button>
-				</div>
-			</li>
+              <!-- Tooltip -->
+              <div
+                v-show="selectedUser === player.username"
+                ref="el => tooltipRefs.value[player.username] = el"
+                class="absolute z-50 flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs w-40 top-full left-0 mt-1 items-center"
+              >
+                <img
+                  :src="player.profileImage"
+                  alt="Avatar"
+                  class="w-12 h-12 rounded-full border border-gray-300"
+                />
+                <div class="font-semibold text-sm text-gray-800 text-center">
+                  {{ player.username }}
+                </div>
+                <button
+                  v-if="player.username !== auth?.username"
+                  class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded text-left"
+                  @click.stop="argo(player.username)"
+                >
+                  💬 Mensaje
+                </button>
+                <button
+                  v-if="player.username !== auth?.username"
+                  class="w-full bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded text-left"
+                  @click.stop="argo(player.username)"
+                >
+                  🚫 Bloquear
+                </button>
+                <button
+                  v-if="player.username !== auth?.username"
+                  class="w-full bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left"
+                  @click.stop="argo(player.username)"
+                >
+                  🎮 Invitar
+                </button>
+              </div>
+            </li>
           </ul>
         </div>
 
