@@ -20,7 +20,7 @@
         <table v-else class="table-auto w-full">
           <thead>
             <tr>
-              <th class="px-4 py-2">Jugadores</th>
+              <th class="px-4 py-2">{{$t("players")}}</th>
             </tr>
           </thead>
           <tbody>

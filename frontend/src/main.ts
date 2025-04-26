@@ -1,21 +1,28 @@
-import { createApp } from "vue";
-import App from "./App.vue";
-import router from "./router";
-import GoogleLogin from "vue3-google-login";
-import i18n from './i18n';
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+import GoogleLogin from 'vue3-google-login';
+import i18n, { initLanguage } from './i18n'
+import { getProfile } from './api';
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const app = createApp(App);
-
 app.use(router);
 app.use(i18n);
-
 app.use(GoogleLogin, {
-  clientId: googleClientId 
+  clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID
 });
 
-app.mount("#app");
-
+getProfile()
+  .then(profile => {
+    initLanguage(profile.favlang);
+  })
+  .catch(() => {
+    console.log('No se pudo obtener perfil; usando idioma por defecto');
+    initLanguage();
+  })
+  .finally(() => {
+    app.mount('#app');
+  });
 
 
 // // src/main.ts

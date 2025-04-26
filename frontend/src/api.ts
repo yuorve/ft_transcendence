@@ -39,7 +39,7 @@ export const checkUsernameAvailability = async (username: String) => {
 
 export const loginWithGoogle = async (googleToken: string) => {
   try {
-    const response = await fetch(`${API_URL}/google-login`, {      
+    const response = await fetch(`${API_URL}/google-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: googleToken }),
@@ -77,6 +77,20 @@ export async function getProfile() {
 
   // data.user es un array; devolvemos solo el primer objeto
   return payload.user[0];
+}
+
+// Actualizar idioma favorito
+export async function updateFavLang(
+  username: string,
+  favlang: string
+): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_URL}/user/${username}/favlang`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ favlang })
+  });
+  if (!res.ok) throw new Error('Error actualizando idioma favorito');
+  return res.json();
 }
 
 // Obtener lista de partidas
@@ -236,8 +250,8 @@ export async function getUsers() {
 }
 
 // Obtener usuario
-export async function getUser(id: number) {
-  const response = await fetch(`${API_URL}/user/${id}`);
+export async function getUser(username: string) {
+  const response = await fetch(`${API_URL}/user/${username}`);
   return response.json();
 }
 
