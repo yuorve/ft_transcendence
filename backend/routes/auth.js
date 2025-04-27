@@ -63,7 +63,7 @@ async function authRoutes(fastify) {
       }
 
       // Generar JWT
-      const jwtToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+      const jwtToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
 
       reply.send({ message: 'Inicio de sesión con Google exitoso', token: jwtToken, username });
     } catch (error) {
