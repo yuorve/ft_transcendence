@@ -1,5 +1,7 @@
 require('dotenv').config();
 const WebSocket = require('ws');
+const http = require('http');
+const url = require('url');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = process.env;
 
@@ -19,7 +21,34 @@ function getUserFromRequest(request) {
     }
 }
   
-const wss = new WebSocket.Server({ port: process.env.PORT });
+//const wss = new WebSocket.Server({ port: process.env.PORT });
+
+// Crear un servidor HTTP que usaremos para montar el WebSocket
+const server = http.createServer();
+
+// Crear el servidor WebSocket y montarlo en el servidor HTTP
+const wss = new WebSocket.Server({ 
+  server,
+  // Permitir conexiones desde cualquier origen
+  verifyClient: (info, cb) => {
+    // Parse de la URL para obtener el token
+    const { query } = url.parse(info.req.url, true);
+    
+    if (!query.token) {
+      return cb(false, 401, 'Unauthorized');
+    }
+    
+    try {
+      // Verificar token JWT (usa el mismo secret que usas en tu backend)
+      const decoded = jwt.verify(query.token, JWT_SECRET);
+      info.req.user = decoded; // Guardar la info del usuario para usarla después
+      return cb(true);
+    } catch (err) {
+      console.error('Error de autenticación WebSocket:', err);
+      return cb(false, 401, 'Unauthorized');
+    }
+  }
+});
 
 let games = {}; //Partidas Activas
 let players = {}; //Jugadores en Línea
@@ -100,8 +129,13 @@ wss.on('connection', (ws, request) => {
                     games[gameId] = {
                         game: data.game,
                         player1: data.player,
+                        score1: 0,
                         player2: null,
+                        score2: null,
                     };
+                    if (data.game === 'Pong') {                        
+                        games[gameId].ball = { x: 0.0, y: 0.0, dx: 0.0, dy: 0.0 };
+                    }
                 }
                 //ws.send(JSON.stringify({ type: 'gameId', id: gameId }));
                 broadcast(JSON.stringify({ type: 'currentPlayers', players }), ws);
@@ -112,11 +146,7 @@ wss.on('connection', (ws, request) => {
                 players[data.player].gameId = data.id;
                 if (games[data.id]) {
                     if (!games[data.id].player2) {
-                        games[data.id].player2 = data.player;
-                        if (data.game === 'pong') {
-                            games[data.id].ball = { x: 0.0, y: 0.0, dx: 0.0, dy: 0.0 };
-                        }
-                        games[data.id].score1 = 0;
+                        games[data.id].player2 = data.player;                        
                         games[data.id].score2 = 0;
                 
                         // Avisa a los jugadores de la nueva partida
@@ -128,21 +158,29 @@ wss.on('connection', (ws, request) => {
                         }
                         if (player2 && player2.readyState === WebSocket.OPEN) {
                             player2.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player1 }));
+                            if (data.game === 'Pong') {
+                                player2.send(JSON.stringify({ type: 'ballUpdate', ball: games[data.id].ball }));
+                            }
                         }
                     }
                 }
             }
             if(data.type === "score"){
-                console.log("Punto para:", id);
+                console.log("Actualizando puntuación");
                 if (games[data.gameId]) {
-                    if (!games[data.gameId].player1 === id) {
-                        games[data.gameId].score1 += 1;
-                    }
-                    if (!games[data.gameId].player2 === id) {
-                        games[data.gameId].score2 += 1;
+                    games[data.gameId].score1 = data.score1;
+                    games[data.gameId].score2 = data.score2;
+                    const clientsArray = Array.from(wss.clients);                
+                    const oponenteId = games[data.gameId].player1 === ws.username ? games[data.gameId].player2 : games[data.gameId].player1;
+                    if (oponenteId) {
+                        players[oponenteId].gameId = null;
+                        const oponente = clientsArray.find(client => client.username === oponenteId);
+                        if (oponente && oponente.readyState === WebSocket.OPEN) {
+                            oponente.send(JSON.stringify({ type: 'scoreUpdate', score1: data.score1, score2: data.score2 }));
+                            console.log("Enviado a: ", oponente.username);
+                        }
                     }
                 }
-                //broadcast(JSON.stringify({type:'scoreUpdate', playerId: id}));
             }
             if(data.type === "gameOver"){
                 console.log("Partida Finalizada:", data.gameId);
@@ -155,23 +193,16 @@ wss.on('connection', (ws, request) => {
             if (data.type === 'gameAborted') {
                 console.log("Partida: ", data.gameId);
                 console.log("Abandono de: ", ws.username);
+                players[ws.username].gameId = null;
                 const clientsArray = Array.from(wss.clients);                
-                const player1 = clientsArray.find(client => client.username === games[data.gameId].player1);
-                const player2 = clientsArray.find(client => client.username === games[data.gameId].player2);
-                // Avisa al oponente del abandono
-                if (games[data.gameId].player2 === ws.username && player1 && player1.readyState === WebSocket.OPEN) {
-                    player1.send(JSON.stringify({ type: 'opponentDisconnected', x: 0 }));
-                    console.log("Enviado a: ", player1.username);
-                }
-                if (games[data.gameId].player1 === ws.username && player2 && player2.readyState === WebSocket.OPEN) {
-                    player2.send(JSON.stringify({ type: 'opponentDisconnected', x: 0 }));
-                    console.log("Enviado a: ", player2.username);
-                }
-                if (games[data.gameId].player1) {
-                    players[games[data.gameId].player1].gameId = null;
-                }
-                if (games[data.gameId].player2) {
-                    players[games[data.gameId].player2].gameId = null;
+                const oponenteId = games[data.gameId].player1 === ws.username ? games[data.gameId].player2 : games[data.gameId].player1;
+                if (oponenteId) {
+                    players[oponenteId].gameId = null;
+                    const oponente = clientsArray.find(client => client.username === oponenteId);
+                    if (oponente && oponente.readyState === WebSocket.OPEN) {
+                        oponente.send(JSON.stringify({ type: 'gameAborted' }));
+                        console.log("Enviado a: ", oponente.username);
+                    }
                 }
                 delete games[data.gameId]; // Elimina la partida
                 console.log("Partida eliminada:", data.gameId);
@@ -194,15 +225,57 @@ wss.on('connection', (ws, request) => {
                     console.log("Enviado a: ", player2.username);
                 }
             }
-            if (data.type === 'ballUpdate') {              
-                games[data.gameId].ball.dx = data.ball.dx;
-                games[data.gameId].ball.dy = data.ball.dy;
+            if (data.type === 'startGame') {
+                console.log("Iniciando Partida: ", data.gameId);                
+                const clientsArray = Array.from(wss.clients);                
+                const player1 = clientsArray.find(client => client.username === games[data.gameId].player1);
+                const player2 = clientsArray.find(client => client.username === games[data.gameId].player2);
+                // Avisa del comienzo
+                if (player1 && player1.readyState === WebSocket.OPEN) {
+                    player1.send(JSON.stringify({ type: 'startGame' }));
+                    console.log("Enviado a: ", player1.username);
+                }
+                if (player2 && player2.readyState === WebSocket.OPEN) {
+                    player2.send(JSON.stringify({ type: 'startGame' }));
+                    console.log("Enviado a: ", player2.username);
+                }
             }
-            if (data.type === 'ballReset') {
+            if (data.type === 'ballUpdate') {                
+                if (games[data.gameId].ball) {
+                    //console.log("Actualizando bola en: ", data.gameId);
+                    games[data.gameId].ball.x = data.ball.x;
+                    games[data.gameId].ball.y = data.ball.y;
+                    games[data.gameId].ball.dx = data.ball.dx;
+                    games[data.gameId].ball.dy = data.ball.dy;
+
+                    const clientsArray = Array.from(wss.clients);                
+                    const oponenteId = games[data.gameId].player1 === ws.username ? games[data.gameId].player2 : games[data.gameId].player1;
+                    if (oponenteId) {                        
+                        const oponente = clientsArray.find(client => client.username === oponenteId);
+                        if (oponente && oponente.readyState === WebSocket.OPEN) {                            
+                            oponente.send(JSON.stringify({ type: 'ballUpdate', ball: games[data.gameId].ball }));
+                            //console.log("Enviado a: ", oponente.username);
+                        }
+                    }
+                }
+            }
+            if (data.type === 'ballReset') { // Esta no hace falta
                 games[data.gameId].ball.x = data.ball.x;
                 games[data.gameId].ball.y = data.ball.y;
-                games[data.gameId].ball.dx = data.ball.dx;
-                games[data.gameId].ball.dy = data.ball.dy;    
+                games[data.gameId].ball.x += data.ball.dx;
+                games[data.gameId].ball.y += data.ball.dy;
+    
+                // Enviar el estado de la partida a los jugadores
+                const clientsArray = Array.from(wss.clients);
+                const player1 = clientsArray.find(client => client.username === games[data.gameId].player1);
+                const player2 = clientsArray.find(client => client.username === games[data.gameId].player2);
+    
+                if (player1 && player1.readyState === WebSocket.OPEN) {
+                    player1.send(JSON.stringify({ type: 'state', ball: games[data.gameId].ball }));
+                }
+                if (player2 && player2.readyState === WebSocket.OPEN) {
+                    player2.send(JSON.stringify({ type: 'state', ball: games[data.gameId].ball }));
+                }
             }
         } catch (error) {            
             console.error("Error al analizar JSON:", error.message);
@@ -247,32 +320,37 @@ function broadcast(data, sender) {
     });
 }
 
-function generatePlayerId() {
-    return Math.random().toString(36).substring(2, 15);
-}
+// function generatePlayerId() {
+//     return Math.random().toString(36).substring(2, 15);
+// }
 
-function generateGameId() {
-    return Math.random().toString(36).substring(2, 8); // Genera id más corto para los juegos
-}
+// function generateGameId() {
+//     return Math.random().toString(36).substring(2, 8); // Genera id más corto para los juegos
+// }
 
-setInterval(() => {    
-    for (const gameId in games) {
-        // Verifica si la partida tiene una pelota
-        if (games[gameId].ball) {
-            games[gameId].ball.x += games[gameId].ball.dx;
-            games[gameId].ball.y += games[gameId].ball.dy;
+// setInterval(() => {    
+//     for (const gameId in games) {
+//         // Verifica si la partida tiene una pelota
+//         if (games[gameId].ball) {
+//             games[gameId].ball.x += games[gameId].ball.dx;
+//             games[gameId].ball.y += games[gameId].ball.dy;
 
-            // Enviar el estado de la partida a los jugadores
-            const clientsArray = Array.from(wss.clients);
-            const player1 = clientsArray.find(client => client.id === games[gameId].player1);
-            const player2 = clientsArray.find(client => client.id === games[gameId].player2);
+//             // Enviar el estado de la partida a los jugadores
+//             const clientsArray = Array.from(wss.clients);
+//             const player1 = clientsArray.find(client => client.id === games[gameId].player1);
+//             const player2 = clientsArray.find(client => client.id === games[gameId].player2);
 
-            if (player1 && player1.readyState === WebSocket.OPEN) {
-                player1.send(JSON.stringify({ type: 'state', ball: games[gameId].ball }));
-            }
-            if (player2 && player2.readyState === WebSocket.OPEN) {
-                player2.send(JSON.stringify({ type: 'state', ball: games[gameId].ball }));
-            }
-        }
-    }
-}, 1000 / 60);
+//             if (player1 && player1.readyState === WebSocket.OPEN) {
+//                 player1.send(JSON.stringify({ type: 'state', ball: games[gameId].ball }));
+//             }
+//             if (player2 && player2.readyState === WebSocket.OPEN) {
+//                 player2.send(JSON.stringify({ type: 'state', ball: games[gameId].ball }));
+//             }
+//         }
+//     }
+// }, 1000 / 60);
+
+// Iniciar el servidor HTTP en el puerto 3000
+server.listen(process.env.PORT, () => {
+    console.log('Servidor WebSocket escuchando en puerto 3000');
+  });
