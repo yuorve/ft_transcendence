@@ -105,6 +105,23 @@ wss.on('connection', (ws, request) => {
                     }
                 });
             }
+            if (data.type === 'privateChat') {
+                const toUsername = data.to;
+                const fromUsername = ws.username;
+            
+                const recipient = Array.from(wss.clients).find(client => client.username === toUsername);
+            
+                if (recipient && recipient.readyState === WebSocket.OPEN) {
+                    // Mandar el mensaje privado al destinatario
+                    recipient.send(JSON.stringify({
+                        type: 'privateChat',
+                        from: fromUsername,
+                        message: data.message,
+                        timestamp: new Date().toISOString(),
+                        openChat: data.openChat || false, // Esta flag viene del emisor
+                    }));
+                }
+            }            
             if (data.type === 'newGame') {
                 // Creación de la partida
                 const gameId = generateGameId();
