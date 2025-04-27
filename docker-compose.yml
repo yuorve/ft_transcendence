@@ -29,7 +29,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - ./backend/uploads:/app/uploadss
+      - ./backend/uploads:/app/uploads
   websocket:
     build: ./websocket
     ports:
