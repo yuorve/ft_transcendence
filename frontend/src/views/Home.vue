@@ -58,8 +58,10 @@
               <td class="border px-4 py-2">{{ game.game }}</td>
               <td class="border px-4 py-2" v-if="game.player1">{{ game.player1 }}</td>
               <td class="border px-4 py-2" v-if="game.player2">{{ game.player2 }}</td>
-              <td class="border px-4 py-2" v-if="!game.player1 || !game.player2"><router-link
-                  :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link></td>
+              <td class="border px-4 py-2" v-if="(!game.player1 || !game.player2) && game.game === 'Pong'"><router-link
+                  :to="{ name: 'PongOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link></td>
+                  <td class="border px-4 py-2" v-if="(!game.player1 || !game.player2) && game.game === 'Tictactoe'"><router-link
+                    :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link></td>
             </tr>
           </tbody>
         </table>
