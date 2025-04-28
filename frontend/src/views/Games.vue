@@ -17,10 +17,10 @@
 			<!-- Botones de acción -->
 			<div v-if="username !== auth?.username" class="flex gap-2">
 				<button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">
-					Añadir amigo
+					{{t('addFriend')}}
 				</button>
 				<button class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
-					Bloquear
+					{{t('blockUser')}}
 				</button>
 			</div>
 		</div>
@@ -28,52 +28,52 @@
 		<!-- Pong Tab -->
 		<div v-if="activeTab === 'Pong'" class="w-full h-full">
 			<div class="flex flex-col items-center justify-center">
-				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">Juegos de Pong</h2>
+				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{t('pongGames')}}</h2>
 				<div v-if="normalPongGames.length" class="w-[98%]">
 					<div v-for="game in normalPongGames" :key="game.game" class="p-4 rounded shadow mb-3" :class="{
 						'bg-green-100': isWin(game), 'bg-red-100': isLoss(game)
 					}">
-						<p><strong>Juego ID:</strong> {{ game.game }}</p>
-						<p><strong>Jugador 1:</strong> {{ game.player1 }}</p>
-						<p><strong>Jugador 2:</strong> {{ game.player2 }}</p>
-						<p><strong>Resultado:</strong> {{ game.score1 }} - {{ game.score2 }}</p>
-						<p><strong>Fecha:</strong> {{ formatDate(game.created_at) }}</p>
+						<p><strong>{{t('game')}} {{ t('id') }}:</strong> {{ game.game }}</p>
+						<p><strong>{{t('player1')}}:</strong> {{ game.player1 }}</p>
+						<p><strong>{{t('player2')}}:</strong> {{ game.player2 }}</p>
+						<p><strong>{{t('score')}}:</strong> {{ game.score1 }} - {{ game.score2 }}</p>
+						<p><strong>{{t('date')}}:</strong> {{ formatDate(game.created_at) }}</p>
 					</div>
 				</div>
-				<p v-else>No se encontraron partidas de Pong.</p>
+				<p v-else>{{t('noPongGames')}}</p>
 			</div>
 		</div>
 
 		<!-- 3 en raya Tab -->
 		<div v-else-if="activeTab === '3 en raya'" class="w-full h-full">
 			<div class="flex flex-col items-center justify-center">
-				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">Juegos de 3 en raya</h2>
+				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{t('tictacGames')}}</h2>
 				<div v-if="normalTicTacToeGames.length" class="w-[98%]">
 					<div v-for="game in normalTicTacToeGames" :key="game.game" class="p-4 rounded shadow mb-3" :class="{
 						'bg-green-100': isWin(game), 'bg-red-100': isLoss(game)
 					}">
-						<p><strong>Juego ID:</strong> {{ game.game }}</p>
-						<p><strong>Jugador 1:</strong> {{ game.player1 }}</p>
-						<p><strong>Jugador 2:</strong> {{ game.player2 }}</p>
-						<p><strong>Resultado:</strong> {{ game.score1 }} - {{ game.score2 }}</p>
-						<p><strong>Fecha:</strong> {{ formatDate(game.created_at) }}</p>
+						<p><strong>{{t('game')}} {{ t('id') }}:</strong> {{ game.game }}</p>
+						<p><strong>{{t('player1')}}:</strong> {{ game.player1 }}</p>
+						<p><strong>{{t('player2')}}:</strong> {{ game.player2 }}</p>
+						<p><strong>{{t('score')}}:</strong> {{ game.score1 }} - {{ game.score2 }}</p>
+						<p><strong>{{t('date')}}:</strong> {{ formatDate(game.created_at) }}</p>
 					</div>
 				</div>
-				<p v-else>No se encontraron partidas de 3 en raya.</p>
+				<p v-else>{{t('noTicTacGames')}}</p>
 			</div>
 		</div>
 
 		<!-- Torneos Tab -->
 		<div v-else-if="activeTab === 'Torneos'" class="w-full h-full">
 			<div class="flex flex-col items-center justify-center">
-				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">Historial de Mis Torneos</h2>
+				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{t('tournamentsHistory')}}</h2>
 				<div v-if="myTournaments.tournaments.length" class="space-y-4 w-[98%]">
 					<div v-for="torneo in myTournaments.tournaments" :key="torneo.tournament"
 						class="bg-white rounded shadow overflow-hidden">
 						<details>
 							<summary
 								class="cursor-pointer px-4 py-2 bg-blue-100 font-semibold flex justify-between items-center">
-								<span>Torneo {{ torneo.tournament }} - juego {{ torneo.games[0].type }}</span>
+								<span>{{t('tournament')}} {{ torneo.tournament }} - {{t('game')}} {{ torneo.games[0].type }}</span>
 								<span class="text-green-700">
 									Ganador: {{ torneo.champion || 'Pendiente' }}
 								</span>
@@ -145,7 +145,9 @@ import { getGames, getMyTournament } from '../api'
 import type { Game, MyTournamentsResponse } from '../api'
 import VueApexCharts from 'vue3-apexcharts'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n();
 const route = useRoute();
 const auth = inject<{ username: string }>("auth");
 
