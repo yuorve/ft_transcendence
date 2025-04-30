@@ -163,8 +163,8 @@ onMounted(() => {
     const result = initPong(); // Llamamos la función del juego
     scene = result.scene;
     engine = result.engine;
-    //if (!hasQueryParams)
-    //  createGame(gameid, "pong", player1 as string, player2 as string, "", "");
+    if (!hasQueryParams)
+      createGame(gameid, "pong", player1 as string, player2 as string, "", "");
   } catch (error) {
     console.error("Error al inicializar Pong:", error);
   }
@@ -212,7 +212,7 @@ watch(
     }
     if (newVal >= 5) {
       console.log("¡La puntuación del jugador izquierdo ha llegado a 5!");
-      //sendPunt(player1 as string);
+      sendPunt(player1 as string);
     }
   }
 );
@@ -226,7 +226,7 @@ watch(
     }
     if (newVal >= 5) {
       console.log("¡La puntuación del jugador derecho ha llegado a 5!");
-      //sendPunt(player2 as string);
+      sendPunt(player2 as string);
     }
   }
 );

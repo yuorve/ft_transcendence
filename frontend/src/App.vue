@@ -19,7 +19,7 @@ watch(
     (newToken) => {
         if (newToken) {
             console.log("conect with watch");
-            console.log(newToken);
+            //console.log(newToken);
             connect(newToken);
         } else {
             close();
