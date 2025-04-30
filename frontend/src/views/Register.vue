@@ -13,7 +13,7 @@
 			<input type="password" v-model="password" required placeholder="*******" />
 	
 			<label>Foto de perfil</label>
-			<input type="file" @change="handleFileUpload" accept="image/*" />
+			<input type="file" @change="handleFileUpload" required accept="image/*" />
 	
 			<button type="submit">Registrarse</button>
 		</form>
@@ -26,7 +26,7 @@
   <script setup>
   import { ref } from "vue";
   import { useRouter } from "vue-router";
-  import { registerUser } from "../api";
+  import { registerUser, checkUsernameAvailability } from "../api";
   
   const router = useRouter();
   const username = ref("");
@@ -40,18 +40,31 @@
   
   const register = async () => {
 	try {
-	  const formData = new FormData();
-	  formData.append("username", username.value);
-	  formData.append("email", email.value);
-	  formData.append("password", password.value);
-	  if (profileImage.value) {
-		formData.append("profileImage", profileImage.value, profileImage.value.name);
-	  }
-  
-	  await registerUser(formData);
-	  router.push("/login"); // Redirige al login tras registrarse
+
+		const availabilityResponse = await checkUsernameAvailability(username.value);
+
+		const availabilityData = availabilityResponse.data;
+
+		if (!availabilityData.available) {
+			alert(availabilityData.message); // Muestra el mensaje de la API
+			return; // Detiene la ejecución de la función register
+		}
+
+		const formData = new FormData();
+		formData.append("username", username.value);
+		formData.append("email", email.value);
+		formData.append("password", password.value);
+		if (profileImage.value) {
+			formData.append("profileImage", profileImage.value, profileImage.value.name);
+		}
+		
+		await registerUser(formData);
+		// Mensaje de éxito
+		alert("Registro completado con éxito.");
+		
+		router.push("/login"); // Redirige al login tras registrarse
 	} catch (error) {
-	  console.error("Error en el registro:", error);
+		console.error("Error en el registro:", error);
 	}
   };
   </script>

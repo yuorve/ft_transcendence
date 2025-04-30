@@ -1,15 +1,33 @@
 import * as BABYLON from '@babylonjs/core'
 import earcut from "earcut";
 import { reactive } from 'vue';
+// import { createGame } from "../api";
 
 (window as any).earcut = earcut;
 
 export const puntuation = reactive({
 	pl: 0,
 	pr: 0,
+	dx: 0.0,
+	dy: 0.0,
+	gameState: 'playing',
+	gameMode: 'newGame',
+	gameOver: 0,
+	online: 0,
+	isHost: false,
+	playerPaddle: null as BABYLON.Nullable<BABYLON.Mesh>,
+	opponentPaddle: null as BABYLON.Nullable<BABYLON.Mesh>,	
 });
 
+// let username = localStorage.getItem("username") || "";
+let maxscore = 5; //Máxima puntuación para detener el juego
+
+function triangleWave(step: number, amplitude: number, start: number, slope: number) {
+	return Math.abs((amplitude - start - slope * step) % (2 * amplitude) - amplitude)
+}
+
 export default function initPong() {
+	//let gameState = 'playing'; // Posibles estados: 'playing', 'gameOver'
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;  //lugar donde se renderiza
 
 	const engine = new BABYLON.Engine(canvas); //motor 3d BABYLON
@@ -134,52 +152,130 @@ export default function initPong() {
 			var direction = Math.random() > 0.5 ? 1 : -1;
 			ballInitDir.x = ballSpeed * direction * Math.cos(angle);
 			ballInitDir.y = ballSpeed * direction * Math.sin(angle);
+			puntuation.dx = ballInitDir.x;
+			puntuation.dy = ballInitDir.y;
 		}
 
 		// INIT BALL
 		resetBall();
 
 		// MOVEMENT
-		scene.onBeforeRenderObservable.add(function () {
-			sphere.position.x += ballInitDir.x;
-			sphere.position.y += ballInitDir.y;
-			sphere.rotation.x += ballInitDir.x;
-			sphere.rotation.y += ballInitDir.y;
+		scene.onBeforeRenderObservable.add(function () {			
+			if (puntuation.gameState === 'playing') {
+			// 	// Sincronización con el oponente
+			// 	ballInitDir.x = puntuation.dx;
+			// 	ballInitDir.y = puntuation.dy;
+			// 	//
+			// 	// Formula guay
+			// 	//
+			// 	sphere.position.x += ballInitDir.x;
+			// 	sphere.position.y += ballInitDir.y;
+			// 	sphere.rotation.x += ballInitDir.x;
+			// 	sphere.rotation.y += ballInitDir.y;
 
-			// collisions with paddles
-			if (sphere.intersectsMesh(paddle2, true) && ballInitDir.x > 0) { //false for less precission, more efficiency 
-				ballInitDir.x *= -1;
-			}
-			if (sphere.intersectsMesh(paddle1, true) && ballInitDir.x < 0) {
-				ballInitDir.x *= -1;
-			}
+			// 	// collisions with paddles
+			// 	if (sphere.intersectsMesh(paddle2, true) && ballInitDir.x > 0) { //false for less precission, more efficiency 
+			// 		ballInitDir.x *= -1;
+			// 		puntuation.dx = ballInitDir.x;
+			// 	}
+			// 	if (sphere.intersectsMesh(paddle1, true) && ballInitDir.x < 0) {
+			// 		ballInitDir.x *= -1;
+			// 		puntuation.dx = ballInitDir.x;
+			// 	}
 
-			// collisions up and down
-			if (sphere.position.y >= maxUpDown + paddleHeight / 2)
-				ballInitDir.y *= -1;
-			if (sphere.position.y <= -maxUpDown - paddleHeight / 2)
-				ballInitDir.y *= -1;
+			// 	// collisions up and down
+			// 	if (sphere.position.y >= maxUpDown + paddleHeight / 2)
+			// 		ballInitDir.y *= -1;
+			// 		puntuation.dy = ballInitDir.y;
+			// 	if (sphere.position.y <= -maxUpDown - paddleHeight / 2)
+			// 		ballInitDir.y *= -1;
+			// 		puntuation.dy = ballInitDir.y;
 
-			// out of table
-			if (sphere.position.x >= paddleDistance + paddleWidth / 2) {
-				puntuation.pl++;
-				resetBall();
-			}
-			if (sphere.position.x <= -paddleDistance - paddleWidth / 2)
-			{
-				puntuation.pr++;
-				resetBall();
-			}
+			// 	// out of table
+			// 	if (sphere.position.x >= paddleDistance + paddleWidth / 2) {
+			// 		puntuation.pl++;
+			// 		resetBall();
+			// 	}
+			// 	if (sphere.position.x <= -paddleDistance - paddleWidth / 2)
+			// 	{
+			// 		puntuation.pr++;
+			// 		resetBall();
+			// 	}
 
-			// paddle controls
-			if (inputMap['w'] && paddle1.position.y < maxUpDown + sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
-				paddle1.position.y += paddleSpeed;
-			if (inputMap['s'] && paddle1.position.y > -maxUpDown - sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
-				paddle1.position.y -= paddleSpeed;
-			if (inputMap['ArrowUp'] && paddle2.position.y < maxUpDown + sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
-				paddle2.position.y += paddleSpeed;
-			if (inputMap['ArrowDown'] && paddle2.position.y > -maxUpDown - sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
-				paddle2.position.y -= paddleSpeed;
+				/////////
+
+				// Solo el anfitrión (newGame) calcula la física de la bola
+				if (puntuation.online === 0 || (puntuation.online === 1 && puntuation.gameMode === 'newGame')) {
+					// Movimiento de la bola
+					sphere.position.x += ballInitDir.x;
+					sphere.position.y += ballInitDir.y;
+					sphere.rotation.x += ballInitDir.x;
+					sphere.rotation.y += ballInitDir.y;
+		
+					// collisions with paddles
+					if (sphere.intersectsMesh(paddle2, true) && ballInitDir.x > 0) {
+						ballInitDir.x *= -1;
+						puntuation.dx = ballInitDir.x;
+					}
+					if (sphere.intersectsMesh(paddle1, true) && ballInitDir.x < 0) {
+						ballInitDir.x *= -1;
+						puntuation.dx = ballInitDir.x;
+					}
+		
+					// collisions up and down
+					if (sphere.position.y >= maxUpDown + paddleHeight / 2) {
+						ballInitDir.y *= -1;
+						puntuation.dy = ballInitDir.y;
+					}
+					if (sphere.position.y <= -maxUpDown - paddleHeight / 2) {
+						ballInitDir.y *= -1;
+						puntuation.dy = ballInitDir.y;
+					}
+		
+					// out of table
+					if (sphere.position.x >= paddleDistance + paddleWidth / 2) {
+						puntuation.pl++;
+						resetBall();
+					}
+					if (sphere.position.x <= -paddleDistance - paddleWidth / 2) {
+						puntuation.pr++;
+						resetBall();
+					}
+				} else {
+					// Los clientes solo actualizan la posición según los datos recibidos
+					sphere.position.x += puntuation.dx;
+					sphere.position.y += puntuation.dy;
+					sphere.rotation.x += puntuation.dx;
+					sphere.rotation.y += puntuation.dy;
+				}
+
+				//////////
+
+				if (puntuation.pl >= maxscore || puntuation.pr >= maxscore) {
+					puntuation.gameState = 'gameOver';
+					// // Guardar partida
+					// createGame("pong",username,"Invitado",puntuation.pl,puntuation.pr);
+				}
+
+				// paddle controls
+				if (puntuation.online === 0) {
+					if (inputMap['w'] && paddle1.position.y < maxUpDown + sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
+						paddle1.position.y += paddleSpeed;
+					if (inputMap['s'] && paddle1.position.y > -maxUpDown - sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
+						paddle1.position.y -= paddleSpeed;
+					if (inputMap['ArrowUp'] && paddle2.position.y < maxUpDown + sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
+						paddle2.position.y += paddleSpeed;
+					if (inputMap['ArrowDown'] && paddle2.position.y > -maxUpDown - sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
+						paddle2.position.y -= paddleSpeed;
+				} else {
+					if (puntuation.playerPaddle) {
+						if (inputMap['ArrowUp'] && puntuation.playerPaddle.position.y < maxUpDown + sphereRadius / 2 && !puntuation.playerPaddle.intersectsMesh(sphere, true))
+							puntuation.playerPaddle.position.y += paddleSpeed;
+						if (inputMap['ArrowDown'] && puntuation.playerPaddle.position.y > -maxUpDown - sphereRadius / 2 && !puntuation.playerPaddle.intersectsMesh(sphere, true))
+							puntuation.playerPaddle.position.y -= paddleSpeed;
+					}
+				}
+			}
 		});
 		return scene;
 	}

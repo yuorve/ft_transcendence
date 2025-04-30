@@ -1,7 +1,9 @@
+// @ts-ignore
 import type { int } from "@babylonjs/core";
 import axios from "axios";
 
-export const API_URL = "http://localhost:4000"; // Dirección del backend
+// Dirección del backend
+export const API_URL = "/api";
 
 export const registerUser = async (formData: FormData) => {
   return axios.post(`${API_URL}/register`, formData, {
@@ -9,11 +11,31 @@ export const registerUser = async (formData: FormData) => {
       "Content-Type": "multipart/form-data",
     },
   });
-}
+};
+
+export const UpdateImage = async (formData: FormData) => {
+  return axios.post(`${API_URL}/update-profile`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const UpdatePassword = async (formData: FormData) => {
+  return axios.post(`${API_URL}/update-password`, formData);
+};
+
+export const deleteAccount = async (formData: FormData) => {
+  return axios.post(`${API_URL}/delete-account`, formData);
+};
+
+export const checkUsernameAvailability = async (username: String) => {
+  return axios.get(`${API_URL}/check-username/${username}`);
+};
 
 export const loginWithGoogle = async (googleToken: string) => {
   try {
-    const response = await fetch(`${API_URL}/google-login`, {
+    const response = await fetch(`${API_URL}/google-login`, {      
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: googleToken }),
@@ -48,17 +70,130 @@ export async function getProfile() {
 }
 
 // Obtener lista de partidas
-export async function getGames() {
-  const response = await fetch(`${API_URL}/games`);
+export async function getGames(username: string) {
+  const response = await fetch(`${API_URL}/games/${username}`);
   return response.json();
 }
 
 // Registrar una partida
-export async function createGame(player1: string, player2: string, score: int) {
+export async function createGame(game: string, type: string, player1: string, player2: string, score1: string, score2: string) {
   const response = await fetch(`${API_URL}/games`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ player1, player2, score }),
+    body: JSON.stringify({ game, type, player1, player2, score1, score2 }),
   });
   return response.json();
+}
+
+// Actualizar una partida
+export async function updateGame(gameId: string, newScore1: string, newScore2: string) {
+  const response = await fetch(`${API_URL}/games/${gameId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ score1: newScore1, score2: newScore2 }),
+  });
+  return response.json();
+}
+
+// Obtener lista de TODOS los torneos
+export async function getAllTournament() {
+  const response = await fetch(`${API_URL}/tournaments`);
+  return response.json();
+}
+
+// Obtener lista de torneos
+export async function getTournament(username: string) {
+  const response = await fetch(`${API_URL}/tournament/${username}`);
+  return response.json();
+}
+
+export async function getMyTournament(username: string) {
+  const response = await fetch(`${API_URL}/mytournaments/${username}`);
+  return response.json();
+}
+
+// Registrar un torneo
+export async function createTournament(id: string, game: string, round: number) {
+  const response = await fetch(`${API_URL}/tournament`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, game, round }),
+  });
+  return response.json();
+}
+
+// Obtener lista de amigos
+export async function getFriends(username: string) {
+  const response = await fetch(`${API_URL}/friends/${username}`);
+  return response.json();
+}
+
+// Obtener lista de solicitudes de amistad
+export async function getRequests(username: string) {
+  const response = await fetch(`${API_URL}/friend-request/${username}`);
+  return response.json();
+}
+
+// Obtener lista de amistades bloqueadas
+export async function getBlocked(username: string) {
+  const response = await fetch(`${API_URL}/friend-blocked/${username}`);
+  return response.json();
+}
+
+// Enviar una solicitud de amistad
+export async function sendRequest(username: string, buddy: string) {
+  const response = await fetch(`${API_URL}/friend-request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, buddy }),
+  });
+  return response.json();
+}
+
+// Aceptar/Rechazar/Bloquear una amistad
+export async function actionRequest(id: string, req: string, blocked: string) {
+  const response = await fetch(`${API_URL}/friends`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id, req, blocked }),
+  });
+  return response.json();
+}
+
+// Obtener lista de chats
+export async function getChats(id: string) {
+  const response = await fetch(`${API_URL}/chats/${id}`);
+  return response.json();
+}
+
+// Guardar un mensaje del chat
+export async function saveMessage(chat: string, sender: string, message: string) {
+  const response = await fetch(`${API_URL}/chats`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat, sender, message }),
+  });
+  return response.json();
+}
+
+// Obtener lista de usuarios
+export async function getUsers() {
+  const response = await fetch(`${API_URL}/users`);
+  return response.json();
+}
+
+// Obtener usuario
+export async function getUser(id: number) {
+  const response = await fetch(`${API_URL}/user/${id}`);
+  return response.json();
+}
+
+// Obtener imagen de usuario
+export async function getUserImage(user: string) {
+  const response = await fetch(`${API_URL}/user-image/${user}`);
+  return response.json();
+}
+
+export function generateId() {
+  return Math.random().toString(36).substring(2, 15);
 }

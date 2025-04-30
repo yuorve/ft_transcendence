@@ -1,6 +1,24 @@
 import * as BABYLON from '@babylonjs/core'
 import { GUI3DManager } from "@babylonjs/gui";
 import { HolographicButton } from "@babylonjs/gui";
+import { createGame } from "../api";
+import { reactive, ref } from 'vue';
+import { useWebSocket } from '../services/websocket';
+
+export const puntuation = reactive({
+    pl: 0,
+    pr: 0,
+    playerTurn: 1,
+    playerFigure: 1,
+    gameOver: 0,
+    online: 0,
+});
+
+export const matriz = ref<number[][]>([
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0]
+]);
 
 export default function initTicTacToe() {
     const canvas = document.getElementById('renderCanvas')  as HTMLCanvasElement;  //lugar donde se renderiza
@@ -23,14 +41,14 @@ export default function initTicTacToe() {
 
         // CAMERA
         const camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene); //camara
-        camera.attachControl(true);
+        // camera.attachControl(true);
         camera.setPosition(new BABYLON.Vector3(0, 0, -15));
-        camera.lowerBetaLimit = Math.PI / 4; //limite movimiento arriba
-        camera.upperBetaLimit = Math.PI / 1.5; //limite movimiento abajo
-        camera.upperAlphaLimit = -Math.PI / 4; //limite movimiento derecha
-        camera.lowerAlphaLimit = -Math.PI / 1.5; //limite movimiento izquierda
-        camera.lowerRadiusLimit = 2; //zoom maximo
-        camera.upperRadiusLimit = 40; //zoom minimo
+        // camera.lowerBetaLimit = Math.PI / 4; //limite movimiento arriba
+        // camera.upperBetaLimit = Math.PI / 1.5; //limite movimiento abajo
+        // camera.upperAlphaLimit = -Math.PI / 4; //limite movimiento derecha
+        // camera.lowerAlphaLimit = -Math.PI / 1.5; //limite movimiento izquierda
+        // camera.lowerRadiusLimit = 2; //zoom maximo
+        // camera.upperRadiusLimit = 40; //zoom minimo
 
         // VARIABLES
         var frameSize = 12;
@@ -38,8 +56,51 @@ export default function initTicTacToe() {
         var framePos = 2;
         var butSize = 3;
         var butPos = 4;
-        var figure = 1;
+        var figure = puntuation.playerFigure;
 
+        // Initialization
+        const rows = matriz.value.length;
+        const cols = matriz.value[0]?.length;
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                matriz.value[i][j] = 0;
+            }
+        }
+
+        //SOCKET
+        const token = localStorage.getItem("token") || "";
+        const { websocketState: { socket } } = useWebSocket(token || '');
+        
+        if (socket) {            
+            socket.addEventListener('message', event => {
+                const data = JSON.parse(event.data);
+                console.log(data);
+                if (data.type === 'opponentMove') {
+                    console.log("Movimiento del otro Jugador");
+                    console.log(data.x);
+                    figure = (figure === 1) ? 2 : 1;
+                    createFigure(buttons[data.x.i][data.x.j].position.x, buttons[data.x.i][data.x.j].position.y, 0);
+                    matriz.value[data.x.i][data.x.j] = figure;                    
+                    buttons[data.x.i][data.x.j].dispose();
+                    puntuation.playerTurn = 1;
+                    if (checkVic()) {
+                        buttons.forEach((row) => {
+                            row.forEach((button) => {
+                                button.dispose();
+                            });
+                        });
+                        if (figure == 1) {
+                            puntuation.pl++;
+                            createX(0, 0, -3, butSize);
+                        } else {
+                            puntuation.pr++;
+                            createCircle(0, 0, -3, butSize);
+                        }
+                    }                    
+                    figure = (figure === 1) ? 2 : 1;
+                }
+            });
+        }
 
         // FRAME
         var frames: BABYLON.Mesh[] = [];
@@ -107,25 +168,19 @@ export default function initTicTacToe() {
         function createFigure(positionX: number, positionY: number, positionZ: number) {
             if (figure == 1) {
                 createX(positionX, positionY, positionZ, 1);
-                figure = 2;
-            }
-            else {
+                //figure = 2;
+            } else {
                 createCircle(positionX, positionY, positionZ, 1);
-                figure = 1;
+                //figure = 1;
             }
         }
 
         // CHECK VICTORY
-        var matriz: number[][] = [
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0]
-        ];
 
         function checkVic() {
             for (var auxY = 0; auxY < 3; auxY++) {
                 for (var auxX = 0; auxX < 3; auxX++) {
-                    if (matriz[auxY][auxX] != figure)
+                    if (matriz.value[auxY][auxX] != figure)
                         break;
                     else if (auxX == 2)
                         return true;
@@ -133,20 +188,20 @@ export default function initTicTacToe() {
             }
             for (var auxX = 0; auxX < 3; auxX++) {
                 for (var auxY = 0; auxY < 3; auxY++) {
-                    if (matriz[auxY][auxX] != figure)
+                    if (matriz.value[auxY][auxX] != figure)
                         break;
                     else if (auxY == 2)
                         return true;
                 }
             }
             for (var auxX = 0, auxY = 0; auxX < 3; auxX++, auxY++) {
-                if (matriz[auxY][auxX] != figure)
+                if (matriz.value[auxY][auxX] != figure)
                     break;
                 else if (auxY == 2)
                     return true;
             }
             for (var auxX = 0, auxY = 2; auxX < 3; auxX++, auxY--) {
-                if (matriz[auxY][auxX] != figure)
+                if (matriz.value[auxY][auxX] != figure)
                     break;
                 else if (auxX == 2)
                     return true;
@@ -182,24 +237,38 @@ export default function initTicTacToe() {
         for (let i = 0; i < 3; i++) {
             for (let x = 0; x < 3; x++) {
                 buttons[i][x].onPointerUpObservable.add(() => {
-                    createFigure(buttons[i][x].position.x, buttons[i][x].position.y, 0);
-                    matriz[i][x] = figure;
-                    buttons[i][x].dispose();
-                    if (checkVic() == true && figure == 2) {
+                    // CHECKING TURN
+                    if (puntuation.playerTurn == 1 || puntuation.online === 0) {
+                        console.log("Crea figura");
+                        createFigure(buttons[i][x].position.x, buttons[i][x].position.y, 0);
+                        matriz.value[i][x] = figure;
+                        buttons[i][x].dispose();
+                        puntuation.playerTurn = 0;
+                    } 
+                    if (checkVic() == true && figure == 1) {
+                        console.log("Ganador 1");
                         buttons.forEach((row) => {
                             row.forEach((button) => {
                                 button.dispose();
                             });
                         });
+                        puntuation.pl++;
                         createX(0, 0, -3, butSize);
+                        puntuation.gameOver = 1;
                     }
-                    else if (checkVic() == true && figure == 1) {
+                    else if (checkVic() == true && figure == 2) {
+                        console.log("Ganador 2");
                         buttons.forEach((row) => {
                             row.forEach((button) => {
                                 button.dispose();
                             });
                         });
+                        puntuation.pr++;
                         createCircle(0, 0, -3, butSize);
+                        puntuation.gameOver = 1;
+                    }
+                    if (puntuation.online === 0) {
+                        figure = (figure === 1) ? 2 : 1;
                     }
                 });
             }
