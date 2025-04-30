@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
 	<div class="container mx-auto p-4 bg-blue-300 mt-3 rounded-xl">
 	  <h1 class="text-2xl font-bold mb-4">Amigos de {{ username }}</h1>
 
@@ -96,4 +96,67 @@
 	  },
 	},
   };
-  </script>
+  </script> -->
+
+  <script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import { getUsers } from '../api'
+import router from '../router'
+
+interface User { username: string }
+
+const allUsers = ref<User[]>([])
+const searchTerm = ref('')
+const results    = ref<User[]>([])
+
+// Al montar, carga la lista completa
+onMounted(async () => {
+  try {
+    const res = await getUsers()
+    // getUsers devuelve { users: User[] }
+    allUsers.value = res.users || []
+  } catch (err) {
+    console.error('No se pudo cargar usuarios:', err)
+  }
+})
+// Computed que actualiza resultados en cuanto cambia searchTerm
+const filteredUsers = computed(() => {
+  const q = searchTerm.value.trim().toLowerCase()
+  if (!q) return []
+  return allUsers.value.filter(u =>
+    u.username.toLowerCase().includes(q)
+  )
+})
+
+function select(username: string) {
+  searchTerm.value = username
+  // aquí decides qué hacer: emitir un evento, navegar…
+  router.push({ path: '/games', query: { username: searchTerm.value} })
+  results.value = []  // opcional: oculta la lista tras seleccionar
+}
+</script>
+
+<template>
+	<div class="relative w-64 bg-white">
+		<p>Buscar usuario</p>
+	  <input
+		v-model="searchTerm"
+		type="text"
+		placeholder="Buscar usuario…"
+		class="w-full border p-2 rounded"
+	  />
+	  <ul
+		v-if="filteredUsers.length"
+		class="absolute z-10 w-full bg-white border rounded mt-1 max-h-40 overflow-auto"
+	  >
+		<li
+		  v-for="user in filteredUsers"
+		  :key="user.username"
+		  @click="select(user.username)"
+		  class="px-2 py-1 hover:bg-gray-100 cursor-pointer"
+		>
+		  {{ user.username }}
+		</li>
+	  </ul>
+	</div>
+  </template>

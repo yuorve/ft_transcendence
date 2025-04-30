@@ -18,14 +18,30 @@ async function userRoutes(fastify) {
   });
 
   // Ruta para obtener un usuario a partir del id
-  fastify.get('/user/:id', async (request, reply) => {
+  fastify.get('/user/:username', async (request, reply) => {
     try {
-      const { id } = request.params;
-      const user = await all('SELECT username FROM users WHERE id = ?', [id]);
-      const username = user.length > 0 ? user[0].username : null;
-
-      reply.send({ username });
+      const { username } = request.params;
+      // Seleccionamos todas las columnas salvo la contraseña
+      const row = await get(
+        `SELECT 
+           id,
+           username,
+           email,
+           profileImage,
+           status,
+           favlang,
+           created_at
+         FROM users 
+         WHERE username = ?`,
+        [username]
+      );
+      if (!row) {
+        return reply.status(404).send({ error: 'Usuario no encontrado' });
+      }
+      // Enviamos el objeto user completo
+      reply.send({ user: row });
     } catch (error) {
+      console.error('Error al obtener usuario por username:', error);
       reply.status(500).send({ error: error.message });
     }
   });
@@ -70,7 +86,7 @@ async function userRoutes(fastify) {
       const userId = decoded.id;
     
       // Obtener datos completos del usuario desde la base de datos
-      const user = await all('SELECT username, email, profileImage, created_at FROM users WHERE id = ?', [userId]);
+      const user = await all('SELECT username, email, profileImage, favlang, created_at FROM users WHERE id = ?', [userId]);
 
       if (!user) {
         return reply.status(404).send({ error: 'Usuario no encontrado' });
@@ -148,11 +164,30 @@ async function userRoutes(fastify) {
           [profileImagePath, user.id]
       );
       
-      reply.send({ success: true, message: "Imagen actualizada con éxito", profilePicture: profileImagePath });
+      reply.send({ success: true, message: "Imagen actualizada con éxito", profilePicture: proprofileImageImagePath });
     } catch (error) {
       reply.status(500).send({ error: 'Error en el servidor' });
     }
   });
+
+// Ruta para actualizar favlang
+fastify.patch('/user/:username/favlang', async (req, reply) => {
+  const { username } = req.params;
+  const { favlang } = req.body;
+  if (typeof favlang !== 'string') {
+    return reply.status(400).send({ error: 'Idioma no válido' });
+  }
+  try {
+    await run(
+      'UPDATE users SET favlang = ? WHERE username = ?',
+      [favlang, username]
+    );
+    reply.send({ success: true });
+  } catch (err) {
+    console.error('Error actualizando favlang:', err);
+    reply.status(500).send({ error: err.message });
+  }
+});
 
   // Ruta para actualizar la contraseña
   fastify.post('/update-password', async (request, reply) => {

@@ -35,7 +35,7 @@ export const checkUsernameAvailability = async (username: String) => {
 
 export const loginWithGoogle = async (googleToken: string) => {
   try {
-    const response = await fetch(`${API_URL}/google-login`, {      
+    const response = await fetch(`${API_URL}/google-login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: googleToken }),
@@ -65,8 +65,28 @@ export async function getProfile() {
     method: "GET",
     headers: { "Authorization": `Bearer ${token}` },
   });
-  const data = await response.json();
-  return data.user;
+
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || "Error al obtener perfil");
+  }
+
+  // data.user es un array; devolvemos solo el primer objeto
+  return payload.user[0];
+}
+
+// Actualizar idioma favorito
+export async function updateFavLang(
+  username: string,
+  favlang: string
+): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_URL}/user/${username}/favlang`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ favlang })
+  });
+  if (!res.ok) throw new Error('Error actualizando idioma favorito');
+  return res.json();
 }
 
 // Obtener lista de partidas
@@ -76,21 +96,36 @@ export async function getGames(username: string) {
 }
 
 // Registrar una partida
-export async function createGame(game: string, type: string, player1: string, player2: string, score1: string, score2: string) {
+export async function createGame(game: string, type: string, game_order: number, player1: string, player2: string, score1: string, score2: string) {
   const response = await fetch(`${API_URL}/games`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ game, type, player1, player2, score1, score2 }),
+    body: JSON.stringify({ game, type, game_order, player1, player2, score1, score2 }),
   });
   return response.json();
 }
 
+// Borrar una partida
+export async function deleteGame(gameId: string) {
+  const response = await fetch(`${API_URL}/delete-game/${gameId}`, {
+    method: 'GET',
+  });
+  return response.json();
+}
+
+// Obtener una partida concreta por su ID de juego
+export async function getGame(gameId: string) {
+  const response = await fetch(`${API_URL}/game/${gameId}`)
+  // asume que responde { game: Game }
+  return response.json()
+}
+
 // Actualizar una partida
-export async function updateGame(gameId: string, newScore1: string, newScore2: string) {
+export async function updateGame(gameId: string, newPlayer1: string, newPlayer2: string, newScore1: string, newScore2: string) {
   const response = await fetch(`${API_URL}/games/${gameId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ score1: newScore1, score2: newScore2 }),
+    body: JSON.stringify({ player1: newPlayer1, player2: newPlayer2, score1: newScore1, score2: newScore2 }),
   });
   return response.json();
 }
@@ -101,15 +136,26 @@ export async function getAllTournament() {
   return response.json();
 }
 
-// Obtener lista de torneos
-export async function getTournament(username: string) {
-  const response = await fetch(`${API_URL}/tournament/${username}`);
+export async function getTournament(tournamentId: string): Promise<TournamentResponse> {
+  const response = await fetch(`${API_URL}/tournament/${tournamentId}`);
+  if (!response.ok) {
+    throw new Error(`Error al cargar el torneo ${tournamentId}: ${response.statusText}`);
+  }
   return response.json();
 }
 
-export async function getMyTournament(username: string) {
-  const response = await fetch(`${API_URL}/mytournaments/${username}`);
-  return response.json();
+export interface MyTournamentsResponse {
+  tournaments: TournamentResponse[];
+}
+
+export async function getMyTournament(
+  username: string
+): Promise<MyTournamentsResponse> {
+  const res = await fetch(`${API_URL}/mytournaments/${username}`);
+  if (!res.ok) {
+    throw new Error(`Error al cargar mis torneos: ${res.statusText}`);
+  }
+  return res.json();
 }
 
 // Registrar un torneo
@@ -119,6 +165,23 @@ export async function createTournament(id: string, game: string, round: number) 
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, game, round }),
   });
+  return response.json();
+}
+
+
+// Actualiza al ganador del troneo
+export async function updateChampion(tournamentId: string, champion: string): Promise<{ message: string }> {
+  const url = `${API_URL}/tournaments/${encodeURIComponent(tournamentId)}/champion`;
+  console.log("Torneo: " + tournamentId + " Campeon: " + champion);
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ champion })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(`Error ${response.status} actualizando campeón: ${err.error || response.statusText}`);
+  }
   return response.json();
 }
 
@@ -183,8 +246,8 @@ export async function getUsers() {
 }
 
 // Obtener usuario
-export async function getUser(id: number) {
-  const response = await fetch(`${API_URL}/user/${id}`);
+export async function getUser(username: string) {
+  const response = await fetch(`${API_URL}/user/${username}`);
   return response.json();
 }
 
@@ -197,3 +260,23 @@ export async function getUserImage(user: string) {
 export function generateId() {
   return Math.random().toString(36).substring(2, 15);
 }
+
+export interface Game {
+  game: string;
+  type: string;
+  game_order: string;
+  player1: string;
+  player2: string;
+  score1: string;
+  score2: string;
+  round: string;
+  created_at: string;
+}
+export interface TournamentResponse {
+  games: Game[];
+  tournament: string;
+  champion: string | null;
+  created_at: string | null;
+}
+
+export const noPlayer = "???";

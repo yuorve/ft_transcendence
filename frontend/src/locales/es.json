@@ -1,4 +1,14 @@
 {
+  "routes": {
+    "games": "Juegos",
+    "friends": "Amigos",
+    "Pong": "Pong",
+    "Tictactoe": "Tres en raya",
+    "tournament": "Torneo",
+    "login": "Iniciar sesión",
+    "profile": "Perfil",
+    "password": "Contraseña"
+  },
   "start": "Inicio",
   "chat": "Chat",
   "pong": "Pong",
@@ -16,8 +26,12 @@
   "profError": "Error obteniendo perfil",
   "profUser": "Perfil de Usuario",
   "changeImg": "Cambiar imangen",
-  "changeName": "Cambiar nombre",
+  "username": "Nombre de usuario",
+  "name": "Nombre",
 
   "notAcc": "¿No tienes cuenta?",
-  "regHere": "Regístrate aquí"
+  "regHere": "Regístrate aquí",
+
+  "players": "Jugadores"
+
   }

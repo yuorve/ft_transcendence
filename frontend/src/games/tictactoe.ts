@@ -21,17 +21,17 @@ export const matriz = ref<number[][]>([
 ]);
 
 export default function initTicTacToe() {
-    const canvas = document.getElementById('renderCanvas')  as HTMLCanvasElement;  //lugar donde se renderiza
+    const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;  //lugar donde se renderiza
 
     const engine = new BABYLON.Engine(canvas); //motor 3d BABYLON
 
-    const CreateScene = function() {
+    const CreateScene = function () {
         const scene = new BABYLON.Scene(engine);
         const manager = new GUI3DManager(scene);
 
         //BACKGROUD
         // @ts-ignore
-        const background = new BABYLON.Layer('background','space.jpg', scene, true);
+        const background = new BABYLON.Layer('background', 'space.jpg', scene, true);
 
         // LIGHTS
         //@ts-ignore
@@ -43,12 +43,12 @@ export default function initTicTacToe() {
         const camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene); //camara
         // camera.attachControl(true);
         camera.setPosition(new BABYLON.Vector3(0, 0, -15));
-        // camera.lowerBetaLimit = Math.PI / 4; //limite movimiento arriba
-        // camera.upperBetaLimit = Math.PI / 1.5; //limite movimiento abajo
-        // camera.upperAlphaLimit = -Math.PI / 4; //limite movimiento derecha
-        // camera.lowerAlphaLimit = -Math.PI / 1.5; //limite movimiento izquierda
-        // camera.lowerRadiusLimit = 2; //zoom maximo
-        // camera.upperRadiusLimit = 40; //zoom minimo
+        camera.lowerBetaLimit = camera.beta; //limite movimiento arriba
+        camera.upperBetaLimit = camera.beta; //limite movimiento abajo
+        camera.upperAlphaLimit = camera.alpha; //limite movimiento derecha
+        camera.lowerAlphaLimit = camera.alpha; //limite movimiento izquierda
+        camera.lowerRadiusLimit = 10; //zoom maximo
+        camera.upperRadiusLimit = 40; //zoom minimo
 
         // VARIABLES
         var frameSize = 12;
@@ -281,14 +281,14 @@ export default function initTicTacToe() {
     }
     const scene = CreateScene();
 
-    engine.runRenderLoop(function()   //loop
+    engine.runRenderLoop(function ()   //loop
     {
-      scene.render();
+        scene.render();
     });
-    
-    window.addEventListener('resize', function()  //evita que los objetos 3d se deformen
+
+    window.addEventListener('resize', function ()  //evita que los objetos 3d se deformen
     {
-      engine.resize();
+        engine.resize();
     });
     return { scene, engine };
 }

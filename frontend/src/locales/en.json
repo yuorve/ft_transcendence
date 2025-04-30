@@ -1,6 +1,17 @@
 {
+  "routes": {
+    "games": "Games",
+    "friends": "Friends",
+    "Pong": "Pong",
+    "Tictactoe": "Tic Tac Toe",
+    "tournament": "Tournament",
+    "login": "Login",
+    "profile": "Profile",
+    "password": "Password"
+  },
   "start": "Start",
   "chat": "Chat",
+  "friends": "Friends",
   "pong": "Pong",
   "tictac": "TicTacToe",
   "tournament": "Tournament",
@@ -16,8 +27,42 @@
   "profError": "Error obtaining profile",
   "profUser": "User profile",
   "changeImg": "Change image",
-  "changeName": "Change name",
+  "username": "Username",
+  "name": "Name",
+  "mail": "Email",
+  "changePass": "Change password",
+  "lang": "Language",
+  "selectLang": "Select language",
+  "matchHistory": "Match history",
+  "deleteAcc": "Delete account",
+  "registerDate": "Registered on",
 
   "notAcc": "Don't have an account?",
-  "regHere": "Register here"
+  "regHere": "Register here",
+
+  "players": "Players",
+  "connectionLost": "Connection lost",
+  "connectionLostMsg": "Your connection has been replaced by another tab or window. Please refresh the page to continue.",
+  "reloadPage": "Reload page",
+
+  "addFriend": "Add friend",
+  "removeFriend": "Remove friend",
+  "blockUser": "Block user",
+  "unblockUser": "Unblock user",
+  "pongGames": "Pong games",
+  "tictacGames": "TicTacToe games",
+  "game": "Game",
+  "id": "ID",
+  "gameType": "Game type",
+  "player1": "Player 1",
+  "player2": "Player 2",
+  "score": "Score",
+  "date": "Date",
+  "noPongGames": "No Pong games found",
+  "noTicTacGames": "No TicTacToe games found",
+  "tournamet": "Tournament",
+  "tournamentsHistory": "My Tournament History",
+
+  "prepare": "Prepare",
+  "opponetName": "Opponent name"
   }
