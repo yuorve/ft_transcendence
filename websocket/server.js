@@ -87,6 +87,10 @@ wss.on('connection', (ws, request) => {
         return;
     }
 
+    players[username] = { gameId: null };
+    broadcast(JSON.stringify({ type: 'currentPlayers', players }));
+    broadcast(JSON.stringify({ type: 'currentGames', games }));
+
     const id = generatePlayerId();
     ws.id = id; // Añadir el id al objeto ws
     players[id] = { username: ws.username }; 
