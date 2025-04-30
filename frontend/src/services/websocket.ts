@@ -8,6 +8,7 @@ export const websocketState = reactive({
     socket: null as WebSocket | null,
     isConnected: false,
     messages: [] as any[], // Almacena mensajes recibidos
+    processedMessages: 0 // Contador para los mensajes procesados
 });
 
 export function useWebSocket() {

@@ -4,6 +4,19 @@ const http = require('http');
 const url = require('url');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = process.env;
+const db = require('./db');
+
+// Rest of your code remains unchanged
+function fetchProfileImage(username) {
+    return db.get('SELECT profileImage FROM users WHERE username = ?', [username])
+    .then(user => {
+   		return user?.profileImage || null;
+    })
+    .catch(error => {
+        console.error("Error al obtener imagen de perfil:", error.message);
+        return null;
+    });
+}
 
 // Función para extraer el ID del usuario de la request
 function getUserFromRequest(request) {
@@ -66,6 +79,7 @@ wss.on('connection', (ws, request) => {
                 }
             }
         });
+
         ws.username = username;
         console.log(`Usuario ${username} conectado`);
     } else {
@@ -73,50 +87,70 @@ wss.on('connection', (ws, request) => {
         return;
     }
 
-    players[username] = { gameId: null };
-    //const id = generatePlayerId();
-    //ws.id = id; // Añadir el id al objeto ws
-    //players[id] = { username: ws.username }; 
-    //console.log('User connected', id);
- 
-    //ws.send(JSON.stringify({ type: 'playerId', id: id }));
-    broadcast(JSON.stringify({ type: 'currentPlayers', players }));
-    broadcast(JSON.stringify({ type: 'currentGames', games }));
+    const id = generatePlayerId();
+    ws.id = id; // Añadir el id al objeto ws
+    players[id] = { username: ws.username }; 
+    console.log('User connected', id);
+
+    fetchProfileImage(ws.username)
+        .then(profileImage => {
+            // Añadimos la imagen de perfil al objeto del jugador
+            players[id].profileImage = profileImage || '/uploads/hello.jpg'; // Proporciona una imagen por defecto
+            
+            // Enviamos ID al cliente
+            ws.send(JSON.stringify({ type: 'playerId', id: id }));
+            
+            // Broadcast de la lista actualizada de jugadores con imágenes de perfil
+            broadcast(JSON.stringify({ type: 'currentPlayers', players }));
+            broadcast(JSON.stringify({ type: 'currentGames', games }));
+        })
+        .catch(error => {
+            console.error("Error al obtener imagen de perfil:", error);
+            // Incluso en caso de error, continuamos con una imagen por defecto
+            players[id].profileImage = '/uploads/hello.jpg';
+            
+            ws.send(JSON.stringify({ type: 'playerId', id: id }));
+            broadcast(JSON.stringify({ type: 'currentPlayers', players }));
+            broadcast(JSON.stringify({ type: 'currentGames', games }));
+        });
 
     ws.on('message', message => {
         try {
             const data = JSON.parse(message);
-            if (data.type === 'chat') {
-                if (!data.recipientId || !data.message) {
-                    console.warn("Mensaje inválido recibido:", message);
-                    return;
-                }
-                // Gestión del Chat
-                console.log(`Mensaje de ${id} a ${data.recipientId}: ${data.message}`);
-                const clientsArray = Array.from(wss.clients);
-                const recipientSocket = clientsArray.find(client => client.id === data.recipientId);
-                const senderSocket = clientsArray.find(client => client.id === id);
-                if (recipientSocket && recipientSocket.readyState === WebSocket.OPEN) {
-                    recipientSocket.send(JSON.stringify({
-                        senderId: id,
-                        message: data.message,
-                    }));
-                } else {
-                    console.log(`Usuario ${data.recipientId} no conectado o no disponible.`);
-                    if (senderSocket && senderSocket.readyState === WebSocket.OPEN) {
-                        senderSocket.send(JSON.stringify({
-                            system: true,
-                            message: `Usuario no conectado`,
-                        }));
+            if (data.type === 'globalChat') {
+                // Crear objeto de mensaje con toda la información necesaria
+                const chatMessage = {
+                    type: 'globalChat',
+                    senderId: id,
+                    username: ws.username || players[id].username,
+                    message: data.message,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Enviar a todos los clientes (incluido el remitente)
+                wss.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify(chatMessage));
                     }
-                }
-                if (senderSocket && senderSocket.readyState === WebSocket.OPEN && data.senderId !== data.recipientId) {
-                    senderSocket.send(JSON.stringify({
-                        senderId: id,
+                });
+            }
+            if (data.type === 'privateChat') {
+                const toUsername = data.to;
+                const fromUsername = ws.username;
+            
+                const recipient = Array.from(wss.clients).find(client => client.username === toUsername);
+            
+                if (recipient && recipient.readyState === WebSocket.OPEN) {
+                    // Mandar el mensaje privado al destinatario
+                    recipient.send(JSON.stringify({
+                        type: 'privateChat',
+                        from: fromUsername,
                         message: data.message,
+                        timestamp: new Date().toISOString(),
+                        openChat: data.openChat || false, // Esta flag viene del emisor
                     }));
                 }
-            }
+            }            
             if (data.type === 'newGame') {
                 // Creación de la partida
                 const gameId = data.id;
@@ -320,9 +354,9 @@ function broadcast(data, sender) {
     });
 }
 
-// function generatePlayerId() {
-//     return Math.random().toString(36).substring(2, 15);
-// }
+ function generatePlayerId() {
+     return Math.random().toString(36).substring(2, 15);
+ }
 
 // function generateGameId() {
 //     return Math.random().toString(36).substring(2, 8); // Genera id más corto para los juegos
