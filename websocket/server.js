@@ -65,7 +65,7 @@ const wss = new WebSocket.Server({
 
 let games = {}; //Partidas Activas
 let players = {}; //Jugadores en Línea
-let ball = { x: 0, y: 0, dx: 0.1, dy: 0.1 }; //Necesario para pong?
+let ball = { x: 0, y: 0, dx: 0.1, dy: 0.1 }; //Necesario para pong
 
 wss.on('connection', (ws, request) => {
     const username = getUserFromRequest(request);
@@ -87,36 +87,27 @@ wss.on('connection', (ws, request) => {
         return;
     }
 
-    players[username] = { gameId: null };
-    broadcast(JSON.stringify({ type: 'currentPlayers', players }));
-    broadcast(JSON.stringify({ type: 'currentGames', games }));
+    players[username] = { gameId: null, profileImage: null };
+    //broadcast(JSON.stringify({ type: 'currentPlayers', players }));
+    //broadcast(JSON.stringify({ type: 'currentGames', games }));
 
-    const id = generatePlayerId();
-    ws.id = id; // Añadir el id al objeto ws
-    players[id] = { username: ws.username }; 
-    console.log('User connected', id);
+    //const id = generatePlayerId();
+    //ws.id = id; // Añadir el id al objeto ws
+    //players[id] = { username: ws.username }; 
+    //console.log('User connected', id);
 
-    fetchProfileImage(ws.username)
-        .then(profileImage => {
-            // Añadimos la imagen de perfil al objeto del jugador
-            players[id].profileImage = profileImage || '/uploads/hello.jpg'; // Proporciona una imagen por defecto
-            
-            // Enviamos ID al cliente
-            ws.send(JSON.stringify({ type: 'playerId', id: id }));
-            
-            // Broadcast de la lista actualizada de jugadores con imágenes de perfil
-            broadcast(JSON.stringify({ type: 'currentPlayers', players }));
-            broadcast(JSON.stringify({ type: 'currentGames', games }));
-        })
-        .catch(error => {
-            console.error("Error al obtener imagen de perfil:", error);
-            // Incluso en caso de error, continuamos con una imagen por defecto
-            players[id].profileImage = '/uploads/hello.jpg';
-            
-            ws.send(JSON.stringify({ type: 'playerId', id: id }));
-            broadcast(JSON.stringify({ type: 'currentPlayers', players }));
-            broadcast(JSON.stringify({ type: 'currentGames', games }));
-        });
+    // fetchProfileImage(ws.username)
+    //     .then(profileImage => {
+    //         // Añadimos la imagen de perfil al objeto del jugador
+    //         players[username].profileImage = profileImage || '/uploads/hello.jpg'; // Proporciona una imagen por defecto                
+    //    })
+    //     .catch(error => {
+    //         console.error("Error al obtener imagen de perfil:", error);
+    //         // Incluso en caso de error, continuamos con una imagen por defecto
+    //         players[username].profileImage = '/uploads/hello.jpg';            
+    //     });
+        broadcast(JSON.stringify({ type: 'currentPlayers', players }));
+        broadcast(JSON.stringify({ type: 'currentGames', games }));
 
     ws.on('message', message => {
         try {

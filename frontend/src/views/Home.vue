@@ -60,7 +60,7 @@
               <td class="border px-4 py-2" v-if="game.player2">{{ game.player2 }}</td>
               <td class="border px-4 py-2" v-if="(!game.player1 || !game.player2) && game.game === 'Pong'"><router-link
                   :to="{ name: 'PongOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link></td>
-                  <td class="border px-4 py-2" v-if="(!game.player1 || !game.player2) && game.game === 'Tictactoe'"><router-link
+                  <td class="border px-4 py-2" v-if="(!game.player1 || !game.player2) && game.game === 'TicTacToe'"><router-link
                     :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link></td>
             </tr>
           </tbody>
@@ -192,8 +192,7 @@ const updateGames = () => {
 
 
 // Uso del websocket
-const token = localStorage.getItem("token") || "";
-const { websocketState: { socket } } = useWebSocket(token || '');
+const { websocketState: { socket } } = useWebSocket();
 
 if (socket) {
   socket.addEventListener('message', event => {

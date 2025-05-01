@@ -26,14 +26,50 @@ const routes = [
     component: PongOnline,   
     name: 'PongOnline',
     props: true,
+    beforeEnter: (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        next("/login");
+      } else {
+        next();
+      }
+    },
   },
   { path: "/TicTacToe-online", 
     component: TTTOnline,   
     name: 'TTTOnline',
     props: true,
+    beforeEnter: (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        next("/login");
+      } else {
+        next();
+      }
+    },
   },
-  { path: "/tournament", component: Tournament },
-  { path: "/register", component: Register },
+  { path: "/tournament", 
+    component: Tournament,
+    beforeEnter: (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        next("/login");
+      } else {
+        next();
+      }
+    },
+  },
+  { path: "/register", 
+    component: Register, 
+    beforeEnter: (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        next("/login");
+      } else {
+        next();
+      }
+    },
+  },
   {
     path: "/profile",
     component: Profile,

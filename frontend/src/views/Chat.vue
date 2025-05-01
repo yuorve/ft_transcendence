@@ -447,7 +447,7 @@ onMounted(() => {
     if (!username.value) {
         router.push("/login");
     } else {
-        connect(token);
+        //connect(token);
         updatePlayersList();
 
         // Inicializar contador de mensajes procesados si es necesario
@@ -472,7 +472,7 @@ onUnmounted(() => {
         isDesktop.value = window.innerWidth >= 768;
     });
     document.removeEventListener("click", handleClickOutside);
-    close();
+    //close();
 });
 
 const selectedUser = ref<string | null>(null);

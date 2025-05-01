@@ -6,7 +6,7 @@ async function gamesRoutes(fastify) {
   fastify.get('/games/:user', async (request, reply) => {
     try {
       const userName = request.params.user;
-      const games = await all('SELECT * FROM games WHERE player1 = ? ORDER BY id ASC', [userName]);
+      const games = await all('SELECT * FROM games WHERE player1 = ? OR player2 = ? ORDER BY id ASC', [userName, userName]);
       reply.send({ games });
     } catch (error) {
       reply.status(500).send({ error: error.message });
@@ -45,7 +45,7 @@ async function gamesRoutes(fastify) {
   fastify.put('/games/:id', async (request, reply) => {
     const { id } = request.params;
     const { player1, player2, score1, score2 } = request.body;
-
+    
     if (
       typeof player1 !== 'string' ||
       typeof player2 !== 'string' ||
@@ -53,13 +53,15 @@ async function gamesRoutes(fastify) {
       typeof score2 !== 'string'
     ) {
       return reply
-        .status(400)
-        .send({ error: 'Faltan datos: player1, player2, score1 o score2' });
+      .status(400)
+      .send({ error: 'Faltan datos: player1, player2, score1 o score2' });
     }
-
+    
     try {
       // Actualiza TODOS los campos que envías
-      await run(`UPDATE games SET player1 = ?, player2 = ?, score1   = ?, score2   = ? WHERE game = ?`, [player1, player2, score1, score2, id]);
+      await run(`UPDATE games SET player1 = ?, player2 = ?, score1 = ?, score2 = ? WHERE game = ?`, [player1, player2, score1, score2, id]);
+      console.log("actualizando partida...")
+      console.log(`UPDATE games SET player1 = ?, player2 = ?, score1 = ?, score2 = ? WHERE game = ?`, [player1, player2, score1, score2, id]);
       reply.send({ message: 'Partida actualizada correctamente' });
     } catch (error) {
       console.error('🔥 ERROR al actualizar partida:', error);

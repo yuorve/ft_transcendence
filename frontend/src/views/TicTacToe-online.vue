@@ -41,8 +41,7 @@ async function loadProfileImage() {
 }
 
 // Uso del websocket
-const token = localStorage.getItem("token") || "";
-const { websocketState: { socket } } = useWebSocket(token || '');
+const { websocketState: { socket } } = useWebSocket();
 
 if (socket) {
     socket.send(JSON.stringify({ type: gameMode, game: 'TicTacToe', id: gameid, player: username }));
@@ -56,10 +55,26 @@ if (socket) {
                 player2.value = data.id;
                 puntuation.playerTurn = 1;
                 console.log("Asignado Jugador 2");
+                createGame(
+                    gameid,
+                    "TicTacToe",
+                    -1,
+                    player1.value,      // YA tenemos username cargado
+                    player2.value,
+                    "",
+                    ""
+                );
             } else {
                 player1.value = data.id;
                 player2.value =  auth?.username || 'ErrorUser';;
                 console.log("Asignado Jugador 1");
+                updateGame(
+                    gameid,
+                    player1.value,
+                    player2.value,
+                    "",
+                    ""
+                );
             }
             loadProfileImage();
             console.log(data.id);
@@ -91,8 +106,6 @@ onMounted(() => {
         const result = initTicTacToe(); // Llamamos la función del juego
         scene = result.scene;
         engine = result.engine;
-		if (!hasQueryParams)
-			createGame(gameid, "TicTacToe", player1.value as string, player2.value as string, "", "");
     } catch (error) {
         console.error("Error al inicializar Tic Tac Toe:", error);
     }
@@ -100,8 +113,15 @@ onMounted(() => {
 
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
-  console.log("gameid en tictac es " + gameid);
-  updateGame(gameid, String(puntuation.pl), String(puntuation.pr));
+  socket.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));
+  // Actualizar partida actual
+  updateGame(
+    gameid,
+    player1.value,
+    player2.value,
+    String(puntuation.pl),
+    String(puntuation.pr)
+  );
   if (hasQueryParams) {
     setTimeout(() => {
       sendrouter.push({
