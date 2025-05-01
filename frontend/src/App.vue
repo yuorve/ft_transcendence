@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, reactive, watch, provide, computed, ref } from 
 import NavBar from "./components/NavBar.vue";
 import chat from "./views/Chat.vue";
 import Profile from "./views/Profile.vue";
-import { getProfile, API_URL } from "./api"
+import { getProfile, API_URL } from "./api";
 import { useWebSocket } from './services/websocket';
 
 const auth = reactive({
@@ -19,7 +19,7 @@ watch(
     (newToken) => {
         if (newToken) {
             console.log("conect with watch");
-            console.log(newToken);
+            //console.log(newToken);
             connect(newToken);
         } else {
             close();

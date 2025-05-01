@@ -2,18 +2,18 @@
 import { reactive } from 'vue';
 
 // Dirección del Websocket
-//const WS_URL: string = "wss://3000-yuorve-fttranscendence-mwntw4fq46g.ws-eu118.gitpod.io";
-//const WS_URL: string = "wss://websocket:3000";
-const WS_URL: string = "ws://localhost:3000";
+const WS_URL: string = "wss://" + window.location.host + "/socket";
 
 export const websocketState = reactive({
     socket: null as WebSocket | null,
     isConnected: false,
     messages: [] as any[], // Almacena mensajes recibidos
+    processedMessages: 0 // Contador para los mensajes procesados
 });
 
 export function useWebSocket() {
     const connect = (token: string) => {
+        console.log(token);
         const url = `${WS_URL}?token=${token}`;
         websocketState.socket = new WebSocket(url);
 

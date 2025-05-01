@@ -29,6 +29,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - ./backend/uploads:/app/uploads
   websocket:
     build: ./websocket
     ports:
@@ -42,6 +43,7 @@ services:
     volumes:
       - ./websocket:/app
       - /app/node_modules
+      - ./database:/database
   backend:
     build: ./backend
     depends_on:

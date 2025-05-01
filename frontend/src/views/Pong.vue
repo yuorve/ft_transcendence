@@ -3,20 +3,20 @@
     <!-- VENTANA DE SETUP -->
     <div class="w-full h-3/4 m-0 p-0 border-red-600">
       <div v-if="showSetup" class="w-full h-full flex items-center justify-center">
-        <div class="flex flex-col items-center w-[80%] md:w-1/2 lg:w-1/3 h-3/4
-    transition-[width] duration-500 ease-in-out justify-center gap-6 landscape:flex-row">
-          <h2 class="text-5xl bg-white p-4 rounded-2xl">Preparar partida</h2>
+        <div class="flex flex-col items-center w-fit h-3/4
+    transition-[width] duration-500 ease-in-out justify-center gap-6 landscape:flex-row landscape:lg:flex-col">
+          <h2 class="lg:text-5xl bg-white p-4 rounded-2xl">{{t('prepare')}} {{ t('game') }}</h2>
           <div class="bg-white w-fit h-fit p-4 flex flex-col items-center justify-center rounded-2xl gap-4">
-            <label class="text-3xl">
-              Nombre del contrincante:
+            <label class="lg:text-3xl">
+              {{t('opponetName')}}:
             </label>
             <input v-if="!isTournament" class="text-center border rounded w-full p-2 bg-gray-200" v-model="player2"
               placeholder="Escribe su nombre" />
-            <p v-else class="text-center p-2 text-2xl">{{ player2 }}</p>
+            <p v-else class="text-center p-2 lg:text-2xl">{{ player2 }}</p>
           </div>
-          <button class="text-white rounded-2xl bg-gradient-to-b from-red-600 to-red-900 p-4 text-2xl"
+          <button class="text-white rounded-2xl bg-gradient-to-b from-red-600 to-red-900 p-4 lg:text-2xl cursor-pointer"
             :disabled="!player2" @click="showSetup = false; initGame();">
-            Iniciar partida
+            {{t('start')}} {{ t('game') }}
           </button>
         </div>
 
@@ -67,7 +67,9 @@ import { Engine, Scene } from "@babylonjs/core"
 import type { Game } from "../api"
 import { getGame, getProfile, API_URL, generateId, createGame, updateGame, noPlayer, deleteGame } from "../api"
 import defaultProfile from '../assets/default-profile.png' // se podria poner las imagenes en public/assets para no tener que importar
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 const sendRouter = useRouter()
 

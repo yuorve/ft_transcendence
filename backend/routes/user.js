@@ -46,6 +46,19 @@ async function userRoutes(fastify) {
     }
   });
 
+  // Ruta para obtener l imagen de un usuario a partir del nombre
+  fastify.get('/user-image/:user', async (request, reply) => {
+    try {
+      const { user } = request.params;
+      const users = await all('SELECT profileImage FROM users WHERE username = ?', [user]);
+      const profileImage = users.length > 0 ? users[0].profileImage : null;
+
+      reply.send({ profileImage });
+    } catch (error) {
+      reply.status(500).send({ error: error.message });
+    }
+  });
+
   // Ruta para verificar si un nombre de usuario está disponible
   fastify.get('/check-username/:username', async (request, reply) => {
     try {
@@ -151,7 +164,7 @@ async function userRoutes(fastify) {
           [profileImagePath, user.id]
       );
       
-      reply.send({ success: true, message: "Imagen actualizada con éxito", profilePicture: profileImagePath });
+      reply.send({ success: true, message: "Imagen actualizada con éxito", profilePicture: proprofileImageImagePath });
     } catch (error) {
       reply.status(500).send({ error: 'Error en el servidor' });
     }

@@ -1,15 +1,18 @@
 <template>
   <div class="connection-lost">
-    <h1>Conexión Perdida</h1>
+    <h1>{{t('connectionLost')}}</h1>
     <p>
-      Tu conexión ha sido reemplazada por otra pestaña o ventana. Por favor, recarga la página para continuar.
+      {{t('connectionLostMessage')}}
     </p>
-    <button @click="reloadPage">Recargar Página</button>
+    <button @click="reloadPage">{{t('reloadPage')}}</button>
     
   </div>
 </template>
   
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
   const reloadPage = () => {
     const redirectUrl: string | null = localStorage.getItem('redirectUrl');
     localStorage.removeItem('redirectUrl');

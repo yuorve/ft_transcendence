@@ -16,7 +16,7 @@
   <script setup>
   import { ref, computed, watch, inject } from "vue";
   import { useRouter } from "vue-router";
-  import { UpdateImage } from "../api";
+  import { UpdateImage, API_URL } from "../api";
   
   const router = useRouter();
   const username = ref(localStorage.getItem("username") || "");
@@ -41,9 +41,8 @@
   
 	  const response = await UpdateImage(formData);
 	   if (response.data.success) {
-		   alert(response.data.message);
-		   alert(response.data.profilePicture);
-		   setProfileImage(response.data.profilePicture);
+		   alert(response.data.message);		   
+		   setProfileImage(`${API_URL}${response.data.profilePicture}`);		   
 		router.push("/profile"); // Redirige al profile tras actualizar
 	  } else {
 		alert('Error al actualizar la imagen: ' + respuesta.data.message);

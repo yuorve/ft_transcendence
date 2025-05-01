@@ -11,6 +11,7 @@ import Chat from "./views/Chat.vue";
 import Pong from "./views/Pong.vue";
 import PongOnline from "./views/Pong-online.vue";
 import TicTacToe from "./views/TicTacToe.vue";
+import TTTOnline from "./views/TicTacToe-online.vue";
 import Tournament from "./views/Tournament.vue";
 import Friends from "./views/Friends.vue";
 import ConnectionLost from "./views/ConnectionLost.vue";
@@ -21,9 +22,14 @@ const routes = [
   { path: "/", component: Home },
   { path: "/login", component: Login },
   { path: "/connection-lost", component: ConnectionLost},
-  { path: "/pong-online/:game", 
+  { path: "/pong-online", 
     component: PongOnline,   
     name: 'PongOnline',
+    props: true,
+  },
+  { path: "/TicTacToe-online", 
+    component: TTTOnline,   
+    name: 'TTTOnline',
     props: true,
   },
   { path: "/tournament", component: Tournament },

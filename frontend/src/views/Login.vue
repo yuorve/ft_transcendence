@@ -73,28 +73,28 @@ const callback = (response) => {
 </script>
 
 <template>
-  <div class="login-container flex flex-col justify-center items-center p-5 bg-amber-300">
-    <h2>{{ $t("login") }}</h2>
-
-    <!-- Formulario de Login con Usuario y Contraseña -->
-    <div class="login-form flex flex-col gap-7 w-70 items-center mt-4">
-      <input id="userLog" v-model="username" type="text" :placeholder="$t('user')"
-        class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700" />
-      <input id="passLog" v-model="password" type="password" :placeholder="$t('password')"
-        class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700" />
-      <button @click="handleLogin"
-        class="active:translate-y-0.5 bg-green-400 active:bg-green-500 w-35 h-10 rounded-md border-1 border-green-600 shadow-md">{{ $t("login") }}</button>
+  <div class="login-container flex flex-col justify-center items-center p-5 h-screen w-screen">
+    <div class="w-[80%] lg:w-fit lg:p-15 items-center justify-center flex flex-col bg-amber-300 gap-3 rounded-2xl shadow-2xl transition-[width, hight] duration-500">
+      <h2 class="portrait:mt-5 lg:text-2xl"><strong>{{ $t("login") }}</strong></h2>
+  
+      <!-- Formulario de Login con Usuario y Contraseña -->
+      <div class="login-form flex flex-col gap-4 lg:gap-3 w-full items-center">
+        <input id="userLog" v-model="username" type="text" :placeholder="$t('user')"
+          class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700" />
+        <input id="passLog" v-model="password" type="password" :placeholder="$t('password')"
+          class="bg-white h-10 rounded-md text-m border-1 border-gray-300 shadow-md focus:outline-1 focus:outline-gray-700" />
+        <button @click="handleLogin"
+          class="active:translate-y-0.5 bg-green-400 active:bg-green-500 w-35 h-10 rounded-md border-1 border-green-600 shadow-md">{{ $t("login") }}</button>
+      </div>
+      <p class="separator text-md">O</p>
+      <!-- Botón de Google Sign-In -->
+      <GoogleLogin :callback="callback" class="shadow-md" />
+      <p class="text-sm text-center">
+        {{ $t("notAcc") }}
+        <router-link to="/register" class="text-blue-500 hover:underline portrait:mb-5">{{ $t("regHere") }}</router-link>
+      </p>
+  
+      <p class="text-red-500 portrait:mb-5 text-center">{{ message }}</p>
     </div>
-
-    <p class="separator m-3 text-md text-gray-500">O</p>
-
-    <!-- Botón de Google Sign-In -->
-    <GoogleLogin :callback="callback" class="shadow-md" />
-    <p class="text-sm text-center mt-4">
-      {{ $t("notAcc") }}
-      <router-link to="/register" class="text-blue-500 hover:underline">{{ $t("regHere") }}</router-link>
-    </p>
-
-    <p class="text-red-500 mt-3">{{ message }}</p>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, inject } from 'vue'
-import { useRouter, RouterLink, RouterView } from 'vue-router'
+import { useRouter, RouterLink, RouterView, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { API_URL, getUser } from '../api'        // tu helper que llama a GET /user/:username
 import { initLanguage } from '../i18n'  // función para fijar el idioma global
@@ -67,11 +67,36 @@ const movSel = computed(() => {
           router.currentRoute.value.path == '/profile' ? t('profile') :
             "unkown";
 });
+
+const selectedRoute = ref('');
+const route = useRoute();
+// Actualizar automáticamente selectedRoute cuando cambia la ruta
+watch(
+  () => route.path,
+  (newPath) => {
+    selectedRoute.value = newPath;
+  },
+  { immediate: true }
+);
+
+// Cambiar de ruta al cambiar el <select>
+const onRouteChange = () => {
+  if (selectedRoute.value) {
+    router.push(selectedRoute.value);
+  }
+};
+
+const translatedRouteName = computed(() => {
+  const path = route.path.substring(1); // quitamos la primera '/'
+  
+  // Usamos el sistema de traducción
+  return t(`routes.${path}`);
+});
 </script>
 
 <template>
   <nav v-if="isAuthenticated"
-    class="bg-gradient-to-r from-blue-500 to-blue-900 flex w-full h-18 p-3 px-0 border-amber-300 border">
+    class="bg-gradient-to-r from-blue-500 to-blue-900 flex w-screen h-18 p-3 px-0 border-amber-300 border">
     <div class="hidden justify-evenly items-center w-3/4 sm:flex" v-if="isAuthenticated">
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/">{{ t('start') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/friends">Amigos</RouterLink>
@@ -81,24 +106,21 @@ const movSel = computed(() => {
       <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white text-center" to="/tournament">{{ t('tournament') }}
       </RouterLink>
     </div>
-    <!-- <div class="flex ml-8 items-center w-400" v-else>
-      <RouterLink class="bg-green-600 p-3 rounded-xl text-white" to="/login">{{ t('start') }}</RouterLink>
-    </div> -->
-    <details v-if="isAuthenticated" class="flex items-center w-3/4 sm:hidden relative z-50">
-      <summary class="list-none cursor-pointer bg-red-600 p-3 w-fit rounded-xl text-white ml-3">
-        <p>{{ movSel }}</p>
-      </summary>
-      <div
-        class="absolute top-full left-4 z-50 flex flex-col border-1 p-2 mt-1 w-auto -translate-x-1 gap-2 bg-gray-300 rounded-lg">
-        <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/">{{ t('start') }}</RouterLink>
-        <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/friends">Amigos</RouterLink>
-        <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/Pong">{{ t('pong') }}</RouterLink>
-        <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/Tictactoe">{{ t('tictac') }}
-        </RouterLink>
-        <RouterLink class="bg-yellow-400 p-3 rounded-xl text-white text-center" to="/tournament">{{ t('tournament') }}
-        </RouterLink>
-      </div>
-    </details>
+    <div class="w-full sm:hidden flex justify-left items-center gap-5">
+      <select v-if="isAuthenticated" v-model="selectedRoute" @change="onRouteChange"
+        class="w-fit text-center p-2 ml-4 h-12 rounded-xl bg-red-600 text-white cursor-pointer">
+        <option v-if="!['/', '/friends', '/Pong', '/Tictactoe', '/tournament'].includes(selectedRoute)"
+          :value="selectedRoute" disabled>
+          {{ translatedRouteName }}
+        </option>
+        <option value="/">{{ t('start') }}</option>
+        <option value="/friends">{{ t('friends') }}</option>
+        <option value="/Pong">{{ t('pong') }}</option>
+        <option value="/Tictactoe">{{ t('tictac') }}</option>
+        <option class="bg-amber-300" value="/tournament">{{ t('tournament') }}</option>
+      </select>
+
+    </div>
     <div class="flex flex-1 justify-center items-center sm:gap-5 gap-1">
       <div v-if="isAuthenticated"
         class="h-12 flex gap-2 mr-5 sm:pr-2 sm:w-auto items-center justify-center bg-red-600 rounded-l-4xl rounded-r-md text-white">
