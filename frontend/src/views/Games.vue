@@ -175,7 +175,7 @@ onMounted(async () => {
 // Filtros para cada tipo de juego
 const normalPongGames = computed(() =>
 	allGames.value.filter(
-		g => g.type === 'pong' && g.score1 !== '' && g.score2 !== '' && Number(g.game_order) === -1
+		g => g.type === 'Pong' && g.score1 !== '' && g.score2 !== '' && Number(g.game_order) === -1
 	)
 )
 const normalTicTacToeGames = computed(() =>

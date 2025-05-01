@@ -30,8 +30,8 @@ if (!auth) {
 const gameMode = route.query.mode;
 const defaultProfileImage = "/src/assets/default-profile.png";
 
-const player1 = ref<string>(String(route.query.player1 || ""));
-const player2 = ref<string>(String(route.query.player2 || ""));
+const player1 = ref<string>(String(route.query.player1 || "Jugador1"));
+const player2 = ref<string>(String(route.query.player2 || "Jugador2"));
 const profileImageP1 = ref<string>(String(defaultProfileImage));
 const profileImageP2 = ref<string>(String(defaultProfileImage));
 
@@ -48,8 +48,7 @@ async function loadProfileImage() {
 }
 
 // Uso del websocket
-const token = localStorage.getItem("token") || "";
-const { websocketState: { socket } } = useWebSocket(token || '');
+const { websocketState: { socket } } = useWebSocket();
 
 let syncInterval: number | null = null;
 
@@ -69,6 +68,15 @@ if (socket) {
               puntuation.playerPaddle = scene.getMeshByName("paddle1");
               //@ts-ignore
               puntuation.opponentPaddle = scene.getMeshByName("paddle2");
+              createGame(
+                gameid,
+                "Pong",
+                -1,
+                player1.value,      // YA tenemos username cargado
+                player2.value,
+                "",
+                ""
+              );
           } else {
               player1.value = data.id;
               player2.value = auth?.username || 'ErrorUser';;
@@ -77,6 +85,13 @@ if (socket) {
               puntuation.playerPaddle = scene.getMeshByName("paddle2");
               //@ts-ignore
               puntuation.opponentPaddle = scene.getMeshByName("paddle1");
+              updateGame(
+                gameid,
+                player1.value,
+                player2.value,
+                "",
+                ""
+              );
               setTimeout(() => {
                 socket.send(JSON.stringify({ type: 'startGame', gameId: gameid }));
             }, 100);          
@@ -163,8 +178,6 @@ onMounted(() => {
     const result = initPong(); // Llamamos la función del juego
     scene = result.scene;
     engine = result.engine;
-    if (!hasQueryParams)
-      createGame(gameid, "pong", player1 as string, player2 as string, "", "");
   } catch (error) {
     console.error("Error al inicializar Pong:", error);
   }
@@ -191,12 +204,18 @@ onUnmounted(() => {
 
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
-  console.log("gameid en pong es " + gameid);
-  updateGame(gameid, String(puntuation.pl), String(puntuation.pr));
+  socket.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));
+  updateGame(
+    gameid,
+    player1.value,
+    player2.value,
+    String(puntuation.pl),
+    String(puntuation.pr)
+  );
   if (hasQueryParams) {
     setTimeout(() => {
       sendrouter.push({
-        path: "/Tournament",
+        path: "/",
       });
     }, 2000);
   }

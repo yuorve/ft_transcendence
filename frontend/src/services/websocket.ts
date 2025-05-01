@@ -55,6 +55,9 @@ export function useWebSocket() {
         websocketState.socket.addEventListener('close', () => {
             console.log('WebSocket closed');
             websocketState.isConnected = false;
+            localStorage.removeItem("username");
+            localStorage.removeItem("token");
+            window.location.reload();
         });
     };
 
