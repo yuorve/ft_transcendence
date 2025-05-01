@@ -14,11 +14,16 @@ export const registerUser = async (formData: FormData) => {
 };
 
 export const UpdateImage = async (formData: FormData) => {
-  return axios.post(`${API_URL}/update-profile`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  try {
+    return axios.post(`${API_URL}/update-profile`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  }  catch (error) {
+    console.error("Error al actualizar la imagen:", error);
+    throw new Error("Error Actualizando.");
+  }
 };
 
 export const UpdatePassword = async (formData: FormData) => {
