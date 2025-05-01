@@ -87,7 +87,7 @@ wss.on('connection', (ws, request) => {
         return;
     }
 
-    players[username] = { gameId: null, profileImage: null };
+    players[username] = { gameId: null, profileImage: null, username: username };
     //broadcast(JSON.stringify({ type: 'currentPlayers', players }));
     //broadcast(JSON.stringify({ type: 'currentGames', games }));
 
@@ -106,8 +106,8 @@ wss.on('connection', (ws, request) => {
     //         // Incluso en caso de error, continuamos con una imagen por defecto
     //         players[username].profileImage = '/uploads/hello.jpg';            
     //     });
-        broadcast(JSON.stringify({ type: 'currentPlayers', players }));
-        broadcast(JSON.stringify({ type: 'currentGames', games }));
+    broadcast(JSON.stringify({ type: 'currentPlayers', players }));
+    broadcast(JSON.stringify({ type: 'currentGames', games }));
 
     ws.on('message', message => {
         try {
@@ -116,8 +116,8 @@ wss.on('connection', (ws, request) => {
                 // Crear objeto de mensaje con toda la información necesaria
                 const chatMessage = {
                     type: 'globalChat',
-                    senderId: id,
-                    username: ws.username || players[id].username,
+                    senderId: username,
+                    username: ws.username || players[username].username,
                     message: data.message,
                     timestamp: new Date().toISOString()
                 };
