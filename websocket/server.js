@@ -6,18 +6,6 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = process.env;
 const db = require('./db');
 
-// Rest of your code remains unchanged
-function fetchProfileImage(username) {
-    return db.get('SELECT profileImage FROM users WHERE username = ?', [username])
-    .then(user => {
-   		return user?.profileImage || null;
-    })
-    .catch(error => {
-        console.error("Error al obtener imagen de perfil:", error.message);
-        return null;
-    });
-}
-
 // Función para extraer el ID del usuario de la request
 function getUserFromRequest(request) {
     // Obtener el token
@@ -87,25 +75,7 @@ wss.on('connection', (ws, request) => {
         return;
     }
 
-    players[username] = { gameId: null, profileImage: null, username: username };
-    //broadcast(JSON.stringify({ type: 'currentPlayers', players }));
-    //broadcast(JSON.stringify({ type: 'currentGames', games }));
-
-    //const id = generatePlayerId();
-    //ws.id = id; // Añadir el id al objeto ws
-    //players[id] = { username: ws.username }; 
-    //console.log('User connected', id);
-
-    // fetchProfileImage(ws.username)
-    //     .then(profileImage => {
-    //         // Añadimos la imagen de perfil al objeto del jugador
-    //         players[username].profileImage = profileImage || '/uploads/hello.jpg'; // Proporciona una imagen por defecto                
-    //    })
-    //     .catch(error => {
-    //         console.error("Error al obtener imagen de perfil:", error);
-    //         // Incluso en caso de error, continuamos con una imagen por defecto
-    //         players[username].profileImage = '/uploads/hello.jpg';            
-    //     });
+    players[username] = { gameId: null, username: username };
     broadcast(JSON.stringify({ type: 'currentPlayers', players }));
     broadcast(JSON.stringify({ type: 'currentGames', games }));
 

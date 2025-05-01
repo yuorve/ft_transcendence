@@ -11,6 +11,7 @@ import {
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useWebSocket, websocketState } from "../services/websocket";
+import { getUserImage } from "../api";
 
 const route = useRoute();
 const router = useRouter();
@@ -55,6 +56,28 @@ interface PrivateChat {
     firstUnreadIndex: number; // Nuevo: Índice del primer mensaje no leído
 }
 const privateChats = ref<PrivateChat[]>([]);
+
+// Objeto para almacenar las imágenes de perfil cargadas
+const profileImages = ref<Record<string, string>>({});
+
+async function loadProfileImage(username: string) {
+    try {
+        if (!profileImages.value[username]) {
+            // Solo cargar si no está ya cargada
+            const imageUrl = await getUserImage(username);
+            if (imageUrl) {
+                console.log("Imagen de perfil cargada:", imageUrl.profileImage);
+                profileImages.value[username] = imageUrl.profileImage;
+            } else {
+                // Imagen por defecto si no se puede cargar
+                profileImages.value[username] = '/uploads/hello.jpg';
+            }
+        }
+    } catch (error) {
+        console.error("Error al cargar la imagen de perfil:", error);
+        profileImages.value[username] = '/uploads/hello.jpg';
+    }
+}
 
 // Array separado para chats minimizados (aparecerán en la barra inferior)
 const minimizedChatsVisible = computed(() => {
@@ -463,6 +486,11 @@ onMounted(() => {
         window.addEventListener("resize", () => {
             isDesktop.value = window.innerWidth >= 768;
         });
+
+        for (const playerId in players.value) {
+            loadProfileImage(players.value[playerId].username);
+        }
+
         document.addEventListener("click", handleClickOutside);
     }
 });
@@ -480,6 +508,9 @@ const tooltipRefs = ref<Record<string, HTMLElement | null>>({});
 
 function toggleTooltip(username: string) {
     selectedUser.value = selectedUser.value === username ? null : username;
+    if (selectedUser.value) {
+        loadProfileImage(username);
+    }
 }
 
 // Cierra el tooltip si se hace clic fuera
@@ -617,7 +648,7 @@ function argo(username: string) {
                                 class="absolute z-50 flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs w-32 sm:w-40 top-full left-0 mt-1 items-center"
                             >
                                 <img
-                                    :src="player.profileImage"
+                                    :src="profileImages[player.username]"
                                     alt="Avatar"
                                     class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-gray-300"
                                 />
