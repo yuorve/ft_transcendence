@@ -164,7 +164,7 @@ async function userRoutes(fastify) {
           [profileImagePath, user.id]
       );
       
-      reply.send({ success: true, message: "Imagen actualizada con éxito", profilePicture: proprofileImageImagePath });
+      reply.send({ success: true, message: "Imagen actualizada con éxito", profilePicture: profileImagePath });
     } catch (error) {
       reply.status(500).send({ error: 'Error en el servidor' });
     }

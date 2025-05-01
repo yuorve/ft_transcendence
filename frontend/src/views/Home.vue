@@ -40,19 +40,24 @@
       </div>
       <div class="container mx-auto p-4 border-2 bg-amber-300 rounded-xl">
         <h1 class="text-2xl font-bold mb-4">Juegos en Curso</h1>
-        <td class="border px-4 py-2">
-          <router-link :to="{ name: 'PongOnline', query: { mode: 'joinGame', gameid: randomAvailableGameId } }"
-            :class="randomAvailableGameId ? 'bg-green-600' : 'bg-gray-400 pointer-events-none'">
-            🎮 Pong aleatorio
-          </router-link>
-        </td>
-
-        <td class="border px-4 py-2">
-          <router-link :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: randomAvailableGameId } }"
-            :class="randomAvailableGameId ? 'bg-green-600' : 'bg-gray-400 pointer-events-none'">
-            🎮 TTT aleatorio
-          </router-link>
-        </td>
+        <div class="border-2">
+          
+          <div>
+            <td class="border px-4 py-2">
+              <router-link :to="{ name: 'PongOnline', query: { mode: 'joinGame', gameid: randomPongGameId } }"
+                :class="randomPongGameId ? 'bg-green-600' : 'bg-gray-400 pointer-events-none'">
+                🎮 Pong aleatorio
+              </router-link>
+            </td>
+    
+            <td class="border px-4 py-2">
+              <router-link :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: randomTTTGameId } }"
+                :class="randomTTTGameId ? 'bg-green-600' : 'bg-gray-400 pointer-events-none'">
+                🎮 TTT aleatorio
+              </router-link>
+            </td>
+          </div>
+        </div>
         <div v-if="!gamesArray" class="text-gray-600">
           Cargando partidas...
         </div>
@@ -90,7 +95,7 @@
 
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { getFriends, getBlocked, noPlayer } from '../api';
 import { useWebSocket } from '../services/websocket';
 
@@ -173,58 +178,74 @@ const updateGames = () => {
   }
 };
 
-const randomAvailableGameId = computed(() => {
-  const gamesString = localStorage.getItem("games");
-  if (!gamesString) {
-    console.error("No hay partidas disponibles en localStorage");
-    return null;
-  }
+function useRandomAvailableGameId(gameType: string) {
+  return computed(() => {
+    if (!games.value || Object.keys(games.value).length === 0) {
+      return null;
+    }
 
-  try {
-    console.warn("SI hay partidas disponibles en localStorage");
-    const games = JSON.parse(gamesString);
-    console.log("Partidas actuales:", games);
-    const availableGames = Object.entries(games)
+    const availableGames = Object.entries(games.value)
       .map(([id, game]: any) => ({ id, ...game }))
-      .filter((game) => game.player2 === null);
-    console.log("Partidas mapeadas:", availableGames);
+      .filter((game) => game.player2 === null && game.game === gameType);
+
     if (availableGames.length === 0) {
-      console.warn("No hay partidas disponibles para unirse");
       return null;
     }
 
     const randomGame = availableGames[Math.floor(Math.random() * availableGames.length)];
-    console.warn("Partida aleatoria seleccionada:", randomGame);
     return randomGame.id;
-  } catch (e) {
-    console.error("Error leyendo partidas:", e);
-    return null;
-  }
-});
+  });
+}
+const gamesLoaded = ref(false);
+const randomPongGameId = useRandomAvailableGameId('pong');
+const randomTTTGameId = useRandomAvailableGameId('TicTacToe');
 
 // Uso del websocket
 const { websocketState: { socket } } = useWebSocket();
 
-if (socket) {
-  socket.addEventListener('message', event => {
-    const data = JSON.parse(event.data);
-    console.log(data);
-    if (data.type === 'currentPlayers') {
-      localStorage.setItem('players', JSON.stringify(data.players));
-      updatePlayers();
-      console.log('Players stored:', data.players);
-    }
-    if (data.type === 'currentGames') {
-      localStorage.setItem('games', JSON.stringify(data.games));
-      updateGames();
-      console.log('Games stored:', data.games);
-    }
-  });
-};
+watch(
+  () => socket,
+  (ws) => {
+    if (!ws) return;
+
+    ws.addEventListener('message', (event) => {
+      const data = JSON.parse(event.data);
+      console.log(data);
+
+      if (data.type === 'currentPlayers') {
+        localStorage.setItem('players', JSON.stringify(data.players));
+        updatePlayers();
+        console.log('Players stored:', data.players);
+      }
+
+      if (data.type === 'currentGames') {
+        games.value = data.games;
+        gamesLoaded.value = true;
+        localStorage.setItem('games', JSON.stringify(data.games));
+        updateGames();
+        console.log('Games stored:', data.games);
+      }
+    });
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   updatePlayers();
   updateGames();
+    // Si ya hay datos, considerar que están cargados
+    const local = localStorage.getItem("games");
+  if (local) {
+    try {
+      const parsed = JSON.parse(local);
+      if (Object.keys(parsed).length > 0) {
+        games.value = parsed;
+        gamesLoaded.value = true; // ✅ activa visualmente los botones
+      }
+    } catch {
+      console.warn("No se pudieron parsear las partidas locales");
+    }
+  }
 });
 
 </script>

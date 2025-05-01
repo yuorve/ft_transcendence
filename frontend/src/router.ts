@@ -61,14 +61,6 @@ const routes = [
   },
   { path: "/register", 
     component: Register, 
-    beforeEnter: (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        next("/login");
-      } else {
-        next();
-      }
-    },
   },
   {
     path: "/profile",
