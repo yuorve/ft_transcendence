@@ -49,10 +49,15 @@ if (socket) {
         const data = JSON.parse(event.data);
         console.log(data);
         if (data.type === 'newPlayer') {
+            puntuation.pl = 0;
+            puntuation.pr = 0;
+            puntuation.gameOver = 0;
             console.log("Nuevo Jugador");
             if ( gameMode === 'newGame' ) {
-                player1.value = auth?.username || 'ErrorUser';;
+                player1.value = auth?.username || 'ErrorUser';
                 player2.value = data.id;
+                //Si queremos que sea aleatorio --> Math.random() > 0.5 ? 1 : 2;
+                puntuation.playerFigure = 1;
                 puntuation.playerTurn = 1;
                 console.log("Asignado Jugador 2");
                 createGame(
@@ -66,7 +71,9 @@ if (socket) {
                 );
             } else {
                 player1.value = data.id;
-                player2.value =  auth?.username || 'ErrorUser';;
+                player2.value =  auth?.username || 'ErrorUser';
+                puntuation.playerFigure = 2;
+                puntuation.playerTurn = 0;
                 console.log("Asignado Jugador 1");
                 updateGame(
                     gameid,
@@ -80,28 +87,20 @@ if (socket) {
             console.log(data.id);
         } else if (data.type === 'opponentDisconnected' || data.type === 'gameAborted') {
             puntuation.gameOver = 1;
-            alert("Oponente Desconectado");
             setTimeout(() => {
                 sendrouter.push({
                     path: "/",
                 });
             }, 500);
+            alert("Oponente Desconectado");
         }
     });
 }
 
 onMounted(() => {
     try {
-        //Si queremos que sea aleatorio --> Math.random() > 0.5 ? 1 : 2;
-        if (gameMode === 'newGame') {            
-            puntuation.playerFigure = 1;
-        } else {
-            puntuation.playerFigure = 2;
-        }
-        puntuation.pl = 0;
-        puntuation.pr = 0;
-        puntuation.playerTurn = 0;        
-        puntuation.gameOver = 0;        
+        puntuation.playerTurn = 0;
+        puntuation.gameOver = 0;
         puntuation.online = 1;
         const result = initTicTacToe(); // Llamamos la función del juego
         scene = result.scene;
@@ -113,7 +112,6 @@ onMounted(() => {
 
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
-  socket.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));
   // Actualizar partida actual
   updateGame(
     gameid,
@@ -196,7 +194,8 @@ watch(
                         };
                         if (socket) {
                             if (puntuation.playerFigure === nuevoElemento) {
-                                socket.send(JSON.stringify({ type: 'opponentMove', gameId: gameid, x: cell }));
+                                //socket.send(JSON.stringify({ type: 'opponentMove', gameId: gameid, x: cell }));
+                                //Al final es mejor hacer esto desde dentro del juego porque a veces no lo detecta
                             }
                             if (puntuation.gameOver === 1) {
                                 socket.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));

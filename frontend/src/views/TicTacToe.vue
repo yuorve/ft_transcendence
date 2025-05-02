@@ -107,6 +107,8 @@ onMounted(async () => {
   }
 
   // 6. Inicializar la escena de 3 en raya
+  puntuation.playerTurn = 1;
+  puntuation.online = 0;
   try {
     const { scene: s, engine: eng } = initTicTacToe();
     scene = s;
