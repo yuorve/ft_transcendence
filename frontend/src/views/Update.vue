@@ -48,7 +48,8 @@
 		alert('Error al actualizar la imagen: ' + respuesta.data.message);
 	  }
 	} catch (error) {
-	  console.error("Error en al actualizar:", error);
+	  alert('Error al actualizar la imagen: Es demasiado grande');
+	  console.error("Error al actualizar:", error);
 	}
   };
   </script>
