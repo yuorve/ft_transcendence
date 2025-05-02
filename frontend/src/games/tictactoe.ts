@@ -8,10 +8,13 @@ import { useWebSocket } from '../services/websocket';
 export const puntuation = reactive({
     pl: 0,
     pr: 0,
+    gameState: 'playing',
+	gameMode: 'newGame',
     playerTurn: 1,
     playerFigure: 1,
     gameOver: 0,
     online: 0,
+    isHost: false
 });
 
 export const matriz = ref<number[][]>([
@@ -68,10 +71,9 @@ export default function initTicTacToe() {
         }
 
         //SOCKET
-        const token = localStorage.getItem("token") || "";
-        const { websocketState: { socket } } = useWebSocket(token || '');
+        const { websocketState: { socket } } = useWebSocket();
         
-        if (socket) {            
+        if (socket) {
             socket.addEventListener('message', event => {
                 const data = JSON.parse(event.data);
                 console.log(data);
@@ -96,6 +98,7 @@ export default function initTicTacToe() {
                             puntuation.pr++;
                             createCircle(0, 0, -3, butSize);
                         }
+                        puntuation.gameOver = 1;
                     }                    
                     figure = (figure === 1) ? 2 : 1;
                 }
@@ -239,6 +242,13 @@ export default function initTicTacToe() {
                 buttons[i][x].onPointerUpObservable.add(() => {
                     // CHECKING TURN
                     if (puntuation.playerTurn == 1 || puntuation.online === 0) {
+                        if (socket) {
+                            const cell = {
+                                i: i,
+                                j: x
+                            };
+                            socket.send(JSON.stringify({ type: 'opponentMove', gameId: 'gameid', x: cell }));
+                        }
                         console.log("Crea figura");
                         createFigure(buttons[i][x].position.x, buttons[i][x].position.y, 0);
                         matriz.value[i][x] = figure;

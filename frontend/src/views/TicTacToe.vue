@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 import initTicTacToe from "../games/tictactoe";
 import { Engine, Scene } from "@babylonjs/core";
 import { getProfile, API_URL, createGame, generateId, updateGame, getGame, deleteGame, noPlayer } from "../api";
@@ -7,7 +7,9 @@ import { useRoute, useRouter } from "vue-router";
 import { puntuation } from "../games/tictactoe";
 import defaultProfile from '../assets/default-profile.png' // se podria poner las imagenes en public/assets para no tener que importar
 import type { Game } from "../api"
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 const sendRouter = useRouter()
 
@@ -27,7 +29,7 @@ const player2 = ref<string>("Invitado")
 const profileImage = ref<string>("")
 const username = ref<string>("")
 
-
+const showSetup = ref(true);
 // Obtener la imagen de perfil desde la API cuando el componente se monta
 onMounted(async () => {
   // 1. Cargar perfil y usuario (redirige al login si no hay token válido)
@@ -107,6 +109,8 @@ onMounted(async () => {
   }
 
   // 6. Inicializar la escena de 3 en raya
+  puntuation.playerTurn = 1;
+  puntuation.online = 0;
   try {
     const { scene: s, engine: eng } = initTicTacToe();
     scene = s;
@@ -130,6 +134,21 @@ onUnmounted(() => {
   puntuation.pl = 0
   puntuation.pr = 0
 })
+
+function initGame() {
+
+nextTick(() => {
+  try {
+    puntuation.gameState = 'playing';
+     puntuation.online = 0;
+    const { scene: s, engine: eng } = initTicTacToe();
+    scene = s;
+    engine = eng;
+  } catch (e) {
+    console.error("Error initializing Pong:", e);
+  }
+})
+}
 
 const sendPunt = async (winner: string) => {
   // Actualizar partida actual
@@ -156,7 +175,7 @@ const sendPunt = async (winner: string) => {
 
   setTimeout(() => {
     if (route.query.isTournament === "true") {
-      sendRouter.push({ path: "/Tournament", query:{ isTournament: "true"} })
+      sendRouter.push({ path: "/Tournament", query: { isTournament: "true" } })
     }
   }, 2000)
 }
@@ -170,30 +189,63 @@ watch(
   (newVal) => newVal >= 1 && sendPunt(player2.value)
 )
 </script>
-
 <template>
-  <div class="flex h-full">
-    <div class="w-1/6 flex flex-col bg-gradient-to-b from-blue-400 to-transparent">
-      <div class="w-full h-80 flex flex-col gap-10 justify-center items-center">
-        <img :src="profileImage" alt="Profile Image" class=" w-30 h-30 rounded-full shadow-2xl border-2">
-        <p class="bg-blue-200 border-1 border-blue-700 shadow-2xl rounded-md p-1">{{ player1 }}</p>
+  <div class="flex flex-col h-screen w-full m-0 p-0 leading-none overflow-hidden">
+    <!-- VENTANA DE SETUP -->
+    <div class="w-full h-3/4 m-0 p-0 border-red-600">
+      <div v-if="showSetup" class="w-full h-full flex items-center justify-center">
+        <div class="flex flex-col items-center w-fit h-3/4
+    transition-[width] duration-500 ease-in-out justify-center gap-6 landscape:flex-row landscape:lg:flex-col">
+          <h2 class="lg:text-5xl bg-white p-4 rounded-2xl">{{t('prepare')}} {{ t('game') }}</h2>
+          <div class="bg-white w-fit h-fit p-4 flex flex-col items-center justify-center rounded-2xl gap-4">
+            <label class="lg:text-3xl">
+              {{t('opponetName')}}:
+            </label>
+            <input v-if="!isTournament" class="text-center border rounded w-full p-2 bg-gray-200" v-model="player2"
+              placeholder="Escribe su nombre" />
+            <p v-else class="text-center p-2 lg:text-2xl">{{ player2 }}</p>
+          </div>
+          <button class="text-white rounded-2xl bg-gradient-to-b from-red-600 to-red-900 p-4 lg:text-2xl cursor-pointer"
+            :disabled="!player2" @click="showSetup = false; initGame();">
+            {{t('start')}} {{ t('game') }}
+          </button>
+        </div>
+
       </div>
-      <div class="border-3 w-full flex-1 flex justify-center">stadistics</div>
+      <!-- Lienzo de Pong, solo se inserta tras pulsar “Iniciar partida” -->
+      <div v-else class="w-full h-full flex items-center justify-center">
+        <canvas id="renderCanvas" class="block w-full h-full outline-none"></canvas>
+      </div>
     </div>
-    <div class="flex flex-col flex-1 m-0 p-0 h-full border-l-3 border-l-blue-700 border-r-3 border-r-amber-700">
-      <div class="border-b-3 border-b-gray-700 h-full">
-        <canvas id="renderCanvas" class="w-full h-full outline-none"></canvas>
+    <div class="w-full h-1/4 m-0 p-0">
+      <div class="flex items-center justify-center bg-gradient-to-r from-blue-700 to-amber-400 w-full h-full p-2">
+        <div class="w-1/3 h-full flex justify-center gap-5 items-center">
+          <img :src="profileImage" alt="Profile image"
+            class="md:h-[80%] aspect-square rounded-full shadow-2xl border-2 hidden md:block" />
+          <p
+            class="md:text-3xl lg:text-5xl text-2xl bg-blue-200 border-1 p-2 border-blue-700 shadow-2xl rounded-md max-w-lg truncate">
+            {{ player1 }}
+          </p>
+        </div>
+        <div class="w-1/3 flex justify-around">
+          <h1 class="text-5xl lg:text-8xl">{{ puntuation.pl }} - {{ puntuation.pr }}</h1>
+        </div>
+        <div class="w-1/3 h-full flex justify-center gap-5 items-center">
+          <p
+            class="md:text-3xl lg:text-5xl text-2xl bg-amber-200 border-1 p-2 border-amber-700 shadow-2xl rounded-md max-w-lg truncate">
+            {{ player2 }}
+          </p>
+          <img :src="defaultProfile" alt="2nd player"
+            class="md:h-[80%] aspect-square rounded-full shadow-2xl border-2 hidden md:block" />
+        </div>
       </div>
-      <!-- <div class="bg-gradient-to-b from-gray-400 to-transparent w-full h-1/4">
-			contador 3 en raya boton de reiniciar?
-			</div> -->
     </div>
-    <div class="w-1/6 flex flex-col bg-gradient-to-b from-amber-400 to-transparent ">
-      <div class="w-full h-80 flex flex-col gap-10 justify-center items-center">
-        <img src="../assets/default-profile.png" alt="Guest Image" class=" w-30 h-30 rounded-full shadow-2xl border-2">
-        <p class="bg-amber-200 border-1 border-amber-700 shadow-2xl rounded-md p-1">{{ player2 }}</p>
-      </div>
-      <div class="border-3 w-full flex-1 flex justify-center">stadistics</div>
+    <div
+      class="absolute w-full h-full text-9xl flex flex-col text-center items-center justify-center pointer-events-none"
+      v-if="puntuation.pl >= 5 || puntuation.pr >= 5">
+      <h1>FIN DE LA PARTIDA</h1>
+      <h2 v-if="puntuation.pl >= 5">GANADOR {{ player1 }}</h2>
+      <h2 v-else>GANADOR {{ player2 }}</h2>
     </div>
   </div>
 </template>

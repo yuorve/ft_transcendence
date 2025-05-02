@@ -213,9 +213,24 @@ wss.on('connection', (ws, request) => {
             }
             if(data.type === "gameOver"){
                 console.log("Partida Finalizada:", data.gameId);
-                players[games[data.gameId].player1].gameId = "";
-                players[games[data.gameId].player2].gameId = "";
-                delete games[data.gameId]; // Elimina la partida
+                if (games[data.gameId])
+                {
+                    if (games[data.gameId].player1)
+                    {
+                      if (players[games[data.gameId].player1])
+                        {
+                            players[games[data.gameId].player1].gameId = "";
+                        }  
+                    }
+                    if (games[data.gameId].player2)
+                        {
+                          if (players[games[data.gameId].player2])
+                            {
+                                players[games[data.gameId].player2].gameId = "";
+                            }  
+                        }
+                    delete games[data.gameId]; // Elimina la partida
+                }
                 broadcast(JSON.stringify({ type: 'currentPlayers', players }), ws);
                 broadcast(JSON.stringify({ type: 'currentGames', games }), ws);;
             }
@@ -239,6 +254,10 @@ wss.on('connection', (ws, request) => {
                 broadcast(JSON.stringify({ type: 'currentGames', games }), ws);
             }
             if (data.type === 'opponentMove') {
+                if (data.gameId === 'gameid')
+                {
+                    data.gameId = players[ws.username].gameId;
+                }
                 console.log("Partida: ", data.gameId);
                 console.log("Movimiento de: ", ws.username);
                 const clientsArray = Array.from(wss.clients);                

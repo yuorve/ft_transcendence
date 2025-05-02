@@ -16,11 +16,12 @@
 			</div>
 			<!-- Botones de acción -->
 			<div v-if="username !== auth?.username" class="flex gap-2">
-				<button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">
-					{{t('addFriend')}}
+				<button @click="addFriend(String(username))"
+					class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded">
+					➕ Añadir amigo
 				</button>
 				<button class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
-					{{t('blockUser')}}
+					{{ t('blockUser') }}
 				</button>
 			</div>
 		</div>
@@ -28,52 +29,53 @@
 		<!-- Pong Tab -->
 		<div v-if="activeTab === 'Pong'" class="w-full h-full">
 			<div class="flex flex-col items-center justify-center">
-				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{t('pongGames')}}</h2>
+				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{ t('pongGames') }}</h2>
 				<div v-if="normalPongGames.length" class="w-[98%]">
 					<div v-for="game in normalPongGames" :key="game.game" class="p-4 rounded shadow mb-3" :class="{
 						'bg-green-100': isWin(game), 'bg-red-100': isLoss(game)
 					}">
-						<p><strong>{{t('game')}} {{ t('id') }}:</strong> {{ game.game }}</p>
-						<p><strong>{{t('player1')}}:</strong> {{ game.player1 }}</p>
-						<p><strong>{{t('player2')}}:</strong> {{ game.player2 }}</p>
-						<p><strong>{{t('score')}}:</strong> {{ game.score1 }} - {{ game.score2 }}</p>
-						<p><strong>{{t('date')}}:</strong> {{ formatDate(game.created_at) }}</p>
+						<p><strong>{{ t('game') }} {{ t('id') }}:</strong> {{ game.game }}</p>
+						<p><strong>{{ t('player1') }}:</strong> {{ game.player1 }}</p>
+						<p><strong>{{ t('player2') }}:</strong> {{ game.player2 }}</p>
+						<p><strong>{{ t('score') }}:</strong> {{ game.score1 }} - {{ game.score2 }}</p>
+						<p><strong>{{ t('date') }}:</strong> {{ formatDate(game.created_at) }}</p>
 					</div>
 				</div>
-				<p v-else>{{t('noPongGames')}}</p>
+				<p v-else>{{ t('noPongGames') }}</p>
 			</div>
 		</div>
 
 		<!-- 3 en raya Tab -->
 		<div v-else-if="activeTab === '3 en raya'" class="w-full h-full">
 			<div class="flex flex-col items-center justify-center">
-				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{t('tictacGames')}}</h2>
+				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{ t('tictacGames') }}</h2>
 				<div v-if="normalTicTacToeGames.length" class="w-[98%]">
 					<div v-for="game in normalTicTacToeGames" :key="game.game" class="p-4 rounded shadow mb-3" :class="{
 						'bg-green-100': isWin(game), 'bg-red-100': isLoss(game)
 					}">
-						<p><strong>{{t('game')}} {{ t('id') }}:</strong> {{ game.game }}</p>
-						<p><strong>{{t('player1')}}:</strong> {{ game.player1 }}</p>
-						<p><strong>{{t('player2')}}:</strong> {{ game.player2 }}</p>
-						<p><strong>{{t('score')}}:</strong> {{ game.score1 }} - {{ game.score2 }}</p>
-						<p><strong>{{t('date')}}:</strong> {{ formatDate(game.created_at) }}</p>
+						<p><strong>{{ t('game') }} {{ t('id') }}:</strong> {{ game.game }}</p>
+						<p><strong>{{ t('player1') }}:</strong> {{ game.player1 }}</p>
+						<p><strong>{{ t('player2') }}:</strong> {{ game.player2 }}</p>
+						<p><strong>{{ t('score') }}:</strong> {{ game.score1 }} - {{ game.score2 }}</p>
+						<p><strong>{{ t('date') }}:</strong> {{ formatDate(game.created_at) }}</p>
 					</div>
 				</div>
-				<p v-else>{{t('noTicTacGames')}}</p>
+				<p v-else>{{ t('noTicTacGames') }}</p>
 			</div>
 		</div>
 
 		<!-- Torneos Tab -->
 		<div v-else-if="activeTab === 'Torneos'" class="w-full h-full">
 			<div class="flex flex-col items-center justify-center">
-				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{t('tournamentsHistory')}}</h2>
+				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{ t('tournamentsHistory') }}</h2>
 				<div v-if="myTournaments.tournaments.length" class="space-y-4 w-[98%]">
 					<div v-for="torneo in myTournaments.tournaments" :key="torneo.tournament"
 						class="bg-white rounded shadow overflow-hidden">
 						<details>
 							<summary
 								class="cursor-pointer px-4 py-2 bg-blue-100 font-semibold flex justify-between items-center">
-								<span>{{t('tournament')}} {{ torneo.tournament }} - {{t('game')}} {{ torneo.games[0].type }}</span>
+								<span>{{ t('tournament') }} {{ torneo.tournament }} - {{ t('game') }} {{
+									torneo.games[0].type }}</span>
 								<span class="text-green-700">
 									Ganador: {{ torneo.champion || 'Pendiente' }}
 								</span>
@@ -111,27 +113,27 @@
 				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">Estadísticas</h2>
 				<div class="w-[98%] flex flex-wrap gap-8 bg-amber-300 rounded justify-around items-center h-full">
 					<!-- Partidas por tipo -->
-					 <div class="flex flex-col items-center sm:w-1/3 border">
+					<div class="flex flex-col items-center sm:w-1/3 border">
 
-						 <VueApexCharts class="w-fit h-fit m-2" type="pie" :options="gamesByTypeChartOptions"
-							 :series="gamesByTypeSeries" />
-					 </div>
+						<VueApexCharts class="w-fit h-fit m-2" type="pie" :options="gamesByTypeChartOptions"
+							:series="gamesByTypeSeries" />
+					</div>
 					<!-- Victorias/Derrotas global -->
-					 <div class="flex flex-col items-center sm:w-1/3 border">
+					<div class="flex flex-col items-center sm:w-1/3 border">
 
-						 <VueApexCharts class="w-fit h-fit m-2" type="pie" :options="winLossChartOptions"
-							 :series="winLossSeries" />
-					 </div>
+						<VueApexCharts class="w-fit h-fit m-2" type="pie" :options="winLossChartOptions"
+							:series="winLossSeries" />
+					</div>
 					<!-- Victorias/Derrotas Pong -->
-					 <div class="flex flex-col items-center sm:w-1/3 border">
-					<VueApexCharts class="w-fit h-fit" type="pie" :options="pongWinLossChartOptions"
-						:series="pongWinLossSeries" />
-						</div>
+					<div class="flex flex-col items-center sm:w-1/3 border">
+						<VueApexCharts class="w-fit h-fit" type="pie" :options="pongWinLossChartOptions"
+							:series="pongWinLossSeries" />
+					</div>
 					<!-- Victorias/Derrotas 3 en raya -->
-					 <div class="flex flex-col items-center sm:w-1/3 border">
-					<VueApexCharts class="w-fit h-fit" type="pie" :options="ticTacToeWinLossChartOptions"
-						:series="ticTacToeWinLossSeries" />
-					 </div>
+					<div class="flex flex-col items-center sm:w-1/3 border">
+						<VueApexCharts class="w-fit h-fit" type="pie" :options="ticTacToeWinLossChartOptions"
+							:series="ticTacToeWinLossSeries" />
+					</div>
 				</div>
 
 			</div>
@@ -141,7 +143,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, inject } from 'vue'
-import { getGames, getMyTournament } from '../api'
+import { getGames, getMyTournament, sendRequest } from '../api'
 import type { Game, MyTournamentsResponse } from '../api'
 import VueApexCharts from 'vue3-apexcharts'
 import { useRoute } from 'vue-router'
@@ -256,5 +258,22 @@ function formatDate(dateStr: string) {
 		month: 'short',
 		day: 'numeric',
 	})
+}
+
+const currentUser = localStorage.getItem("username") || "";
+
+const addFriend = async (buddy: string) => {
+	if (buddy === currentUser) {
+		alert("No puedes añadirte a ti mismo.");
+		return;
+	}
+
+	try {
+		const res = await sendRequest(currentUser, buddy);
+		console.warn(res.message || "Solicitud enviada a " + username);
+	} catch (err) {
+		console.error("Error al añadir amigo:", err);
+		alert("No se pudo añadir el amigo");
+	}
 }
 </script>

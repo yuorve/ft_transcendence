@@ -17,7 +17,7 @@ async function friendsRoutes(fastify) {
     fastify.get('/friend-request/:user', async (request, reply) => {
       try {
         const userName = request.params.user;
-        const friends = await all('SELECT * FROM friends WHERE request = "1" AND username = ?', [userName]);
+        const friends = await all('SELECT * FROM friends WHERE request = "1" AND buddy = ?', [userName]);
         reply.send({ friends });
       } catch (error) {
         reply.status(500).send({ error: error.message });
@@ -47,7 +47,26 @@ async function friendsRoutes(fastify) {
       }
       console.log("Actualizando registro de amistad...")
       try {
+        // 1. Actualiza el estado de la solicitud original
         await run('UPDATE friends SET request = ?, blocked = ? WHERE id = ?', [req, blocked, id]);
+      
+        // 2. Si fue aceptada, crear relación inversa si no existe
+        if (req === "0" && blocked === "0") {
+          const original = await get('SELECT * FROM friends WHERE id = ?', [id]);
+          
+          const alreadyExists = await get(
+            'SELECT * FROM friends WHERE username = ? AND buddy = ?',
+            [original.buddy, original.username]
+          );
+      
+          if (!alreadyExists) {
+            await run(
+              'INSERT INTO friends (username, buddy, request, blocked) VALUES (?, ?, "0", "0")',
+              [original.buddy, original.username]
+            );
+          }
+        }
+      
         reply.send({ message: 'Amistad actualizada' });
       } catch (error) {
         reply.status(500).send({ error: 'Error al actualizar amistad' });
