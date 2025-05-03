@@ -79,6 +79,23 @@ async function loadProfileImage(username: string) {
     }
 }
 
+const blockedUsers = ref<string[]>([]);
+const blockUser = (usernameToToggle: string) => {
+    const isBlocked = blockedUsers.value.includes(usernameToToggle);
+
+    if (isBlocked) {
+        send({
+            type: "unblockUser",
+            unblockedUser: usernameToToggle,
+        });
+    } else {
+        send({
+            type: "blockUser",
+            blockedUser: usernameToToggle,
+        });
+    }
+};
+
 // Array separado para chats minimizados (aparecerán en la barra inferior)
 const minimizedChatsVisible = computed(() => {
     return privateChats.value.filter((chat) => chat.minimized);
@@ -261,6 +278,16 @@ function handleWebSocketMessages() {
                         scrollToBottom(chatElement);
                     });
                 }
+            } else if (data.type === "blockedUsers") {
+                blockedUsers.value = data.blockedUsers || [];
+            } else if (data.type === "userBlocked" && data.success) {
+                if (!blockedUsers.value.includes(data.blockedUser)) {
+                    blockedUsers.value.push(data.blockedUser);
+                }
+            } else if (data.type === "userUnblocked" && data.success) {
+                blockedUsers.value = blockedUsers.value.filter(
+                    (u) => u !== data.unblockedUser
+                );
             }
         }
     });
@@ -589,7 +616,7 @@ function argo(username: string) {
                                 <div
                                     v-show="selectedUser === player.username"
                                     ref="el => tooltipRefs.value[player.username] = el"
-                                    class="absolute z-50 flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs sm:text-sm w-32 sm:w-40 md:w-48 top-0 left-full ml-2 sm:top-full sm:left-0 sm:mt-1 items-center"
+                                    class="absolute z-50 flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs sm:text-sm w-45 md:w-45 lg:w-32 top-full ml-2 sm:left-0 sm:mt-1 items-center"
                                 >
                                     <img
                                         :src="profileImages[player.username]"
@@ -616,10 +643,23 @@ function argo(username: string) {
                                         v-if="
                                             player.username !== auth?.username
                                         "
-                                        class="w-full bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
-                                        @click.stop="argo(player.username)"
+                                        class="w-full px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
+                                        :class="
+                                            blockedUsers.includes(
+                                                player.username
+                                            )
+                                                ? 'bg-red-200 hover:bg-red-300 text-green-800'
+                                                : 'bg-red-200 hover:bg-red-300 text-red-800'
+                                        "
+                                        @click.stop="blockUser(player.username)"
                                     >
-                                        🚫 Bloquear
+                                        {{
+                                            blockedUsers.includes(
+                                                player.username
+                                            )
+                                                ? "✅ Desbloquear"
+                                                : "🚫 Bloquear"
+                                        }}
                                     </button>
                                     <button
                                         v-if="
@@ -782,8 +822,8 @@ function argo(username: string) {
                     class="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden flex flex-col"
                     :style="{
                         position: 'fixed',
-                        bottom: '72px',
-                        right: `${10 + (index * 50)}px`,
+                        bottom: '60px',
+                        right: `${15 + index * 50}px`,
                         width: '250px',
                         height: '300px',
                         maxHeight: '70vh',
