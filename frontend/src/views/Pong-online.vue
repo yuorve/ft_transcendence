@@ -144,12 +144,12 @@ if (socket) {
         } else if (data.type === 'opponentDisconnected' || data.type === 'gameAborted') {
             puntuation.gameState === 'gameOver';
             puntuation.gameOver = 1;
-            //alert("Oponente Desconectado");
             setTimeout(() => {
-                sendrouter.push({
-                    path: "/",
-                });
+              sendrouter.push({
+                path: "/",
+              });
             }, 500);
+            //alert("Oponente Desconectado");
         } 
     });
 }
@@ -188,6 +188,7 @@ onUnmounted(() => {
     clearInterval(syncInterval);
   }
   if (socket && puntuation.gameState === 'playing') {
+    deleteGame(gameid);
     socket.send(JSON.stringify({ type: 'gameAborted', gameId: gameid }));
   }
   if (scene) {
