@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, inject, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
+import { useWebSocket, websocketState } from "../services/websocket";
 import { getMyTournament, createTournament, createGame, generateId, noPlayer, updateChampion, getUsers } from "../api";
 import type { Game, MyTournamentsResponse, TournamentResponse } from "../api";
 // import type { int } from "@babylonjs/core";
@@ -15,6 +15,9 @@ const fromPong = computed(() => route.query.isTournament === 'true');
 const idtournament = generateId();
 
 const game = ref("");
+
+//conexion websocket
+const {send} = useWebSocket();
 
 const player1 = ref(auth?.username || "Jugador 1");
 const player2 = ref("Invitado");
@@ -146,6 +149,7 @@ function startNewTournament() {
 
 onMounted(async () => {
   await checkTournament();
+  useWebSocket();
 });
 
 const players = ref<string[]>([currentUser]);
@@ -209,6 +213,10 @@ const generateRanks = async (count: number) => {
     }
     checkTournament();
     tournamentActive.value = true;
+    send({
+      type: "tournamentCreated",
+      message: `🏆 ¡En breve dara comienzo un nuevo torneo!`,
+    });
   }
   else
     console.log("Error en generateRanks: No hay suficientes jugadores");

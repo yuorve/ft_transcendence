@@ -144,7 +144,22 @@ wss.on("connection", (ws, request) => {
                     }
                 }
             }
-
+            if (data.type === "tournamentCreated") {
+                const systemMessage = {
+                    type: "globalChat",
+                    senderId: "sistema",
+                    username: "Sistema", // nombre visible en el chat
+                    message: data.message,
+                    timestamp: new Date().toISOString(),
+                };
+            
+                wss.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify(systemMessage));
+                    }
+                });
+            }
+            
             // Modificar el manejo de los mensajes globales para filtrar mensajes de usuarios bloqueados
             if (data.type === "globalChat") {
                 // Crear objeto de mensaje con toda la información necesaria

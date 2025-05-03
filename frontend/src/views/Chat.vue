@@ -582,7 +582,7 @@ function argo(username: string) {
                             hidden: !showUserList && !isDesktop,
                             'flex flex-col': showUserList && !isDesktop,
                             block: true,
-                            'md:w-1/3 lg:w-1/4': isDesktop,
+                            'md:w-1/3 lg:w-1/3': isDesktop,
                             'w-full': !isDesktop,
                         }"
                         class="bg-white p-2 md:p-3 lg:p-4 border-b md:border-b-0 md:border-r border-gray-300 overflow-y-auto"
@@ -602,7 +602,12 @@ function argo(username: string) {
                             <li
                                 v-for="(player, id) in players"
                                 :key="id"
-                                class="relative p-1 md:p-1.5 hover:bg-gray-100 rounded cursor-pointer flex items-center transition-colors"
+                                :class="blockedUsers.includes(
+                                                player.username
+                                            )
+                                                ? 'bg-red-200 hover:bg-red-300 text-green-800'
+                                                : 'bg-gray-100 hover:bg-gray-200 text-black'"
+                                class="relative p-1 md:p-1.5 rounded cursor-pointer flex items-center transition-colors"
                                 @click.stop="toggleTooltip(player.username)"
                             >
                                 <span
@@ -616,7 +621,7 @@ function argo(username: string) {
                                 <div
                                     v-show="selectedUser === player.username"
                                     ref="el => tooltipRefs.value[player.username] = el"
-                                    class="absolute z-50 flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs sm:text-sm w-45 md:w-45 lg:w-32 top-full ml-2 sm:left-0 sm:mt-1 items-center"
+                                    class="absolute z-50 flex flex-col gap-1 bg-white border border-gray-300 shadow-md p-2 rounded-lg text-xs sm:text-sm w-45 top-full ml-2 sm:left-0 sm:mt-1 items-center"
                                 >
                                     <img
                                         :src="profileImages[player.username]"
