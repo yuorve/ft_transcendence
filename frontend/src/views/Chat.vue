@@ -477,6 +477,7 @@ onMounted(() => {
 
         window.addEventListener("resize", () => {
             isDesktop.value = window.innerWidth >= 768;
+            scrollToBottom(chatBoxRef.value);
         });
 
         for (const playerId in players.value) {
@@ -602,11 +603,11 @@ function argo(username: string) {
                             <li
                                 v-for="(player, id) in players"
                                 :key="id"
-                                :class="blockedUsers.includes(
-                                                player.username
-                                            )
-                                                ? 'bg-red-200 hover:bg-red-300 text-green-800'
-                                                : 'bg-gray-100 hover:bg-gray-200 text-black'"
+                                :class="
+                                    blockedUsers.includes(player.username)
+                                        ? 'bg-red-200 hover:bg-red-300 text-green-800'
+                                        : 'bg-gray-100 hover:bg-gray-200 text-black'
+                                "
                                 class="relative p-1 md:p-1.5 rounded cursor-pointer flex items-center transition-colors"
                                 @click.stop="toggleTooltip(player.username)"
                             >
@@ -710,19 +711,25 @@ function argo(username: string) {
                                 v-for="(msg, index) in messages"
                                 :key="index"
                                 class="flex flex-col max-w-full"
-                                :class="
-                                    msg.from === auth?.username
-                                        ? 'items-end'
-                                        : 'items-start'
-                                "
+                                :class="{
+                                    'items-end': msg.from === auth?.username,
+                                    'items-start':
+                                        msg.from !== auth?.username &&
+                                        msg.from !== 'System',
+                                    'items-center': msg.from === 'System',
+                                }"
                             >
                                 <div
                                     class="rounded-lg px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm md:text-base break-words shadow-sm"
-                                    :class="
-                                        msg.from === auth?.username
-                                            ? 'bg-blue-100 text-black'
-                                            : 'bg-green-100 text-black'
-                                    "
+                                    :class="{
+                                        'bg-blue-100 text-black text-left':
+                                            msg.from === auth?.username,
+                                        'bg-green-100 text-black text-left':
+                                            msg.from !== auth?.username &&
+                                            msg.from !== 'System',
+                                        'bg-yellow-200 text-black text-center font-semibold':
+                                            msg.from === 'System',
+                                    }"
                                     style="
                                         max-width: 85%;
                                         word-break: break-word;

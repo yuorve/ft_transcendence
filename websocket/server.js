@@ -147,8 +147,8 @@ wss.on("connection", (ws, request) => {
             if (data.type === "tournamentCreated") {
                 const systemMessage = {
                     type: "globalChat",
-                    senderId: "sistema",
-                    username: "Sistema", // nombre visible en el chat
+                    senderId: "System",
+                    username: "System", // nombre visible en el chat
                     message: data.message,
                     timestamp: new Date().toISOString(),
                 };
