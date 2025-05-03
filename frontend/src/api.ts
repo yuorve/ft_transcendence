@@ -20,7 +20,7 @@ export const UpdateImage = async (formData: FormData) => {
         "Content-Type": "multipart/form-data",
       },
     });
-  }  catch (error) {
+  } catch (error) {
     console.error("Error al actualizar la imagen:", error);
     throw new Error("Error Actualizando.");
   }
@@ -216,6 +216,15 @@ export async function sendRequest(username: string, buddy: string) {
     body: JSON.stringify({ username, buddy }),
   });
   return response.json();
+}
+
+export async function deleteFriend(username: string, buddy: string) {
+  const res = await fetch(`${API_URL}/friends`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, buddy }),
+  });
+  return res.json();
 }
 
 // Aceptar/Rechazar/Bloquear una amistad

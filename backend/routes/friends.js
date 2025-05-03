@@ -85,5 +85,22 @@ async function friendsRoutes(fastify) {
     });
   }
 
+// Eliminar amistad en ambos sentidos
+fastify.delete('/friends', async (request, reply) => {
+  const { username, buddy } = request.body;
+
+  if (!username || !buddy) {
+    return reply.status(400).send({ error: 'Faltan datos' });
+  }
+
+  try {
+    await run('DELETE FROM friends WHERE username = ? AND buddy = ?', [username, buddy]);
+    await run('DELETE FROM friends WHERE username = ? AND buddy = ?', [buddy, username]);
+    reply.send({ message: 'Amistad eliminada' });
+  } catch (error) {
+    reply.status(500).send({ error: 'Error al eliminar amistad' });
+  }
+});
+
   module.exports = friendsRoutes;
   

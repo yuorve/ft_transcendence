@@ -183,10 +183,10 @@ wss.on('connection', (ws, request) => {
                         const player1 = clientsArray.find(client => client.username === games[data.id].player1);
                         const player2 = clientsArray.find(client => client.username === games[data.id].player2);                        
                         if (player1 && player1.readyState === WebSocket.OPEN) {
-                            player1.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player2 }));
+                            player1.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player2, game: data.id }));
                         }
                         if (player2 && player2.readyState === WebSocket.OPEN) {
-                            player2.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player1 }));
+                            player2.send(JSON.stringify({ type: 'newPlayer', id: games[data.id].player1, game: data.id }));
                             if (data.game === 'Pong') {
                                 player2.send(JSON.stringify({ type: 'ballUpdate', ball: games[data.id].ball }));
                             }
@@ -256,6 +256,7 @@ wss.on('connection', (ws, request) => {
             if (data.type === 'opponentMove') {
                 if (data.gameId === 'gameid')
                 {
+                    // Si no recibimos el gameid, lo obtenemos del array de jugadores
                     data.gameId = players[ws.username].gameId;
                 }
                 console.log("Partida: ", data.gameId);

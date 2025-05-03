@@ -20,6 +20,10 @@
 					class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded">
 					➕ Añadir amigo
 				</button>
+				<button @click="removeFriend(String(username))"
+					class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+					❌ Borrar amigo
+				</button>
 				<button class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
 					{{ t('blockUser') }}
 				</button>
@@ -143,7 +147,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, inject } from 'vue'
-import { getGames, getMyTournament, sendRequest } from '../api'
+import { deleteFriend, getGames, getMyTournament, sendRequest } from '../api'
 import type { Game, MyTournamentsResponse } from '../api'
 import VueApexCharts from 'vue3-apexcharts'
 import { useRoute } from 'vue-router'
@@ -276,4 +280,17 @@ const addFriend = async (buddy: string) => {
 		alert("No se pudo añadir el amigo");
 	}
 }
+
+const removeFriend = async (buddy: string) => {
+  const confirmDelete = confirm(`¿Estás seguro de que quieres eliminar a ${buddy} de tu lista de amigos?`);
+  if (!confirmDelete) return;
+
+  try {
+    await deleteFriend(currentUser, buddy);
+    alert('Amigo eliminado');
+  } catch (err) {
+    console.error('Error eliminando amigo:', err);
+    alert('No se pudo eliminar al amigo');
+  }
+};
 </script>
