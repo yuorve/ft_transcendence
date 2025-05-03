@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, inject, watch } from "vue";
 import initTicTacToe from "../games/tictactoe";
 import { Engine, Scene } from "@babylonjs/core";
-import { API_URL, createGame, generateId, updateGame, getUserImage } from "../api";
+import { API_URL, createGame, updateGame, deleteGame, generateId, getUserImage } from "../api";
 import { useRoute, useRouter } from "vue-router";
 import { puntuation, matriz } from "../games/tictactoe";
 import { useWebSocket } from '../services/websocket';
@@ -47,19 +47,20 @@ if (socket) {
     socket.send(JSON.stringify({ type: gameMode, game: 'TicTacToe', id: gameid, player: username }));
     socket.addEventListener('message', event => {
         const data = JSON.parse(event.data);
-        console.log(data);
+        //console.log(data);
         if (data.type === 'newPlayer') {
             puntuation.pl = 0;
             puntuation.pr = 0;
             puntuation.gameOver = 0;
-            console.log("Nuevo Jugador");
-            if ( gameMode === 'newGame' ) {
+            puntuation.online = 1;
+            //console.log("Nuevo Jugador");
+            if ( gameMode === 'newGame' && gameid === data.game ) {
                 player1.value = auth?.username || 'ErrorUser';
                 player2.value = data.id;
                 //Si queremos que sea aleatorio --> Math.random() > 0.5 ? 1 : 2;
                 puntuation.playerFigure = 1;
                 puntuation.playerTurn = 1;
-                console.log("Asignado Jugador 2");
+                //console.log("Asignado Jugador 2");
                 createGame(
                     gameid,
                     "TicTacToe",
@@ -69,12 +70,12 @@ if (socket) {
                     "",
                     ""
                 );
-            } else {
+            } else if ( gameid === data.game ) {
                 player1.value = data.id;
-                player2.value =  auth?.username || 'ErrorUser';
+                player2.value = auth?.username || 'ErrorUser';
                 puntuation.playerFigure = 2;
                 puntuation.playerTurn = 0;
-                console.log("Asignado Jugador 1");
+                //console.log("Asignado Jugador 1");
                 updateGame(
                     gameid,
                     player1.value,
@@ -84,15 +85,13 @@ if (socket) {
                 );
             }
             loadProfileImage();
-            console.log(data.id);
         } else if (data.type === 'opponentDisconnected' || data.type === 'gameAborted') {
-            puntuation.gameOver = 1;
             setTimeout(() => {
                 sendrouter.push({
                     path: "/",
                 });
             }, 500);
-            alert("Oponente Desconectado");
+            //alert("Oponente Desconectado");
         }
     });
 }
@@ -113,6 +112,9 @@ onMounted(() => {
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
   // Actualizar partida actual
+  console.log('puntuación izq: ', puntuation.pl);
+  console.log('puntuación der: ', puntuation.pr);
+  socket.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));
   updateGame(
     gameid,
     player1.value,
@@ -130,9 +132,10 @@ const sendPunt = (winner: string) => {
 };
 
 onUnmounted(() => {
-	console.log("desomantando...");
+	//console.log("desomantando...");
     if (socket && puntuation.gameOver === 0) {
         socket.send(JSON.stringify({ type: 'gameAborted', gameId: gameid }));
+        deleteGame(gameid);
     }
     if (scene) {
         scene.dispose(); // Eliminar la escena de Babylon.js
@@ -166,50 +169,50 @@ watch(
   }
 );
 
-watch(
-    () => JSON.parse(JSON.stringify(matriz.value)), 
+// watch(
+//     () => JSON.parse(JSON.stringify(matriz.value)), 
     
-    (nuevaCopiaMatriz, antiguaCopiaMatriz) => {
-        console.log('Detectado cambio en la matriz');
+//     (nuevaCopiaMatriz, antiguaCopiaMatriz) => {
+//         console.log('Detectado cambio en la matriz');
 
-        if (!nuevaCopiaMatriz || !antiguaCopiaMatriz) return;
+//         if (!nuevaCopiaMatriz || !antiguaCopiaMatriz) return;
 
-        const rows = nuevaCopiaMatriz.length;
-        if (antiguaCopiaMatriz.length !== rows) return;
-        const cols = nuevaCopiaMatriz[0]?.length || 0;
-        if (antiguaCopiaMatriz[0]?.length !== cols) return;
+//         const rows = nuevaCopiaMatriz.length;
+//         if (antiguaCopiaMatriz.length !== rows) return;
+//         const cols = nuevaCopiaMatriz[0]?.length || 0;
+//         if (antiguaCopiaMatriz[0]?.length !== cols) return;
 
-        for (let i = 0; i < rows; i++) {
-            for (let j = 0; j < cols; j++) {
-                if (nuevaCopiaMatriz[i] && antiguaCopiaMatriz[i]) {
-                    const nuevoElemento = nuevaCopiaMatriz[i][j];
-                    const antiguoElemento = antiguaCopiaMatriz[i][j];
+//         for (let i = 0; i < rows; i++) {
+//             for (let j = 0; j < cols; j++) {
+//                 if (nuevaCopiaMatriz[i] && antiguaCopiaMatriz[i]) {
+//                     const nuevoElemento = nuevaCopiaMatriz[i][j];
+//                     const antiguoElemento = antiguaCopiaMatriz[i][j];
 
-                    if (nuevoElemento !== antiguoElemento) {
-                        console.log(`Cambio detectado en [${i}][${j}]`);
-                        console.log(`Valor nuevo: ${nuevoElemento}`);
-                        const cell = {
-                            i: i,
-                            j: j
-                        };
-                        if (socket) {
-                            if (puntuation.playerFigure === nuevoElemento) {
-                                //socket.send(JSON.stringify({ type: 'opponentMove', gameId: gameid, x: cell }));
-                                //Al final es mejor hacer esto desde dentro del juego porque a veces no lo detecta
-                            }
-                            if (puntuation.gameOver === 1) {
-                                socket.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-    { 
-        deep: true
-    } 
-);
+//                     if (nuevoElemento !== antiguoElemento) {
+//                         console.log(`Cambio detectado en [${i}][${j}]`);
+//                         console.log(`Valor nuevo: ${nuevoElemento}`);
+//                         const cell = {
+//                             i: i,
+//                             j: j
+//                         };
+//                         if (socket) {
+//                             if (puntuation.playerFigure === nuevoElemento) {
+//                                 //socket.send(JSON.stringify({ type: 'opponentMove', gameId: gameid, x: cell }));
+//                                 //Al final es mejor hacer esto desde dentro del juego porque a veces no lo detecta
+//                             }
+//                             if (puntuation.gameOver === 1) {
+//                                 socket.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     },
+//     { 
+//         deep: true
+//     } 
+// );
 </script>
 
 <template>
