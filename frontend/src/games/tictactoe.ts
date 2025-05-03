@@ -73,11 +73,14 @@ export default function initTicTacToe() {
         if (socket) {
             socket.addEventListener('message', event => {
                 const data = JSON.parse(event.data);
-                console.log(data);
-                if (data.type === 'opponentMove') {
-                    console.log("Movimiento del otro Jugador");
-                    console.log(data.x);
+                //console.log(data);
+                if (data.type === 'newPlayer') {
+                    figure = puntuation.playerFigure;
+                } else if (data.type === 'opponentMove') {
+                    //console.log("Movimiento del otro Jugador");
+                    //console.log(data.x);
                     figure = (figure === 1) ? 2 : 1;
+                    //console.log('figura:', figure);
                     createFigure(buttons[data.x.i][data.x.j].position.x, buttons[data.x.i][data.x.j].position.y, 0);
                     matriz.value[data.x.i][data.x.j] = figure;                    
                     buttons[data.x.i][data.x.j].dispose();
@@ -89,12 +92,13 @@ export default function initTicTacToe() {
                             });
                         });
                         if (figure == 1) {
-                            puntuation.pl++;
+                            puntuation.pl = 1;
                             createX(0, 0, -3, butSize);
                         } else {
-                            puntuation.pr++;
+                            puntuation.pr = 1;
                             createCircle(0, 0, -3, butSize);
                         }
+                        console.log('Gana el oponente');
                         puntuation.gameOver = 1;
                     }                    
                     figure = (figure === 1) ? 2 : 1;
@@ -238,6 +242,7 @@ export default function initTicTacToe() {
             for (let x = 0; x < 3; x++) {
                 buttons[i][x].onPointerUpObservable.add(() => {
                     // CHECKING TURN
+                    //console.log('Juegas con:', figure);
                     if (puntuation.playerTurn == 1 || puntuation.online === 0) {
                         if (socket) {
                             const cell = {
@@ -245,8 +250,9 @@ export default function initTicTacToe() {
                                 j: x
                             };
                             socket.send(JSON.stringify({ type: 'opponentMove', gameId: 'gameid', x: cell }));
+                            //Como aqui no tenemos el gameid, no se le pasa y dejamos que el servidor lo obtenga 
                         }
-                        console.log("Crea figura");
+                        //console.log("Crea figura");
                         createFigure(buttons[i][x].position.x, buttons[i][x].position.y, 0);
                         matriz.value[i][x] = figure;
                         buttons[i][x].dispose();
@@ -259,7 +265,7 @@ export default function initTicTacToe() {
                                 button.dispose();
                             });
                         });
-                        puntuation.pl++;
+                        puntuation.pl = 1;
                         createX(0, 0, -3, butSize);
                         puntuation.gameOver = 1;
                     }
@@ -270,7 +276,7 @@ export default function initTicTacToe() {
                                 button.dispose();
                             });
                         });
-                        puntuation.pr++;
+                        puntuation.pr = 1;
                         createCircle(0, 0, -3, butSize);
                         puntuation.gameOver = 1;
                     }
