@@ -17,7 +17,7 @@ async function friendsRoutes(fastify) {
     fastify.get('/friend-request/:user', async (request, reply) => {
       try {
         const userName = request.params.user;
-        const friends = await all('SELECT * FROM friends WHERE request = "1" AND buddy = ?', [userName]);
+        const friends = await all('SELECT * FROM friends WHERE request = "1" AND username = ?', [userName]);
         reply.send({ friends });
       } catch (error) {
         reply.status(500).send({ error: error.message });
@@ -83,24 +83,24 @@ async function friendsRoutes(fastify) {
         reply.status(500).send({ error: error.message });
       }
     });
+    // Eliminar amistad en ambos sentidos
+    fastify.delete('/friends', async (request, reply) => {
+      const { username, buddy } = request.body;
+    
+      if (!username || !buddy) {
+        return reply.status(400).send({ error: 'Faltan datos' });
+      }
+    
+      try {
+        await run('DELETE FROM friends WHERE username = ? AND buddy = ?', [username, buddy]);
+        await run('DELETE FROM friends WHERE username = ? AND buddy = ?', [buddy, username]);
+        reply.send({ message: 'Amistad eliminada' });
+      } catch (error) {
+        reply.status(500).send({ error: 'Error al eliminar amistad' });
+      }
+    });
   }
 
-// Eliminar amistad en ambos sentidos
-fastify.delete('/friends', async (request, reply) => {
-  const { username, buddy } = request.body;
-
-  if (!username || !buddy) {
-    return reply.status(400).send({ error: 'Faltan datos' });
-  }
-
-  try {
-    await run('DELETE FROM friends WHERE username = ? AND buddy = ?', [username, buddy]);
-    await run('DELETE FROM friends WHERE username = ? AND buddy = ?', [buddy, username]);
-    reply.send({ message: 'Amistad eliminada' });
-  } catch (error) {
-    reply.status(500).send({ error: 'Error al eliminar amistad' });
-  }
-});
 
   module.exports = friendsRoutes;
   

@@ -60,7 +60,22 @@ export async function login(username: string, password: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
-  return response.json();
+
+  const contentType = response.headers.get("content-type");
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Error del servidor:", errorText);
+    throw new Error(`Error del servidor: ${response.status}`);
+  }
+
+  if (contentType && contentType.includes("application/json")) {
+    return response.json();
+  } else {
+    const text = await response.text();
+    console.error("Respuesta no JSON:", text);
+    throw new Error("La respuesta no es JSON");
+  }
 }
 
 // Obtener perfil del usuario autenticado

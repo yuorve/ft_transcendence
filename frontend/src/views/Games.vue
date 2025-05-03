@@ -16,12 +16,14 @@
 			</div>
 			<!-- Botones de acción -->
 			<div v-if="username !== auth?.username" class="flex gap-2">
-				<button @click="addFriend(String(username))"
+				<button v-if="!isFriend(username)" @click="addFriend(String(username))"
 					class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded">
 					➕ Añadir amigo
 				</button>
-				<button @click="removeFriend(String(username))"
-					class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+
+				<!-- Solo mostrar si SÍ es amigo -->
+				<button v-else @click="removeFriend(String(username))"
+					class="bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded">
 					❌ Borrar amigo
 				</button>
 				<button class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
@@ -148,7 +150,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, inject } from 'vue'
 import { deleteFriend, getGames, getMyTournament, sendRequest } from '../api'
-import type { Game, MyTournamentsResponse } from '../api'
+import type { Game, MyTournamentsResponse, getFriends } from '../api'
 import VueApexCharts from 'vue3-apexcharts'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -168,6 +170,7 @@ const myTournaments = ref<MyTournamentsResponse>({ tournaments: [] })
 onMounted(async () => {
 	if (!username) return
 	try {
+		loadFriends();
 		const { games } = await getGames(username)
 		allGames.value = games
 
@@ -273,8 +276,8 @@ const addFriend = async (buddy: string) => {
 	}
 
 	try {
-		const res = await sendRequest(currentUser, buddy);
-		console.warn(res.message || "Solicitud enviada a " + username);
+		const res = await sendRequest(username, currentUser);
+		console.log(res.message || "Solicitud enviada a " + username);
 	} catch (err) {
 		console.error("Error al añadir amigo:", err);
 		alert("No se pudo añadir el amigo");
@@ -282,15 +285,24 @@ const addFriend = async (buddy: string) => {
 }
 
 const removeFriend = async (buddy: string) => {
-  const confirmDelete = confirm(`¿Estás seguro de que quieres eliminar a ${buddy} de tu lista de amigos?`);
-  if (!confirmDelete) return;
+	const confirmDelete = confirm(`¿Estás seguro de que quieres eliminar a ${buddy} de tu lista de amigos?`);
+	if (!confirmDelete) return;
 
-  try {
-    await deleteFriend(currentUser, buddy);
-    alert('Amigo eliminado');
-  } catch (err) {
-    console.error('Error eliminando amigo:', err);
-    alert('No se pudo eliminar al amigo');
-  }
+	try {
+		await deleteFriend(currentUser, buddy);
+		alert('Amigo eliminado');
+	} catch (err) {
+		console.error('Error eliminando amigo:', err);
+		alert('No se pudo eliminar al amigo');
+	}
 };
+
+// const friends = ref([]);
+// async function loadFriends() {
+//   friends.value = await getFriends(currentUser); // o cualquier forma de obtener tu username actual
+// }
+
+// function isFriend(name: string): boolean {
+// 	return friends.value.some(f => f.buddy === name || f.username === name);
+// }
 </script>

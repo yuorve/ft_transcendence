@@ -198,7 +198,7 @@ function initGame() {
   nextTick(() => {
     try {
       puntuation.gameState = 'playing';
-       puntuation.online = 0;
+      puntuation.online = 0;
       const { scene: s, engine: eng } = initPong();
       scene = s;
       engine = eng;

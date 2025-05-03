@@ -15,9 +15,9 @@ const { t, locale } = useI18n()
 
 // Estado local del usuario
 const userName = ref<string>(t("login"));
- const defaultProfileImage = "/src/assets/default-profile.png";
- const profileImage = inject('profileImage', ref(defaultProfileImage));
- const favLang = ref<string>('');
+const defaultProfileImage = "/src/assets/default-profile.png";
+const profileImage = inject('profileImage', ref(defaultProfileImage));
+const favLang = ref<string>('');
 
 // Computed para saber si hay sesión
 const isAuthenticated = computed(() => !!auth?.username)

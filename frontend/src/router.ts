@@ -60,7 +60,7 @@ const routes = [
     },
   },
   { path: "/register", 
-    component: Register, 
+    component: Register,
   },
   {
     path: "/profile",
