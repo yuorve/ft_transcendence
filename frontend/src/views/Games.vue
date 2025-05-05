@@ -16,14 +16,14 @@
 			</div>
 			<!-- Botones de acción -->
 			<div v-if="username !== auth?.username" class="flex gap-2">
-				<button v-if="!isFriend(username)" @click="addFriend(String(username))"
-					class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded">
+				<button v-if="!isFriend(String(username))" @click="addFriend(String(username))"
+					class="bg-blue-500 hover:bg-blue-600 transition text-white px-2 py-1 rounded">
 					➕ Añadir amigo
 				</button>
 
 				<!-- Solo mostrar si SÍ es amigo -->
 				<button v-else @click="removeFriend(String(username))"
-					class="bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded">
+					class="bg-violet-500 hover:bg-violet-700 transition text-white px-2 py-1 rounded">
 					❌ Borrar amigo
 				</button>
 				<button class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
@@ -149,8 +149,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, inject } from 'vue'
-import { deleteFriend, getGames, getMyTournament, sendRequest } from '../api'
-import type { Game, MyTournamentsResponse, getFriends } from '../api'
+import { deleteFriend, getGames, getMyTournament, sendRequest, getFriends } from '../api'
+import type { Game, MyTournamentsResponse } from '../api'
 import VueApexCharts from 'vue3-apexcharts'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -276,7 +276,7 @@ const addFriend = async (buddy: string) => {
 	}
 
 	try {
-		const res = await sendRequest(username, currentUser);
+		const res = await sendRequest(String(username), currentUser);
 		console.log(res.message || "Solicitud enviada a " + username);
 	} catch (err) {
 		console.error("Error al añadir amigo:", err);
@@ -297,12 +297,17 @@ const removeFriend = async (buddy: string) => {
 	}
 };
 
-// const friends = ref([]);
-// async function loadFriends() {
-//   friends.value = await getFriends(currentUser); // o cualquier forma de obtener tu username actual
-// }
+const friends = ref<any[]>([]);
+  const loadFriends = async () => {
+	try {
+	  const res = await getFriends(String(currentUser));
+	  friends.value = res.friends || [];
+	} catch (err) {
+	  console.error('Error al cargar amigos:', err);
+	}
+  };
 
-// function isFriend(name: string): boolean {
-// 	return friends.value.some(f => f.buddy === name || f.username === name);
-// }
+function isFriend(name: string): boolean {
+	return friends.value.some(f => f.buddy === name || f.username === name);
+}
 </script>
