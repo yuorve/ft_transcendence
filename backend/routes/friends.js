@@ -38,6 +38,53 @@ async function friendsRoutes(fastify) {
         reply.status(500).send({ error: 'Error al registrar solicitud' });
       }
     });
+
+    fastify.post('/friend-block', async (request, reply) => {
+      const { username, buddy, blocked } = request.body;
+    
+      if (!username || !buddy || typeof blocked === 'undefined') {
+        return reply.status(400).send({ error: 'Missing data' });
+      }
+    
+      try {
+        if (blocked === "1") {
+          // Intenta actualizar
+          const result = await run(
+            'UPDATE friends SET blocked = ?, request = "0" WHERE username = ? AND buddy = ?',
+            [blocked, username, buddy]
+          );
+    
+          // Si no existía, creamos una relación con bloqueo
+          if (result.changes === 0) {
+            await run(
+              'INSERT INTO friends (username, buddy, request, blocked) VALUES (?, ?, "0", "1")',
+              [username, buddy]
+            );
+          }
+    
+          return reply.send({ message: 'User blocked' });
+        }
+    
+        // Si está desbloqueando, eliminamos cualquier relación existente con bloqueo previo
+        const existing = await get(
+          'SELECT * FROM friends WHERE username = ? AND buddy = ?',
+          [username, buddy]
+        );
+    
+        if (existing && existing.blocked === "1") {
+          await run(
+            'DELETE FROM friends WHERE username = ? AND buddy = ?',
+            [username, buddy]
+          );
+        }
+    
+        return reply.send({ message: 'User unblocked and record deleted' });
+    
+      } catch (error) {
+        console.error('Error in /friend-block:', error);
+        return reply.status(500).send({ error: 'Error updating block status' });
+      }
+    });
     
     // Ruta para aceptar/rechazar/bloquear amistad
     fastify.post('/friends', async (request, reply) => {

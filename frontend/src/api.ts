@@ -233,6 +233,30 @@ export async function sendRequest(username: string, buddy: string) {
   return response.json();
 }
 
+export async function blockUser(username: string, buddy: string, blocked = true) {
+	const response = await fetch(`${API_URL}/friend-block`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			username,
+			buddy,
+			blocked: blocked ? "1" : "0"
+		})
+	});
+	return await response.json();
+}
+
+export async function getBlockedUsers(username: string) {
+  const response = await fetch(`/friend-blocked/${username}`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to fetch blocked users');
+  }
+
+  return data.friends;
+}
+
 export async function deleteFriend(username: string, buddy: string) {
   const res = await fetch(`${API_URL}/friends`, {
     method: 'DELETE',

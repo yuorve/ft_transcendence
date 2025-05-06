@@ -16,20 +16,39 @@
 			</div>
 			<!-- Botones de acción -->
 			<div v-if="username !== auth?.username" class="flex gap-2">
-				<button v-if="!isFriend(String(username))" @click="addFriend(String(username))"
+				<p v-if="hasBlockedTarget()" class="text-red-700 font-semibold">
+					Lo tienes bloqueado</p>
+				<p v-else-if="isBlockedByTarget()" class="text-red-700 font-semibold">
+					Te tiene bloqueado
+				</p>
+				<p v-else-if="!isFriend(String(username)) && isRequestPending()"
+					class="text-gray-500 font-semibold">
+					Pendiente
+				</p>
+
+				<!-- Mostrar botón de añadir amigo solo si no está pendiente ni es amigo -->
+				<button v-else-if="!isFriend(String(username)) && !isRequestPending()"
+					@click="addFriend(String(username))"
 					class="bg-blue-500 hover:bg-blue-600 transition text-white px-2 py-1 rounded">
 					➕ Añadir amigo
 				</button>
-
 				<!-- Solo mostrar si SÍ es amigo -->
 				<button v-else @click="removeFriend(String(username))"
 					class="bg-violet-500 hover:bg-violet-700 transition text-white px-2 py-1 rounded">
 					❌ Borrar amigo
 				</button>
-				<button class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
-					{{ t('blockUser') }}
-				</button>
+				<div v-if="!isFriend(String(username)) && !isRequestPending()">
+					<button v-if="hasBlockedTarget()" @click="handleUnblockUser(String(username))"
+						class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
+						🔓 Desbloquear
+					</button>
+					<button v-else @click="handleBlockUser(String(username))"
+						class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
+						{{ t('blockUser') }}
+					</button>
+				</div>
 			</div>
+
 		</div>
 
 		<!-- Pong Tab -->
@@ -149,7 +168,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, inject } from 'vue'
-import { deleteFriend, getGames, getMyTournament, sendRequest, getFriends } from '../api'
+import { deleteFriend, getGames, getMyTournament, sendRequest, getFriends, blockUser, getBlocked, getRequests } from '../api'
 import type { Game, MyTournamentsResponse } from '../api'
 import VueApexCharts from 'vue3-apexcharts'
 import { useRoute } from 'vue-router'
@@ -170,6 +189,9 @@ const myTournaments = ref<MyTournamentsResponse>({ tournaments: [] })
 onMounted(async () => {
 	if (!username) return
 	try {
+		await loadBlockedByOthers();
+		await loadMyBlocked();
+		await loadPendingRequests();
 		loadFriends();
 		const { games } = await getGames(username)
 		allGames.value = games
@@ -269,6 +291,17 @@ function formatDate(dateStr: string) {
 
 const currentUser = localStorage.getItem("username") || "";
 
+async function handleBlockUser(buddyName: string) {
+	try {
+		await blockUser(currentUser, buddyName);
+		alert(`${buddyName} has been blocked`);
+		await loadMyBlocked();
+	} catch (err) {
+		console.error(err);
+		alert(`Error blocking ${buddyName}: ${err}`);
+	}
+}
+
 const addFriend = async (buddy: string) => {
 	if (buddy === currentUser) {
 		alert("No puedes añadirte a ti mismo.");
@@ -277,7 +310,10 @@ const addFriend = async (buddy: string) => {
 
 	try {
 		const res = await sendRequest(String(username), currentUser);
+		alert(`${username} has been requested as a friend`);
 		console.log(res.message || "Solicitud enviada a " + username);
+		await loadPendingRequests();
+		loadFriends();
 	} catch (err) {
 		console.error("Error al añadir amigo:", err);
 		alert("No se pudo añadir el amigo");
@@ -298,16 +334,77 @@ const removeFriend = async (buddy: string) => {
 };
 
 const friends = ref<any[]>([]);
-  const loadFriends = async () => {
+const loadFriends = async () => {
 	try {
-	  const res = await getFriends(String(currentUser));
-	  friends.value = res.friends || [];
+		const res = await getFriends(String(currentUser));
+		friends.value = res.friends || [];
 	} catch (err) {
-	  console.error('Error al cargar amigos:', err);
+		console.error('Error al cargar amigos:', err);
 	}
-  };
+};
 
 function isFriend(name: string): boolean {
 	return friends.value.some(f => f.buddy === name || f.username === name);
+}
+
+const blockedMe = ref<any[]>([]);
+
+const loadBlockedByOthers = async () => {
+	try {
+		// Obtenemos a quién ha bloqueado el usuario que estoy mirando (no el actual)
+		const res = await getBlocked(String(username)); // username = persona objetivo
+		console.log("usuario bloqueado por otros:", res);
+		console.log(res);
+		blockedMe.value = res.friends || [];
+	} catch (err) {
+		console.error('Error comprobando bloqueos:', err);
+	}
+};
+
+function isBlockedByTarget(): boolean {
+	return blockedMe.value.some(entry => entry.buddy === currentUser);
+}
+const myBlocked = ref<any[]>([]);
+
+const loadMyBlocked = async () => {
+	try {
+		const res = await getBlocked(String(currentUser)); // quién he bloqueado yo
+		myBlocked.value = res.friends || [];
+	} catch (err) {
+		console.error("Error al cargar mi lista de bloqueados", err);
+	}
+};
+function hasBlockedTarget(): boolean {
+	return myBlocked.value.some(entry => entry.buddy === username);
+}
+
+async function handleUnblockUser(buddyName: string) {
+	try {
+		// Aquí modificas blocked = "0" en backend
+		await blockUser(currentUser, buddyName, false); // debes adaptar blockUser() a esto
+		alert(`${buddyName} ha sido desbloqueado`);
+
+		await loadMyBlocked(); // Recarga para actualizar el botón
+	} catch (err) {
+		console.error(err);
+		alert(`Error al desbloquear a ${buddyName}`);
+	}
+}
+
+const pendingRequests = ref<any[]>([]);
+
+const loadPendingRequests = async () => {
+	try {
+		const res = await getRequests(String(username));
+		pendingRequests.value = res.friends || [];
+	} catch (err) {
+		console.error("Error cargando solicitudes pendientes:", err);
+	}
+};
+
+function isRequestPending(): boolean {
+	return pendingRequests.value.some(
+		req => req.buddy === currentUser
+	);
 }
 </script>
