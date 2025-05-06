@@ -11,7 +11,7 @@ import {
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useWebSocket, websocketState } from "../services/websocket";
-import { getUserImage } from "../api";
+import { getUserImage, generateId } from "../api";
 
 const route = useRoute();
 const router = useRouter();
@@ -672,7 +672,7 @@ function argo(username: string) {
                                             player.username !== auth?.username
                                         "
                                         class="w-full bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
-                                        @click.stop="argo(player.username)"
+                                        @click.stop="inviteToGame(player.username)"
                                     >
                                         🎮 Invitar
                                     </button>
