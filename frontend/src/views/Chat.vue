@@ -12,6 +12,7 @@ import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useWebSocket, websocketState } from "../services/websocket";
 import { getUserImage, generateId } from "../api";
+import { fromJSON } from "postcss";
 
 const route = useRoute();
 const router = useRouter();
@@ -95,6 +96,34 @@ const blockUser = (usernameToToggle: string) => {
         });
     }
 };
+
+const incomingInvites = ref<{ from: string; gameId: string }[]>([]);
+function inviteToGame(targetUsername: string) {
+    if (!auth?.username) return;
+
+    send({
+        type: "game-invite",
+        from: auth.username,
+        to: targetUsername,
+        content: `${auth.username} te ha invitado a jugar.`,
+        gameId: generateId(),
+    });
+}
+
+function respondToGameInvite(to: string, gameId: string, accepted: boolean) {
+    send({
+        type: "game-invite-response",
+        to,
+        gameId,
+        from: auth?.username,
+        accepted,
+    });
+
+    // Quitar la invitación ya respondida
+    incomingInvites.value = incomingInvites.value.filter(
+        (invite) => invite.gameId !== gameId
+    );
+}
 
 // Array separado para chats minimizados (aparecerán en la barra inferior)
 const minimizedChatsVisible = computed(() => {
@@ -288,6 +317,101 @@ function handleWebSocketMessages() {
                 blockedUsers.value = blockedUsers.value.filter(
                     (u) => u !== data.unblockedUser
                 );
+            } else if (data.type === "game-invite") {
+                // Agregar la invitación al array de `incomingInvites` para el div con los botones
+                incomingInvites.value.push({
+                    from: data.from,
+                    gameId: data.gameId,
+                });
+
+                const from = data.from;
+                const chatIndex = privateChats.value.findIndex(
+                    (c) => c.username === from
+                );
+
+                // Solo agregar los botones de invitación, sin el mensaje adicional
+                const inviteMessage = {
+                    from,
+                    message: "Te ha invitado a jugar", // Provide a default or meaningful message
+                    timestamp: undefined, // Optional timestamp
+                    openChat: false, // Set the appropriate value for openChat
+                    gameId: data.gameId,
+                    inviteButtons: true, // Nueva propiedad para indicar que hay botones de invitación
+                };
+
+                // Si el chat ya existe, solo agregar los botones
+                if (chatIndex >= 0) {
+                    privateChats.value[chatIndex].messages.push(inviteMessage);
+                } else {
+                    // Si el chat no existe, creamos uno nuevo con los botones de invitación
+                    privateChats.value.unshift({
+                        username: from,
+                        messages: [
+                            {
+                                ...inviteMessage,
+                                message: "Te ha invitado a jugar", // Provide a default or meaningful message
+                                openChat: false, // Set the appropriate value for openChat
+                            },
+                        ],
+                        minimized: false,
+                        lastMessageTime: Date.now(),
+                        unreadCount: 0,
+                        firstUnreadIndex: -1,
+                    });
+                }
+
+                // Actualizar orden de chats por actividad
+                if (chatIndex >= 0) {
+                    const chat = privateChats.value.splice(chatIndex, 1)[0];
+                    privateChats.value.unshift(chat);
+                }
+
+                // Hacer scroll hasta el último mensaje del chat
+                nextTick(() => {
+                    const chatElement = document.getElementById(
+                        `private-chat-messages-${from}`
+                    );
+                    scrollToBottom(chatElement);
+                });
+            } else if (data.type === "game-invite-response") {
+                const from = data.from;
+                const accepted = data.accepted;
+                const responseMessage = accepted
+                    ? `${from} aceptó tu invitación. ¡Comienza la partida!`
+                    : `${from} rechazó tu invitación.`;
+
+                const chatIndex = privateChats.value.findIndex(
+                    (c) => c.username === from
+                );
+
+                if (chatIndex >= 0) {
+                    privateChats.value[chatIndex].messages.push({
+                        from,
+                        message: responseMessage,
+                        openChat: true,
+                    });
+
+                    nextTick(() => {
+                        const chatElement = document.getElementById(
+                            `private-chat-messages-${from}`
+                        );
+                        scrollToBottom(chatElement);
+                    });
+                }
+            } else if (data.type === "startGame") {
+                console.log("Recibido startGame:", data);
+                if (data.gameId) {
+                    // Use router instead of window.location to stay in the SPA context
+                    router.push({
+                        path: `/pong-online`,
+                        query: {
+                            gameid: data.gameId,
+                            player1: data.players[0],
+                            player2: data.players[1],
+                            mode: "newGame",
+                        },
+                    });
+                }
             }
         }
     });
@@ -672,7 +796,9 @@ function argo(username: string) {
                                             player.username !== auth?.username
                                         "
                                         class="w-full bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
-                                        @click.stop="inviteToGame(player.username)"
+                                        @click.stop="
+                                            inviteToGame(player.username)
+                                        "
                                     >
                                         🎮 Invitar
                                     </button>
@@ -935,6 +1061,42 @@ function argo(username: string) {
                                             })
                                         }}
                                     </div>
+                                </div>
+                            </div>
+                            <div
+                                v-for="invite in incomingInvites"
+                                :key="invite.gameId"
+                                class="bg-yellow-100 p-2 rounded shadow mb-2"
+                            >
+                                <!--                                 <p class="text-yellow-900 text-sm">
+                                    {{ invite.from }} te ha invitado a una
+                                    partida.
+                                </p> -->
+                                <div class="flex gap-2 mt-2">
+                                    <button
+                                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                                        @click="
+                                            respondToGameInvite(
+                                                invite.from,
+                                                invite.gameId,
+                                                true
+                                            )
+                                        "
+                                    >
+                                        Aceptar
+                                    </button>
+                                    <button
+                                        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                                        @click="
+                                            respondToGameInvite(
+                                                invite.from,
+                                                invite.gameId,
+                                                false
+                                            )
+                                        "
+                                    >
+                                        Rechazar
+                                    </button>
                                 </div>
                             </div>
                         </div>
