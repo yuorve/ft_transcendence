@@ -64,5 +64,6 @@
   "tournamentsHistory": "My Tournament History",
 
   "prepare": "Prepare",
-  "opponetName": "Opponent name"
+  "opponetName": "Opponent name",
+  "randomPong": "Random Pong"
   }

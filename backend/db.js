@@ -9,7 +9,14 @@ const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CR
   else console.log('Base de datos SQLite conectada');
 });
 
-const run = promisify(db.run.bind(db));
+const run = (...args) => {
+  return new Promise((resolve, reject) => {
+    db.run(...args, function (err) {
+      if (err) reject(err);
+      else resolve(this); // <- MUY IMPORTANTE para acceder a .changes
+    });
+  });
+};
 const get = promisify(db.get.bind(db));
 const all = promisify(db.all.bind(db));
 

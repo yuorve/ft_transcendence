@@ -20,7 +20,7 @@ export const UpdateImage = async (formData: FormData) => {
         "Content-Type": "multipart/form-data",
       },
     });
-  }  catch (error) {
+  } catch (error) {
     console.error("Error al actualizar la imagen:", error);
     throw new Error("Error Actualizando.");
   }
@@ -60,7 +60,22 @@ export async function login(username: string, password: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
   });
-  return response.json();
+
+  const contentType = response.headers.get("content-type");
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Error del servidor:", errorText);
+    throw new Error(`Error del servidor: ${response.status}`);
+  }
+
+  if (contentType && contentType.includes("application/json")) {
+    return response.json();
+  } else {
+    const text = await response.text();
+    console.error("Respuesta no JSON:", text);
+    throw new Error("La respuesta no es JSON");
+  }
 }
 
 // Obtener perfil del usuario autenticado
@@ -216,6 +231,39 @@ export async function sendRequest(username: string, buddy: string) {
     body: JSON.stringify({ username, buddy }),
   });
   return response.json();
+}
+
+export async function blockUser(username: string, buddy: string, blocked = true) {
+	const response = await fetch(`${API_URL}/friend-block`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			username,
+			buddy,
+			blocked: blocked ? "1" : "0"
+		})
+	});
+	return await response.json();
+}
+
+export async function getBlockedUsers(username: string) {
+  const response = await fetch(`/friend-blocked/${username}`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to fetch blocked users');
+  }
+
+  return data.friends;
+}
+
+export async function deleteFriend(username: string, buddy: string) {
+  const res = await fetch(`${API_URL}/friends`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, buddy }),
+  });
+  return res.json();
 }
 
 // Aceptar/Rechazar/Bloquear una amistad
