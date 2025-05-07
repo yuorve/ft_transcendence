@@ -377,18 +377,49 @@ function handleWebSocketMessages() {
                 const from = data.from;
                 const accepted = data.accepted;
                 const responseMessage = accepted
-                    ? `${from} aceptó tu invitación. ¡Comienza la partida!`
-                    : `${from} rechazó tu invitación.`;
+                    ? `Acepto tu invitación. ¡Que comience la partida!`
+                    : `Rechazo tu invitación.`;
 
+                // Buscar o crear el chat privado
                 const chatIndex = privateChats.value.findIndex(
                     (c) => c.username === from
                 );
 
                 if (chatIndex >= 0) {
+                    // Chat existente - añadir mensaje
                     privateChats.value[chatIndex].messages.push({
                         from,
                         message: responseMessage,
-                        openChat: true,
+                        timestamp: new Date().toISOString(),
+                        openChat: false,
+                    });
+
+
+                    // Scroll al fondo después de renderizar
+                    nextTick(() => {
+                        const chatElement = document.getElementById(
+                            `private-chat-messages-${from}`
+                        );
+                        if (chatElement) {
+                            scrollToBottom(chatElement);
+                        }
+                    });
+                } else {
+                    // Chat no existente - crear uno nuevo
+                    privateChats.value.push({
+                        username: from,
+                        messages: [
+                            {
+                                from,
+                                message: responseMessage,
+                                timestamp: new Date().toISOString(),
+                                openChat: true,
+                            },
+                        ],
+                        minimized: false,
+                        lastMessageTime: Date.now(),
+                        unreadCount: 0,
+                        firstUnreadIndex: -1,
                     });
 
                     nextTick(() => {
