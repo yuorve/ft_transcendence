@@ -180,76 +180,111 @@ wss.on("connection", (ws, request) => {
                     );
                 }
             }
-            if (data.type === "game-invite-response") {
-                const toUsername = data.to; // El jugador que envió la invitación
-                const fromUsername = ws.username; // El jugador que responde
-                const gameId = data.gameId;
-                const accepted = data.accepted;
-            
-                // Primero, encontrar al usuario que envió la invitación
-                const inviter = [...wss.clients].find(
-                    (client) => 
-                        client.readyState === WebSocket.OPEN && 
-                        client.username === toUsername
-                );
-            
-                // Enviar respuesta al invitador
-                if (inviter) {
-                    inviter.send(
-                        JSON.stringify({
-                            type: "game-invite-response",
-                            from: fromUsername,
-                            accepted: accepted,
-                            gameId: gameId
-                        })
-                    );
-                }
-            
-                // Continuar con la lógica existente solo si se aceptó la invitación
-                if (accepted) {
-                    // Create game if it doesn't exist
-                    if (!games[gameId]) {
-                        games[gameId] = {
-                            id: gameId,
-                            game: "Pong",
-                            player1: toUsername,
-                            player2: fromUsername,
-                            score1: 0,
-                            score2: 0,
-                            state: "waiting",
-                            ball: { x: 0.0, y: 0.0, dx: 0.0, dy: 0.0 },
-                        };
-                    }
-            
-                    // Assign gameId to both players
-                    if (players[toUsername]) players[toUsername].gameId = gameId;
-                    if (players[fromUsername]) players[fromUsername].gameId = gameId;
-            
-                    // Notify both players
-                    const clientsArray = Array.from(wss.clients);
-                    const player1Client = clientsArray.find(
-                        (client) => client.username === toUsername
-                    );
-                    const player2Client = clientsArray.find(
-                        (client) => client.username === fromUsername
-                    );
-            
-                    const startGameMsg = JSON.stringify({
-                        type: "startGame",
-                        gameId,
-                        players: [toUsername, fromUsername],
-                    });
-            
-                    if (player1Client && player1Client.readyState === WebSocket.OPEN) {
-                        player1Client.send(startGameMsg);
-                    }
-                    if (player2Client && player2Client.readyState === WebSocket.OPEN) {
-                        player2Client.send(startGameMsg);
-                    }
-            
-                    console.log(`Partida ${gameId} iniciada entre ${toUsername} y ${fromUsername}`);
-                }
-            }
+			if (data.type === "game-invite-response") {
+				const toUsername = data.to; // El jugador que envió la invitación
+				const fromUsername = ws.username; // El jugador que responde
+				const gameId = data.gameId;
+				const accepted = data.accepted;
+			
+				// Primero, encontrar al usuario que envió la invitación
+				const inviter = [...wss.clients].find(
+					(client) => 
+						client.readyState === WebSocket.OPEN && 
+						client.username === toUsername
+				);
+			
+				// Enviar respuesta al invitador
+				if (inviter) {
+					inviter.send(
+						JSON.stringify({
+							type: "game-invite-response",
+							from: fromUsername,
+							accepted: accepted,
+							gameId: gameId
+						})
+					);
+				}
+			
+				// Continuar con la lógica existente solo si se aceptó la invitación
+				if (accepted) {
+					console.log(`Invitación a partida ${gameId} aceptada por ${fromUsername}`);
+					
+					// Create game if it doesn't exist
+					if (!games[gameId]) {
+						games[gameId] = {
+							id: gameId,
+							game: "Pong",
+							player1: toUsername,
+							player2: fromUsername,
+							score1: 0,
+							score2: 0,
+							state: "waiting",
+							ball: { x: 0.0, y: 0.0, dx: 0.0, dy: 0.0 },
+						};
+					}
+			
+					// Assign gameId to both players
+					if (players[toUsername]) players[toUsername].gameId = gameId;
+					if (players[fromUsername]) players[fromUsername].gameId = gameId;
+			
+					// Notify both players
+					const clientsArray = Array.from(wss.clients);
+					const player1Client = clientsArray.find(
+						(client) => client.username === toUsername
+					);
+					const player2Client = clientsArray.find(
+						(client) => client.username === fromUsername
+					);
+			
+					const startGameMsg1 = JSON.stringify({
+						type: "startGame",
+						gameId,
+						players: [toUsername, fromUsername],
+						mode: "newGame",
+					});
+
+					const startGameMsg2 = JSON.stringify({
+						type: "startGame",
+						gameId,
+						players: [toUsername, fromUsername],
+						mode: "joinGame",
+					});
+			
+					// Informar a todos los clientes de la partida actualizada
+					broadcast(JSON.stringify({ type: "currentGames", games }));
+					broadcast(JSON.stringify({ type: "currentPlayers", players }));
+			
+					if (player1Client && player1Client.readyState === WebSocket.OPEN) {
+						player1Client.send(startGameMsg1);
+					}
+					if (player2Client && player2Client.readyState === WebSocket.OPEN) {
+						player2Client.send(startGameMsg2);
+					}
+			
+					console.log(`Partida ${gameId} iniciada entre ${toUsername} y ${fromUsername}`);
+					
+					// Añadimos un pequeño retraso antes de enviar el mensaje startGame
+					// para asegurar que ambos clientes estén listos
+					setTimeout(() => {
+						if (player1Client && player1Client.readyState === WebSocket.OPEN) {
+							player1Client.send(JSON.stringify({ 
+								type: "startGame", 
+								gameId: gameId,
+								message: "Comenzando partida",
+								mode: "newGame",
+							}));
+						}
+						if (player2Client && player2Client.readyState === WebSocket.OPEN) {
+							player2Client.send(JSON.stringify({ 
+								type: "startGame", 
+								gameId: gameId,
+								message: "Comenzando partida",
+								mode: "joinGame",
+							}));
+						}
+					}, 2000); // Espera 2 segundos para que ambos clientes estén listos
+				}
+			}
 
             // Modificar el manejo de los mensajes globales para filtrar mensajes de usuarios bloqueados
             if (data.type === "globalChat") {

@@ -101,12 +101,14 @@ const incomingInvites = ref<{ from: string; gameId: string }[]>([]);
 function inviteToGame(targetUsername: string) {
     if (!auth?.username) return;
 
+	const gameId = generateId();
+
     send({
         type: "game-invite",
         from: auth.username,
         to: targetUsername,
         content: `${auth.username} te ha invitado a jugar.`,
-        gameId: generateId(),
+        gameId: gameId,
     });
 }
 
@@ -432,14 +434,13 @@ function handleWebSocketMessages() {
             } else if (data.type === "startGame") {
                 console.log("Recibido startGame:", data);
                 if (data.gameId) {
-                    // Use router instead of window.location to stay in the SPA context
                     router.push({
                         path: `/pong-online`,
                         query: {
                             gameid: data.gameId,
                             player1: data.players[0],
                             player2: data.players[1],
-                            mode: "newGame",
+                            mode: data.mode,
                         },
                     });
                 }
