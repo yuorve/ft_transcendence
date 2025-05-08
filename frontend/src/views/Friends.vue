@@ -84,94 +84,101 @@ const loadBlocked = async () => {
 </script>
 
 <template>
-	<div class="relative w-64 bg-white">
-		<p>Buscar usuario</p>
-		<input v-model="searchTerm" type="text" placeholder="Buscar usuario…" class="w-full border p-2 rounded" />
-		<ul v-if="filteredUsers.length"
-			class="absolute z-10 w-full bg-white border rounded mt-1 max-h-40 overflow-auto">
-			<li v-for="user in filteredUsers" :key="user.username" @click="select(user.username)"
-				class="px-2 py-1 hover:bg-gray-100 cursor-pointer">
-				{{ user.username }}
-			</li>
-		</ul>
-	</div>
-	<div class="bg-amber-300">
-		<h2 class="text-xl font-bold mt-4 mb-2">Solicitudes pendientes</h2>
-		<table class="table-auto w-full">
-			<thead>
-				<tr>
-					<th class="px-4 py-2 text-left">Usuario</th>
-					<th class="px-4 py-2 text-left">Acción</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr v-for="sol in requests" :key="sol.id">
-					<td class="border px-4 py-2">{{ sol.buddy }}</td>
-					<td class="border px-4 py-2">
-						<button @click="acceptRequest(sol.id)"
-							class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded mr-2">
-							Aceptar
-						</button>
-						<button @click="rejectRequest(sol.id)"
-							class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
-							Rechazar
-						</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-	<div class="p-4">
-		<h1 class="text-2xl font-bold mb-4">Mis amigos</h1>
+	<div class="flex w-[98%] flex-col md:flex-row h-full gap-3">
+		<div class="flex flex-col md:w-1/3 w-full items-center justify-center">
+			<div class="flex flex-col w-[90%] h-[90%]  rounded-xl">
+				<div class="flex relative w-full bg-white px-4 py-2 rounded-t-xl">
+					<h1 class="text-xl font-bold mx-4 my-2">Buscar</h1>
+					<input v-model="searchTerm" type="text" placeholder="Buscar usuario…"
+						class="w-full max-w-64 border p-2 rounded" />
+					<ul v-if="filteredUsers.length"
+						class="absolute top-15 left-30 z-10 w-64 bg-white border rounded mt-1 max-h-40 overflow-auto">
+						<li v-for="user in filteredUsers" :key="user.username" @click="select(user.username)"
+							class="px-2 py-1 hover:bg-gray-100 cursor-pointer">
+							{{ user.username }}
+						</li>
+					</ul>
+				</div>
+				<div class="bg-white w-full h-full rounded-b-xl">
+					<h1 class="text-xl font-bold mt-4 mb-2 m-3">Solicitudes pendientes</h1>
+					<table class="table-auto w-full bg-gray-300 rounded-xl">
+						<thead>
+							<tr class="bg-white">
+								<th class="text-center px-4 py-2">Usuario</th>
+								<th class="px-4 py-2 text-center">Acción</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-if="requests.length" v-for="sol in requests" :key="sol.id">
+								<td class="text-center px-4 py-2">{{ sol.buddy }}</td>
+								<td class="items-center justify-center flex px-4 py-2">
+									<button @click="acceptRequest(sol.id)"
+										class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded mr-2">
+										Aceptar
+									</button>
+									<button @click="rejectRequest(sol.id)"
+										class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+										Rechazar
+									</button>
+								</td>
+							</tr>
+							<p v-else class="text-gray-500 px-4 py-2">Sin solicitudes todavia</p>
+						</tbody>
+					</table>
+			</div>
+			</div>
+		</div>
+		<div class="flex md:w-1/3 w-full items-center justify-center">
 
-		<table class="table-auto w-full border bg-blue-400">
-			<thead>
-				<tr class="bg-gray-100">
-					<th class="text-left px-4 py-2">Nombre de usuario</th>
-					<th class="text-left px-4 py-2">Acciones</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr v-for="friend in friends" :key="friend.id">
-					<td class="border px-4 py-2">{{ friend.buddy }}</td>
-					<td class="border px-4 py-2">
-						<!-- Aquí puedes poner botones como "Chatear", "Eliminar", etc -->
-						<router-link :to="{ name: 'Chats', params: { buddy: friend.buddy } }"
-							class="text-blue-500 hover:underline">
-							Chatear
-						</router-link>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+			<div class="w-[90%] h-[90%] bg-green-400 rounded-xl">
+				<h1 class="text-2xl font-bold mx-4 my-2">Mis amigos</h1>
+
+				<table class="table-auto w-full bg-green-200 rounded-xl">
+					<thead>
+						<tr class="bg-white">
+							<th class="text-center px-4 py-2">Nombre de usuario</th>
+							<th class="text-center px-4 py-2">Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-if="friends.length" v-for="friend in friends" :key="friend.id">
+							<td class=" px-4 py-2">{{ friend.buddy }}</td>
+							<td class=" px-4 py-2">
+								<!-- Aquí puedes poner botones como "Chatear", "Eliminar", etc -->
+								<button class="bg-blue-500 hover:bg-blue-700 transition rounded px-2">noFunc</button>
+							</td>
+						</tr>
+						<p v-else class="text-gray-500 px-4 py-2">Sin amigos todavia</p>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="flex md:w-1/3 w-full items-center justify-center">
+			<div class="w-[90%] h-[90%] bg-red-500 rounded-xl">
+
+				<h1 class="text-2xl font-bold mx-4 my-2">Usuarios bloqueados</h1>
+
+				<table class="table-auto w-full bg-red-200 rounded-b-xl">
+					<thead>
+						<tr class="bg-white">
+							<th class="text-left px-4 py-2">Nombre de usuario</th>
+							<th class="text-left px-4 py-2">Acciones</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="user in blocked" :key="user.id">
+							<td class=" px-4 py-2">{{ user.buddy }}</td>
+							<td class=" px-4 py-2">
+								<button class="bg-blue-500 hover:bg-blue-700 transition rounded px-2">noFunc</button>
+							</td>
+						</tr>
+						<tr v-if="blocked.length === 0">
+							<td colspan="2" class="text-gray-500 px-4 py-2">No tienes usuarios bloqueados</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</div>
-
-	<div class="p-4">
-	<h1 class="text-2xl font-bold mb-4">Usuarios bloqueados</h1>
-
-	<table class="table-auto w-full border bg-red-200">
-		<thead>
-			<tr class="bg-gray-100">
-				<th class="text-left px-4 py-2">Nombre de usuario</th>
-				<th class="text-left px-4 py-2">Acciones</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr v-for="user in blocked" :key="user.id">
-				<td class="border px-4 py-2">{{ user.buddy }}</td>
-				<td class="border px-4 py-2">
-					<router-link
-						:to="{ name: 'Chats', params: { buddy: user.buddy } }"
-						class="text-blue-500 hover:underline"
-					>
-						Chatear
-					</router-link>
-				</td>
-			</tr>
-			<tr v-if="blocked.length === 0">
-				<td colspan="2" class="text-gray-500 px-4 py-2">No tienes usuarios bloqueados</td>
-			</tr>
-		</tbody>
-	</table>
-</div>
 </template>

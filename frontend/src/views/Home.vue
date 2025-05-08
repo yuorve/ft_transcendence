@@ -80,7 +80,7 @@
                 <div class="w-full flex justify-around items-center">
                   <td class="" v-if="game.player1">{{ game.player1 }}</td>
                   <td class="" v-if="game.player2">{{ game.player2 }}</td>
-                  <td class="bg-green-500 px-2 rounded-xl transition duration-500 hover:bg-green-600" v-if="(!game.player1 || !game.player2) && game.game === 'Pong'"><router-link
+                  <td class="bg-green-500 px-2 rounded-xl transition duration-500 hover:bg-green-600" v-if="(!game.player1 || !game.player2) && game.game === 'pong'"><router-link
                       :to="{ name: 'PongOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link></td>
                   <td class="bg-green-500 px-2 rounded-xl transition duration-500 hover:bg-green-600" v-if="(!game.player1 || !game.player2) && game.game === 'TicTacToe'">
                     <router-link
@@ -204,7 +204,7 @@ function useRandomAvailableGameId(gameType: string) {
   });
 }
 const gamesLoaded = ref(false);
-const randomPongGameId = useRandomAvailableGameId('Pong');
+const randomPongGameId = useRandomAvailableGameId('pong');
 const randomTTTGameId = useRandomAvailableGameId('TicTacToe');
 
 // Uso del websocket

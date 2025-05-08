@@ -53,7 +53,7 @@ const { websocketState: { socket } } = useWebSocket();
 let syncInterval: number | null = null;
 
 if (socket) {
-    socket.send(JSON.stringify({ type: gameMode, game: 'Pong', id: gameid, player: username }));
+    socket.send(JSON.stringify({ type: gameMode, game: 'pong', id: gameid, player: username }));
     socket.addEventListener('message', event => {
         const data = JSON.parse(event.data);
         console.log(data);
@@ -70,7 +70,7 @@ if (socket) {
               puntuation.opponentPaddle = scene.getMeshByName("paddle2");
               createGame(
                 gameid,
-                "Pong",
+                "pong",
                 -1,
                 player1.value,      // YA tenemos username cargado
                 player2.value,

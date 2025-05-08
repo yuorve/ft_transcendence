@@ -130,7 +130,7 @@ onMounted(async () => {
     try {
       await createGame(
         gameid.value,
-        "Pong",
+        "pong",
         -1,
         username.value,      // YA tenemos username cargado
         player2.value,
