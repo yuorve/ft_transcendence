@@ -271,7 +271,7 @@ onUnmounted(() => {
 
 const sendrouter = useRouter();
 const sendPunt = (winner: string) => {
-  socket.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));
+  socket?.send(JSON.stringify({ type: 'gameOver', gameId: gameid }));
   updateGame(
     gameid,
     player1.value,
