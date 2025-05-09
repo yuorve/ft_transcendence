@@ -1,4 +1,5 @@
 import * as BABYLON from '@babylonjs/core'
+import { GUI3DManager, HolographicButton } from '@babylonjs/gui';
 import earcut from "earcut";
 import { reactive } from 'vue';
 // import { createGame } from "../api";
@@ -16,7 +17,7 @@ export const puntuation = reactive({
 	online: 0,
 	isHost: false,
 	playerPaddle: null as BABYLON.Nullable<BABYLON.Mesh>,
-	opponentPaddle: null as BABYLON.Nullable<BABYLON.Mesh>,	
+	opponentPaddle: null as BABYLON.Nullable<BABYLON.Mesh>,
 });
 
 // let username = localStorage.getItem("username") || "";
@@ -57,8 +58,9 @@ export default function initPong() {
 
 		// CAMERA
 		const camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene); //camara
+		let cameraZoom = -15;
 		// camera.attachControl(true);	//comentado para que no se mueva
-		camera.setPosition(new BABYLON.Vector3(0, 0, -15));
+		camera.setPosition(new BABYLON.Vector3(0, 0, cameraZoom));
 		camera.lowerBetaLimit = Math.PI / 4; //limite movimiento arriba
 		camera.upperBetaLimit = Math.PI / 1.5; //limite movimiento abajo
 		camera.upperAlphaLimit = -Math.PI / 4; //limite movimiento derecha
@@ -129,6 +131,202 @@ export default function initPong() {
 		paddle2Mat.emissiveColor = new BABYLON.Color3(1, 0, 0);
 		paddle2.material = paddle2Mat;
 
+		//MOVEMENT BUTTONS
+		const manager = new GUI3DManager(scene);
+		var buttons: HolographicButton[][] = [];
+		for (let y = 0; y < 3; y++) {
+			buttons[y] = [];
+			for (let x = 0; x < 3; x++) {
+				let button = new HolographicButton(`button${y},${x}`);
+				buttons[y][x] = button;
+			}
+		}
+
+		type ButtonRepeatControl = {
+			intervalId: number | null;
+			isHeld: boolean;
+		};
+
+		function createButton(y: number, x: number, posY: number, posX: number, onHold: () => void) {
+			buttons[y][x].position = new BABYLON.Vector3(posY, posX, -0.5);
+			buttons[y][x].scaling = new BABYLON.Vector3(6, 3.5, 1);
+			manager.addControl(buttons[y][x]);
+			if (buttons[y][x].backMaterial) {
+				buttons[y][x].backMaterial.alpha = 0;
+			}
+			if (buttons[y][x].frontMaterial) {
+				buttons[y][x].frontMaterial.alpha = 0;
+			}
+			buttons[y][x].pointerEnterAnimation = () => { }; // nada
+			buttons[y][x].pointerOutAnimation = () => { };
+			buttons[y][x].pointerDownAnimation = () => { };
+			buttons[y][x].pointerUpAnimation = () => { };
+			const control: ButtonRepeatControl = { intervalId: null, isHeld: false };
+
+			// Mantener pulsado
+			buttons[y][x].pointerDownAnimation = () => {
+				if (!control.isHeld) {
+					control.isHeld = true;
+					control.intervalId = window.setInterval(onHold, 5);
+				}
+			};
+
+			// Soltar botón
+			buttons[y][x].pointerUpAnimation = () => {
+				control.isHeld = false;
+				if (control.intervalId !== null) {
+					clearInterval(control.intervalId);
+					control.intervalId = null;
+				}
+			};
+
+			// Por seguridad, también al salir del área del botón
+			buttons[y][x].pointerOutAnimation = () => {
+				control.isHeld = false;
+				if (control.intervalId !== null) {
+					clearInterval(control.intervalId);
+					control.intervalId = null;
+				}
+			};
+			// console.log("gamemode es ", puntuation.gameMode);
+			// console.log(" puntuation.online es  ", puntuation.online);
+		}
+
+		if (puntuation.online === 0)
+		{
+			createButton(0, 0, -paddleDistance, paddleDistance / 2 - 0.25, handleTopLeftClick);
+			createButton(1, 0, -paddleDistance, -paddleDistance / 2 + 0.25, handleBotLeftClick);
+			createButton(0, 2, paddleDistance, paddleDistance / 2 - 0.25, handleTopRightClick);
+			createButton(0, 1, paddleDistance, -paddleDistance / 2 + 0.25, handleBotRightClick);
+		}
+		else if (puntuation.online === 0 || (puntuation.online === 1 && puntuation.gameMode === 'newGame')) {
+			createButton(0, 0, -paddleDistance, paddleDistance / 2 - 0.25, handleTopLeftClick);
+			createButton(1, 0, -paddleDistance, -paddleDistance / 2 + 0.25, handleBotLeftClick);
+		}
+		else {
+			createButton(0, 2, paddleDistance, paddleDistance / 2 - 0.25, handleTopRightClick);
+			createButton(0, 1, paddleDistance, -paddleDistance / 2 + 0.25, handleBotRightClick);
+		}
+
+		function handleTopLeftClick() {
+			console.log("Top Left button clicked – acción A");
+			if (paddle1.position.y < maxUpDown + sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
+				paddle1.position.y += paddleSpeed;
+		}
+
+		function handleBotLeftClick() {
+			console.log("Bot Left button clicked – acción B");
+			if (paddle1.position.y > -maxUpDown - sphereRadius / 2 && !paddle1.intersectsMesh(sphere, true))
+				paddle1.position.y -= paddleSpeed;
+		}
+
+		function handleTopRightClick() {
+			console.log("Top Right button clicked – acción C");
+			if (paddle2.position.y < maxUpDown + sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
+				paddle2.position.y += paddleSpeed;
+		}
+
+		function handleBotRightClick() {
+			console.log("Bot Right button clicked – acción D");
+			if (paddle2.position.y > -maxUpDown - sphereRadius / 2 && !paddle2.intersectsMesh(sphere, true))
+				paddle2.position.y -= paddleSpeed;
+		}
+
+		//CAMERA ZOOM BUTTONS
+		var ZoomInVar: HolographicButton = new HolographicButton("ZoomIn");
+		function  createZoomInButton(posY: number, posX: number, onHold: () => void) {
+			ZoomInVar.position = new BABYLON.Vector3(posY, posX, -0.7);
+			ZoomInVar.scaling = new BABYLON.Vector3(6, 1, 1);
+            ZoomInVar.text = `Zoom In`;
+			ZoomInVar.pointerEnterAnimation = () => {true }; // nada
+			ZoomInVar.pointerOutAnimation = () => {true };
+			ZoomInVar.pointerDownAnimation = () => { true};
+			ZoomInVar.pointerUpAnimation = () => {true };
+			manager.addControl(ZoomInVar);
+			const control: ButtonRepeatControl = { intervalId: null, isHeld: false };
+			// Mantener pulsado
+			ZoomInVar.pointerDownAnimation = () => {
+				if (!control.isHeld) {
+					control.isHeld = true;
+					control.intervalId = window.setInterval(onHold, 50);
+				}
+			};
+			// Soltar botón
+			ZoomInVar.pointerUpAnimation = () => {
+				control.isHeld = false;
+				if (control.intervalId !== null) {
+					clearInterval(control.intervalId);
+					control.intervalId = null;
+				}
+			};
+
+			// Por seguridad, también al salir del área del botón
+			ZoomInVar.pointerOutAnimation = () => {
+				control.isHeld = false;
+				if (control.intervalId !== null) {
+					clearInterval(control.intervalId);
+					control.intervalId = null;
+				}
+			};
+			// console.log("gamemode es ", puntuation.gameMode);
+			// console.log(" puntuation.online es  ", puntuation.online);
+		}
+		function ZoomIn() {
+			console.log("Zoom In pushed");
+			if (cameraZoom < -10)
+			cameraZoom += 1;
+		// camera.attachControl(true);	//comentado para que no se mueva
+		camera.setPosition(new BABYLON.Vector3(0, 0, cameraZoom));
+		}
+		createZoomInButton(0,maxUpDown + paddleHeight / 2 + sphereRadius + paddleWidth / 2 ,ZoomIn)
+
+		var ZoomOutVar: HolographicButton = new HolographicButton("ZoomOut");
+		function  createZoomOutButton(posY: number, posX: number, onHold: () => void) {
+			ZoomOutVar.position = new BABYLON.Vector3(posY, posX, -0.7);
+			ZoomOutVar.scaling = new BABYLON.Vector3(6, 1, 1);
+            ZoomOutVar.text = `Zoom Out`;
+			ZoomOutVar.pointerEnterAnimation = () => {true }; // nada
+			ZoomOutVar.pointerOutAnimation = () => {true };
+			ZoomOutVar.pointerDownAnimation = () => { true};
+			ZoomOutVar.pointerUpAnimation = () => {true };
+			manager.addControl(ZoomOutVar);
+			const control: ButtonRepeatControl = { intervalId: null, isHeld: false };
+			// Mantener pulsado
+			ZoomOutVar.pointerDownAnimation = () => {
+				if (!control.isHeld) {
+					control.isHeld = true;
+					control.intervalId = window.setInterval(onHold, 50);
+				}
+			};
+			// Soltar botón
+			ZoomOutVar.pointerUpAnimation = () => {
+				control.isHeld = false;
+				if (control.intervalId !== null) {
+					clearInterval(control.intervalId);
+					control.intervalId = null;
+				}
+			};
+
+			// Por seguridad, también al salir del área del botón
+			ZoomOutVar.pointerOutAnimation = () => {
+				control.isHeld = false;
+				if (control.intervalId !== null) {
+					clearInterval(control.intervalId);
+					control.intervalId = null;
+				}
+			};
+			// console.log("gamemode es ", puntuation.gameMode);
+			// console.log(" puntuation.online es  ", puntuation.online);
+		}
+		function ZoomOut() {
+			console.log("Zoom Out pushed");
+			if (cameraZoom > -20)
+			cameraZoom -= 1;
+		// camera.attachControl(true);	//comentado para que no se mueva
+		camera.setPosition(new BABYLON.Vector3(0, 0, cameraZoom));
+		}
+		createZoomOutButton(0,-(maxUpDown + paddleHeight / 2 + sphereRadius + paddleWidth / 2) ,ZoomOut)
+
 		// TEXT
 		async function loadFontData() {
 			const response = await fetch('/Knewave_Regular.json');
@@ -160,47 +358,47 @@ export default function initPong() {
 		resetBall();
 
 		// MOVEMENT
-		scene.onBeforeRenderObservable.add(function () {			
+		scene.onBeforeRenderObservable.add(function () {
 			if (puntuation.gameState === 'playing') {
-			// 	// Sincronización con el oponente
-			// 	ballInitDir.x = puntuation.dx;
-			// 	ballInitDir.y = puntuation.dy;
-			// 	//
-			// 	// Formula guay
-			// 	//
-			// 	sphere.position.x += ballInitDir.x;
-			// 	sphere.position.y += ballInitDir.y;
-			// 	sphere.rotation.x += ballInitDir.x;
-			// 	sphere.rotation.y += ballInitDir.y;
+				// 	// Sincronización con el oponente
+				// 	ballInitDir.x = puntuation.dx;
+				// 	ballInitDir.y = puntuation.dy;
+				// 	//
+				// 	// Formula guay
+				// 	//
+				// 	sphere.position.x += ballInitDir.x;
+				// 	sphere.position.y += ballInitDir.y;
+				// 	sphere.rotation.x += ballInitDir.x;
+				// 	sphere.rotation.y += ballInitDir.y;
 
-			// 	// collisions with paddles
-			// 	if (sphere.intersectsMesh(paddle2, true) && ballInitDir.x > 0) { //false for less precission, more efficiency 
-			// 		ballInitDir.x *= -1;
-			// 		puntuation.dx = ballInitDir.x;
-			// 	}
-			// 	if (sphere.intersectsMesh(paddle1, true) && ballInitDir.x < 0) {
-			// 		ballInitDir.x *= -1;
-			// 		puntuation.dx = ballInitDir.x;
-			// 	}
+				// 	// collisions with paddles
+				// 	if (sphere.intersectsMesh(paddle2, true) && ballInitDir.x > 0) { //false for less precission, more efficiency 
+				// 		ballInitDir.x *= -1;
+				// 		puntuation.dx = ballInitDir.x;
+				// 	}
+				// 	if (sphere.intersectsMesh(paddle1, true) && ballInitDir.x < 0) {
+				// 		ballInitDir.x *= -1;
+				// 		puntuation.dx = ballInitDir.x;
+				// 	}
 
-			// 	// collisions up and down
-			// 	if (sphere.position.y >= maxUpDown + paddleHeight / 2)
-			// 		ballInitDir.y *= -1;
-			// 		puntuation.dy = ballInitDir.y;
-			// 	if (sphere.position.y <= -maxUpDown - paddleHeight / 2)
-			// 		ballInitDir.y *= -1;
-			// 		puntuation.dy = ballInitDir.y;
+				// 	// collisions up and down
+				// 	if (sphere.position.y >= maxUpDown + paddleHeight / 2)
+				// 		ballInitDir.y *= -1;
+				// 		puntuation.dy = ballInitDir.y;
+				// 	if (sphere.position.y <= -maxUpDown - paddleHeight / 2)
+				// 		ballInitDir.y *= -1;
+				// 		puntuation.dy = ballInitDir.y;
 
-			// 	// out of table
-			// 	if (sphere.position.x >= paddleDistance + paddleWidth / 2) {
-			// 		puntuation.pl++;
-			// 		resetBall();
-			// 	}
-			// 	if (sphere.position.x <= -paddleDistance - paddleWidth / 2)
-			// 	{
-			// 		puntuation.pr++;
-			// 		resetBall();
-			// 	}
+				// 	// out of table
+				// 	if (sphere.position.x >= paddleDistance + paddleWidth / 2) {
+				// 		puntuation.pl++;
+				// 		resetBall();
+				// 	}
+				// 	if (sphere.position.x <= -paddleDistance - paddleWidth / 2)
+				// 	{
+				// 		puntuation.pr++;
+				// 		resetBall();
+				// 	}
 
 				/////////
 
@@ -211,7 +409,7 @@ export default function initPong() {
 					sphere.position.y += ballInitDir.y;
 					sphere.rotation.x += ballInitDir.x;
 					sphere.rotation.y += ballInitDir.y;
-		
+
 					// collisions with paddles
 					if (sphere.intersectsMesh(paddle2, true) && ballInitDir.x > 0) {
 						ballInitDir.x *= -1;
@@ -221,7 +419,7 @@ export default function initPong() {
 						ballInitDir.x *= -1;
 						puntuation.dx = ballInitDir.x;
 					}
-		
+
 					// collisions up and down
 					if (sphere.position.y >= maxUpDown + paddleHeight / 2) {
 						ballInitDir.y *= -1;
@@ -231,7 +429,7 @@ export default function initPong() {
 						ballInitDir.y *= -1;
 						puntuation.dy = ballInitDir.y;
 					}
-		
+
 					// out of table
 					if (sphere.position.x >= paddleDistance + paddleWidth / 2) {
 						puntuation.pl++;
@@ -279,9 +477,9 @@ export default function initPong() {
 		});
 		return scene;
 	}
-	
+
 	const scene = CreateScene();
-	
+
 	engine.runRenderLoop(function ()   //loop
 	{
 		scene.render();
