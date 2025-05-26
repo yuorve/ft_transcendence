@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-screen w-full m-0 p-0 leading-none overflow-hidden">
+  <div class="relative flex flex-col h-screen w-full m-0 p-0 leading-none overflow-hidden">
     <!-- VENTANA DE SETUP -->
     <div class="w-full h-3/4 m-0 p-0 border-red-600">
       <div v-if="showSetup" class="w-full h-full flex items-center justify-center">
@@ -50,11 +50,11 @@
       </div>
     </div>
     <div
-      class="absolute w-full h-full text-9xl flex flex-col text-center items-center justify-center pointer-events-none"
+      class="absolute w-full h-full text-xl flex flex-col text-center items-center justify-center pointer-events-none xl:text-8xl"
       v-if="puntuation.pl >= 5 || puntuation.pr >= 5">
-      <h1>FIN DE LA PARTIDA</h1>
-      <h2 v-if="puntuation.pl >= 5">GANADOR {{ player1 }}</h2>
-      <h2 v-else>GANADOR {{ player2 }}</h2>
+      <h1 class="bg-white rounded-2xl">FIN DE LA PARTIDA</h1>
+      <h2 class="bg-white rounded-2xl" v-if="puntuation.pl >= 5">GANADOR {{ player1 }}</h2>
+      <h2 class="bg-white rounded-2xl" v-else>GANADOR {{ player2 }}</h2>
     </div>
   </div>
 </template>
@@ -130,7 +130,7 @@ onMounted(async () => {
     try {
       await createGame(
         gameid.value,
-        "pong",
+        "Pong",
         -1,
         username.value,      // YA tenemos username cargado
         player2.value,
