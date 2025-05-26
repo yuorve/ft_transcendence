@@ -17,7 +17,7 @@ const idtournament = generateId();
 const game = ref("");
 
 //conexion websocket
-const {send} = useWebSocket();
+const { send } = useWebSocket();
 
 const player1 = ref(auth?.username || "Jugador 1");
 const player2 = ref("Invitado");
@@ -150,6 +150,10 @@ function startNewTournament() {
 onMounted(async () => {
   await checkTournament();
   useWebSocket();
+  // const res = await getUsers()
+  // console.log("el id del torneo todavia no creado es " + idtournament)
+  // // getUsers devuelve { users: User[] }
+  // allUsers.value = res.users || []
 });
 
 const players = ref<string[]>([currentUser]);
@@ -247,6 +251,22 @@ watch(playerNum, (newCount) => {
     players.value.splice(newCount);
   }
 });
+
+const searchTerm = ref('')
+const allUsers = ref<User[]>([])
+
+const filteredUsers = computed(() => {
+  const q = searchTerm.value.trim().toLowerCase()
+  if (!q) return []
+  return allUsers.value.filter(u =>
+    u.username.toLowerCase().includes(q)
+  )
+})
+
+function select(username: string) {
+  searchTerm.value = username
+  // router.push({ path: '/games', query: { username: searchTerm.value } })
+}
 </script>
 
 
@@ -281,9 +301,18 @@ watch(playerNum, (newCount) => {
         <div v-else class="bg-white rounded gap-3 p-1">
           <input v-model="players[index]" type="text" :placeholder="`Jugador ${index + 1}`"
             class="border rounded p-2 my-1" />
-          <button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">
+          <!-- <input v-model="searchTerm" type="text" placeholder="Invitar usuario…"
+            class="w-full max-w-64 border p-2 rounded" />
+          <ul v-if="filteredUsers.length"
+            class="absolute z-10 w-60 bg-white border rounded mt-1 max-h-40 overflow-auto">
+            <li v-for="user in filteredUsers" :key="user.username" @click="select(user.username)"
+              class="px-2 py-1 hover:bg-gray-100 cursor-pointer">
+              {{ user.username }}
+            </li>
+          </ul> -->
+          <!-- <button class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition">
             Invitar
-          </button>
+          </button> -->
         </div>
 
       </div>

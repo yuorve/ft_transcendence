@@ -56,7 +56,6 @@ const filteredUsers = computed(() => {
 
 function select(username: string) {
 	searchTerm.value = username
-	// aquí decides qué hacer: emitir un evento, navegar…
 	router.push({ path: '/games', query: { username: searchTerm.value } })
 	results.value = []  // opcional: oculta la lista tras seleccionar
 }
