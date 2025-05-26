@@ -2,7 +2,7 @@
 import { ref, onMounted, inject, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useWebSocket, websocketState } from "../services/websocket";
-import { getMyTournament, createTournament, createGame, generateId, noPlayer, updateChampion, getUsers } from "../api";
+import { getMyTournament, createTournament, createGame, generateId, noPlayer, updateChampion, getUsers, deleteTournament } from "../api";
 import type { Game, MyTournamentsResponse, TournamentResponse } from "../api";
 // import type { int } from "@babylonjs/core";
 
@@ -160,70 +160,80 @@ const players = ref<string[]>([currentUser]);
 
 // Función para generar los participantes del torneo
 const generateRanks = async (count: number) => {
-  if (players.value.length == playerNum.value) {
-    console.log("ID torneo:", idtournament);
-    const normalized = players.value.map(p =>
-      p.trim().toLocaleLowerCase());
-    console.log("normalized players:", normalized);
-
-    // 2) Construir el Set de usuarios de la API
-    const res = await getUsers();
-    const validUsernames = new Set(
-      (res.users || []).map((u: { username: string; }) =>
-        u.username.trim().toLocaleLowerCase()
-      )
-    );
-    console.log("validUsernames from API:", Array.from(validUsernames));
-
-    // 3) Validar existencia solo sobre índices >= 1
-    for (let i = 1; i < normalized.length; i++) {
-      const name = normalized[i];
-      // si usas un placeholder para rondas vacías:
-      if (name === noPlayer.trim().toLocaleLowerCase()) continue;
-
-      // **** aquí va la alerta solo si NO está en el Set ****
-      if (validUsernames.has(name)) {
-        alert(`El usuario “${players.value[i].trim()}” existe.`);
+  try {
+    if (players.value.length == playerNum.value) {
+      if (game.value == "") {
+        throw new Error("Por favor, selecciona un juego antes de crear el torneo.");
         return;
       }
-    }
+      console.log("ID torneo:", idtournament);
+      const normalized = players.value.map(p =>
+        p.trim().toLocaleLowerCase());
+      console.log("normalized players:", normalized);
 
-    let k = 0;
+      // 2) Construir el Set de usuarios de la API
+      const res = await getUsers();
+      const validUsernames = new Set(
+        (res.users || []).map((u: { username: string; }) =>
+          u.username.trim().toLocaleLowerCase()
+        )
+      );
+      console.log("validUsernames from API:", Array.from(validUsernames));
 
-    // Recorremos el array players desde el segundo elemento (índice 1) hasta count - 1
-    for (let i = 1; i < count; i++) {
-      if (i % 2 !== 0) {
-        const idgame = generateId();
-        await createGame(idgame, game.value, k, players.value[i - 1], players.value[i], "", "");
-        await createTournament(idtournament, idgame, 1);
-        k++;
+      // 3) Validar existencia solo sobre índices >= 1
+      for (let i = 1; i < normalized.length; i++) {
+        const name = normalized[i];
+        // si usas un placeholder para rondas vacías:
+        if (name === noPlayer.trim().toLocaleLowerCase()) continue;
+
+        // **** aquí va la alerta solo si NO está en el Set ****
+        if (validUsernames.has(name)) {
+          alert(`El usuario “${players.value[i].trim()}” existe.`);
+          return;
+        }
       }
-      let currentGameCount = Math.floor(count / 2);
-      let round = 2;
-      // Mientras queden más de un partido (es decir, hasta el partido final)
-      while (currentGameCount > 1) {
-        k = 0;
-        // Calculamos cuántos partidos tendrá la siguiente ronda (la mitad)
-        currentGameCount = Math.floor(currentGameCount / 2);
-        for (let i = 0; i < currentGameCount; i++) {
+
+      let k = 0;
+
+      // Recorremos el array players desde el segundo elemento (índice 1) hasta count - 1
+      for (let i = 1; i < count; i++) {
+        if (i % 2 !== 0) {
           const idgame = generateId();
-          // Se crea un partido "vacío" (sin jugadores asignados) para esta ronda
-          await createGame(idgame, game.value, k, noPlayer, noPlayer, "", "");
-          await createTournament(idtournament, idgame, round);
+          await createGame(idgame, game.value, k, players.value[i - 1], players.value[i], "", "");
+          await createTournament(idtournament, idgame, 1);
           k++;
         }
-        round++;
+        let currentGameCount = Math.floor(count / 2);
+        let round = 2;
+        // Mientras queden más de un partido (es decir, hasta el partido final)
+        while (currentGameCount > 1) {
+          k = 0;
+          // Calculamos cuántos partidos tendrá la siguiente ronda (la mitad)
+          currentGameCount = Math.floor(currentGameCount / 2);
+          for (let i = 0; i < currentGameCount; i++) {
+            const idgame = generateId();
+            // Se crea un partido "vacío" (sin jugadores asignados) para esta ronda
+            await createGame(idgame, game.value, k, noPlayer, noPlayer, "", "");
+            await createTournament(idtournament, idgame, round);
+            k++;
+          }
+          round++;
+        }
       }
+      checkTournament();
+      tournamentActive.value = true;
+      send({
+        type: "tournamentCreated",
+        message: `🏆 ¡En breve dara comienzo un nuevo torneo!`,
+      });
     }
-    checkTournament();
-    tournamentActive.value = true;
-    send({
-      type: "tournamentCreated",
-      message: `🏆 ¡En breve dara comienzo un nuevo torneo!`,
-    });
+    else
+      throw new Error("El número de jugadores no coincide con el número de inputs.");
+
   }
-  else
-    console.log("Error en generateRanks: No hay suficientes jugadores");
+  catch (error) {
+    alert(error.message);
+  }
 }
 
 const playerNum = ref(0);
@@ -267,6 +277,20 @@ function select(username: string) {
   searchTerm.value = username
   // router.push({ path: '/games', query: { username: searchTerm.value } })
 }
+
+const borrarTorneo = async (tournamentId: string) => {
+  try {
+    console.log("Borrando torneo con ID:", tournamentId);
+    const res = await deleteTournament(tournamentId);
+    console.log(res.message);
+    game.value = "";
+    tournamentData.value = null;
+    players.value = [currentUser];
+    checkTournament();
+  } catch (err) {
+    console.error("Error al borrar torneo:", err);
+  }
+};
 </script>
 
 
@@ -348,4 +372,7 @@ function select(username: string) {
         @click="startNewTournament">Nuevo torneo</button>
     </div>
   </div>
+  <button v-if="tournamentData" @click="borrarTorneo(tournamentData.tournament)" class ="p-2 w-fit bg-red-500 text-white rounded-md">
+    🗑️ Borrar torneo
+  </button>
 </template>
