@@ -101,6 +101,8 @@ export default function initTicTacToe() {
                         puntuation.gameOver = 1;
                     }                    
                     figure = (figure === 1) ? 2 : 1;
+                } else if (data.type === 'newPlayer') {
+                    figure = puntuation.playerFigure;
                 }
             });
         }

@@ -358,7 +358,7 @@ function handleWebSocketMessages() {
 					timestamp: undefined, // Optional timestamp
 					openChat: false, // Set the appropriate value for openChat
 					gameId: data.gameId,
-					inviteButtons: true, // Nueva propiedad para indicar que hay botones de invitación
+					inviteButtons: true,
 				};
 
 				// Si el chat ya existe, solo agregar los botones
@@ -398,15 +398,19 @@ function handleWebSocketMessages() {
 			} else if (data.type === "game-invite-response") {
 				const from = data.from;
 				const accepted = data.accepted;
-				const gameId = data.gameId;
+				//const gameId = data.gameId;
 				const responseMessage = accepted
 					? `Acepto tu invitación. ¡Que comience la partida!`
 					: `Rechazo tu invitación.`;
-
+				
+				//Para minimizar el chat
+				if (accepted)
+					isOpen.value = !isOpen.value;
 				// Buscar o crear el chat privado
 				const chatIndex = privateChats.value.findIndex(
 					(c) => c.username === from
 				);
+				
 
 				if (chatIndex >= 0) {
 					// Chat existente - añadir mensaje
