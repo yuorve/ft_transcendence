@@ -194,31 +194,27 @@ const generateRanks = async (count: number) => {
       }
 
       let k = 0;
+      // Ronda 1: emparejar jugadores
+      for (let i = 1; i < count; i += 2) {
+        const idgame = generateId();
+        await createGame(idgame, game.value, k, players.value[i - 1], players.value[i], "", "");
+        await createTournament(idtournament, idgame, 1);
+        k++;
+      }
 
-      // Recorremos el array players desde el segundo elemento (índice 1) hasta count - 1
-      for (let i = 1; i < count; i++) {
-        if (i % 2 !== 0) {
+      // Crear rondas siguientes
+      let currentGameCount = Math.floor(count / 2);
+      let round = 2;
+      while (currentGameCount > 1) {
+        k = 0;
+        currentGameCount = Math.floor(currentGameCount / 2);
+        for (let i = 0; i < currentGameCount; i++) {
           const idgame = generateId();
-          await createGame(idgame, game.value, k, players.value[i - 1], players.value[i], "", "");
-          await createTournament(idtournament, idgame, 1);
+          await createGame(idgame, game.value, k, noPlayer, noPlayer, "", "");
+          await createTournament(idtournament, idgame, round);
           k++;
         }
-        let currentGameCount = Math.floor(count / 2);
-        let round = 2;
-        // Mientras queden más de un partido (es decir, hasta el partido final)
-        while (currentGameCount > 1) {
-          k = 0;
-          // Calculamos cuántos partidos tendrá la siguiente ronda (la mitad)
-          currentGameCount = Math.floor(currentGameCount / 2);
-          for (let i = 0; i < currentGameCount; i++) {
-            const idgame = generateId();
-            // Se crea un partido "vacío" (sin jugadores asignados) para esta ronda
-            await createGame(idgame, game.value, k, noPlayer, noPlayer, "", "");
-            await createTournament(idtournament, idgame, round);
-            k++;
-          }
-          round++;
-        }
+        round++;
       }
       checkTournament();
       tournamentActive.value = true;
@@ -372,7 +368,8 @@ const borrarTorneo = async (tournamentId: string) => {
         @click="startNewTournament">Nuevo torneo</button>
     </div>
   </div>
-  <button v-if="tournamentData" @click="borrarTorneo(tournamentData.tournament)" class ="p-2 w-fit bg-red-500 text-white rounded-md">
+  <button v-if="tournamentData" @click="borrarTorneo(tournamentData.tournament)"
+    class="p-2 w-fit bg-red-500 text-white rounded-md">
     🗑️ Borrar torneo
   </button>
 </template>
