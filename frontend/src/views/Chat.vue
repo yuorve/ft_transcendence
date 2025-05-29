@@ -964,7 +964,7 @@ function argo(username: string) {
                                         v-if="
                                             player.username !== auth?.username
                                         "
-                                        class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
+                                        class="w-full bg-blue-100 cursor-pointer hover:bg-blue-200 text-blue-800 px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
                                         @click.stop="
                                             openPrivateChat(player.username)
                                         "
@@ -975,7 +975,7 @@ function argo(username: string) {
                                         v-if="
                                             player.username !== auth?.username
                                         "
-                                        class="w-full px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
+                                        class="w-full px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors cursor-pointer"
                                         :class="
                                             blockedUsers.includes(
                                                 player.username
@@ -997,7 +997,7 @@ function argo(username: string) {
                                         v-if="
                                             player.username !== auth?.username
                                         "
-                                        class="w-full bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
+                                        class="w-full bg-green-100 cursor-pointer hover:bg-green-200 text-green-800 px-2 py-1 rounded text-left text-xs sm:text-sm transition-colors"
                                         @click.stop="
                                             inviteToGame(player.username)
                                         "
