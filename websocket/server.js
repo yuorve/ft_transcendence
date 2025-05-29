@@ -287,6 +287,80 @@ wss.on("connection", (ws, request) => {
         }
       }
 
+      if (data.type === "tournament-invite") {
+        const toUsername = data.to;
+        const fromUsername = ws.username;
+        const tournamentId = data.tournamentId;
+        const gameType = data.gameType;
+        const totalPlayers = data.totalPlayers;
+      
+        const recipient = [...wss.clients].find(
+          (client) =>
+            client.readyState === WebSocket.OPEN &&
+            client.username === toUsername
+        );
+      
+        if (recipient) {
+          recipient.send(
+            JSON.stringify({
+              type: "tournament-invite",
+              creator: fromUsername,
+              tournamentId: tournamentId,
+              gameType: gameType,
+              totalPlayers: totalPlayers,
+            })
+          );
+        } else {
+          // Si el usuario no está conectado, enviar error al creador
+          ws.send(
+            JSON.stringify({
+              type: "tournament-invite-error",
+              message: `El usuario ${toUsername} no está conectado`,
+              offlineUser: toUsername,
+            })
+          );
+        }
+      }
+      
+      if (data.type === "tournament-invite-response") {
+        const toUsername = data.to; // El jugador que envió la invitación (creador del torneo)
+        const fromUsername = ws.username; // El jugador que responde
+        const tournamentId = data.tournamentId;
+        const accepted = data.accepted;
+      
+        console.log(`Respuesta de torneo de ${fromUsername}: ${accepted ? 'aceptada' : 'rechazada'}`);
+      
+        // Encontrar al creador del torneo (quien envió la invitación)
+        const creator = [...wss.clients].find(
+          (client) =>
+            client.readyState === WebSocket.OPEN &&
+            client.username === toUsername
+        );
+      
+        // Enviar respuesta al creador
+        if (creator) {
+          creator.send(
+            JSON.stringify({
+              type: "tournament-invite-response",
+              from: fromUsername,
+              accepted: accepted,
+              tournamentId: tournamentId,
+            })
+          );
+        }
+      
+        // También enviar confirmación al que respondió
+        ws.send(
+          JSON.stringify({
+            type: "tournament-invite-confirmation",
+            message: accepted 
+              ? "Has aceptado la invitación al torneo" 
+              : "Has rechazado la invitación al torneo",
+            tournamentId: tournamentId,
+          })
+        );
+      }
+
       // Modificar el manejo de los mensajes globales para filtrar mensajes de usuarios bloqueados
       if (data.type === "globalChat") {
         // Crear objeto de mensaje con toda la información necesaria
