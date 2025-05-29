@@ -9,7 +9,7 @@ export const puntuation = reactive({
     pl: 0,
     pr: 0,
     gameState: 'playing',
-	gameMode: 'newGame',
+    gameMode: 'newGame',
     playerTurn: 1,
     playerFigure: 1,
     gameOver: 0,
@@ -45,7 +45,7 @@ export default function initTicTacToe() {
         // CAMERA
         const camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 10, new BABYLON.Vector3(0, 0, 0), scene); //camara
         // camera.attachControl(true);
-		let cameraZoom = -15;
+        let cameraZoom = -15;
         camera.setPosition(new BABYLON.Vector3(0, 0, cameraZoom));
         camera.lowerBetaLimit = camera.beta; //limite movimiento arriba
         camera.upperBetaLimit = camera.beta; //limite movimiento abajo
@@ -73,7 +73,7 @@ export default function initTicTacToe() {
 
         //SOCKET
         const { websocketState: { socket } } = useWebSocket();
-        
+
         if (socket) {
             socket.addEventListener('message', event => {
                 const data = JSON.parse(event.data);
@@ -83,7 +83,7 @@ export default function initTicTacToe() {
                     console.log(data.x);
                     figure = (figure === 1) ? 2 : 1;
                     createFigure(buttons[data.x.i][data.x.j].position.x, buttons[data.x.i][data.x.j].position.y, 0);
-                    matriz.value[data.x.i][data.x.j] = figure;                    
+                    matriz.value[data.x.i][data.x.j] = figure;
                     buttons[data.x.i][data.x.j].dispose();
                     puntuation.playerTurn = 1;
                     if (checkVic()) {
@@ -100,8 +100,10 @@ export default function initTicTacToe() {
                             createCircle(0, 0, -3, butSize);
                         }
                         puntuation.gameOver = 1;
-                    }                    
+                    }
                     figure = (figure === 1) ? 2 : 1;
+                } else if (data.type === 'newPlayer') {
+                    figure = puntuation.playerFigure;
                 }
             });
         }
@@ -237,117 +239,117 @@ export default function initTicTacToe() {
         createButton(2, 1, 0, -butPos);
         createButton(2, 2, butPos, -butPos);
 
-                //CAMERA ZOOM BUTTONS
-                type ButtonRepeatControl = {
-                    intervalId: number | null;
-                    isHeld: boolean;
-                };
-                var ZoomInVar: HolographicButton = new HolographicButton("ZoomIn");
-                function  createZoomInButton(posY: number, posX: number, onHold: () => void) {
-                    ZoomInVar.position = new BABYLON.Vector3(posY, posX, -0.7);
-                    ZoomInVar.scaling = new BABYLON.Vector3(4, 0.5, 1);
-                    ZoomInVar.text = `Zoom In`;
-                    ZoomInVar.pointerEnterAnimation = () => {true }; // nada
-                    ZoomInVar.pointerOutAnimation = () => {true };
-                    ZoomInVar.pointerDownAnimation = () => { true};
-                    ZoomInVar.pointerUpAnimation = () => {true };
-                    manager.addControl(ZoomInVar);
-                    const control: ButtonRepeatControl = { intervalId: null, isHeld: false };
-                    // Mantener pulsado
-                    ZoomInVar.pointerDownAnimation = () => {
-                        if (!control.isHeld) {
-                            control.isHeld = true;
-                            control.intervalId = window.setInterval(onHold, 50);
-                        }
-                    };
-                    // Soltar botón
-                    ZoomInVar.pointerUpAnimation = () => {
-                        control.isHeld = false;
-                        if (control.intervalId !== null) {
-                            clearInterval(control.intervalId);
-                            control.intervalId = null;
-                        }
-                    };
-        
-                    // Por seguridad, también al salir del área del botón
-                    ZoomInVar.pointerOutAnimation = () => {
-                        control.isHeld = false;
-                        if (control.intervalId !== null) {
-                            clearInterval(control.intervalId);
-                            control.intervalId = null;
-                        }
-                    };
-                    // console.log("gamemode es ", puntuation.gameMode);
-                    // console.log(" puntuation.online es  ", puntuation.online);
+        //CAMERA ZOOM BUTTONS
+        type ButtonRepeatControl = {
+            intervalId: number | null;
+            isHeld: boolean;
+        };
+        var ZoomInVar: HolographicButton = new HolographicButton("ZoomIn");
+        function createZoomInButton(posY: number, posX: number, onHold: () => void) {
+            ZoomInVar.position = new BABYLON.Vector3(posY, posX, -0.7);
+            ZoomInVar.scaling = new BABYLON.Vector3(4, 0.5, 1);
+            ZoomInVar.text = `Zoom In`;
+            ZoomInVar.pointerEnterAnimation = () => { true }; // nada
+            ZoomInVar.pointerOutAnimation = () => { true };
+            ZoomInVar.pointerDownAnimation = () => { true };
+            ZoomInVar.pointerUpAnimation = () => { true };
+            manager.addControl(ZoomInVar);
+            const control: ButtonRepeatControl = { intervalId: null, isHeld: false };
+            // Mantener pulsado
+            ZoomInVar.pointerDownAnimation = () => {
+                if (!control.isHeld) {
+                    control.isHeld = true;
+                    control.intervalId = window.setInterval(onHold, 50);
                 }
-                function ZoomIn() {
-                    console.log("Zoom In pushed");
-                    if (cameraZoom < -10)
-                    cameraZoom += 1;
-                // camera.attachControl(true);	//comentado para que no se mueva
-                camera.setPosition(new BABYLON.Vector3(0, 0, cameraZoom));
+            };
+            // Soltar botón
+            ZoomInVar.pointerUpAnimation = () => {
+                control.isHeld = false;
+                if (control.intervalId !== null) {
+                    clearInterval(control.intervalId);
+                    control.intervalId = null;
                 }
-                createZoomInButton(0,framePos ,ZoomIn)
-        
-                var ZoomOutVar: HolographicButton = new HolographicButton("ZoomOut");
-                function  createZoomOutButton(posY: number, posX: number, onHold: () => void) {
-                    ZoomOutVar.position = new BABYLON.Vector3(posY, posX, -0.7);
-                    ZoomOutVar.scaling = new BABYLON.Vector3(4, 0.5, 1);
-                    ZoomOutVar.text = `Zoom Out`;
-                    ZoomOutVar.pointerEnterAnimation = () => {true }; // nada
-                    ZoomOutVar.pointerOutAnimation = () => {true };
-                    ZoomOutVar.pointerDownAnimation = () => { true};
-                    ZoomOutVar.pointerUpAnimation = () => {true };
-                    manager.addControl(ZoomOutVar);
-                    const control: ButtonRepeatControl = { intervalId: null, isHeld: false };
-                    // Mantener pulsado
-                    ZoomOutVar.pointerDownAnimation = () => {
-                        if (!control.isHeld) {
-                            control.isHeld = true;
-                            control.intervalId = window.setInterval(onHold, 50);
-                        }
-                    };
-                    // Soltar botón
-                    ZoomOutVar.pointerUpAnimation = () => {
-                        control.isHeld = false;
-                        if (control.intervalId !== null) {
-                            clearInterval(control.intervalId);
-                            control.intervalId = null;
-                        }
-                    };
-        
-                    // Por seguridad, también al salir del área del botón
-                    ZoomOutVar.pointerOutAnimation = () => {
-                        control.isHeld = false;
-                        if (control.intervalId !== null) {
-                            clearInterval(control.intervalId);
-                            control.intervalId = null;
-                        }
-                    };
-                    // console.log("gamemode es ", puntuation.gameMode);
-                    // console.log(" puntuation.online es  ", puntuation.online);
+            };
+
+            // Por seguridad, también al salir del área del botón
+            ZoomInVar.pointerOutAnimation = () => {
+                control.isHeld = false;
+                if (control.intervalId !== null) {
+                    clearInterval(control.intervalId);
+                    control.intervalId = null;
                 }
-                function ZoomOut() {
-                    console.log("Zoom Out pushed");
-                    if (cameraZoom > -20)
-                    cameraZoom -= 1;
-                // camera.attachControl(true);	//comentado para que no se mueva
-                camera.setPosition(new BABYLON.Vector3(0, 0, cameraZoom));
+            };
+            // console.log("gamemode es ", puntuation.gameMode);
+            // console.log(" puntuation.online es  ", puntuation.online);
+        }
+        function ZoomIn() {
+            console.log("Zoom In pushed");
+            if (cameraZoom < -10)
+                cameraZoom += 1;
+            // camera.attachControl(true);	//comentado para que no se mueva
+            camera.setPosition(new BABYLON.Vector3(0, 0, cameraZoom));
+        }
+        createZoomInButton(0, framePos, ZoomIn)
+
+        var ZoomOutVar: HolographicButton = new HolographicButton("ZoomOut");
+        function createZoomOutButton(posY: number, posX: number, onHold: () => void) {
+            ZoomOutVar.position = new BABYLON.Vector3(posY, posX, -0.7);
+            ZoomOutVar.scaling = new BABYLON.Vector3(4, 0.5, 1);
+            ZoomOutVar.text = `Zoom Out`;
+            ZoomOutVar.pointerEnterAnimation = () => { true }; // nada
+            ZoomOutVar.pointerOutAnimation = () => { true };
+            ZoomOutVar.pointerDownAnimation = () => { true };
+            ZoomOutVar.pointerUpAnimation = () => { true };
+            manager.addControl(ZoomOutVar);
+            const control: ButtonRepeatControl = { intervalId: null, isHeld: false };
+            // Mantener pulsado
+            ZoomOutVar.pointerDownAnimation = () => {
+                if (!control.isHeld) {
+                    control.isHeld = true;
+                    control.intervalId = window.setInterval(onHold, 50);
                 }
-                createZoomOutButton(0,-framePos ,ZoomOut)
-        
-                // TEXT
-                async function loadFontData() {
-                    const response = await fetch('/Knewave_Regular.json');
-                    const fontData = await response.json();
-                    const text = BABYLON.MeshBuilder.CreateText('', 'THE PONG', fontData, {
-                        size: 2,
-                        depth: 0.5
-                    });
-                    if (text)
-                        text.position = new BABYLON.Vector3(0, -1, 3);
-                    return fontData;
+            };
+            // Soltar botón
+            ZoomOutVar.pointerUpAnimation = () => {
+                control.isHeld = false;
+                if (control.intervalId !== null) {
+                    clearInterval(control.intervalId);
+                    control.intervalId = null;
                 }
+            };
+
+            // Por seguridad, también al salir del área del botón
+            ZoomOutVar.pointerOutAnimation = () => {
+                control.isHeld = false;
+                if (control.intervalId !== null) {
+                    clearInterval(control.intervalId);
+                    control.intervalId = null;
+                }
+            };
+            // console.log("gamemode es ", puntuation.gameMode);
+            // console.log(" puntuation.online es  ", puntuation.online);
+        }
+        function ZoomOut() {
+            console.log("Zoom Out pushed");
+            if (cameraZoom > -20)
+                cameraZoom -= 1;
+            // camera.attachControl(true);	//comentado para que no se mueva
+            camera.setPosition(new BABYLON.Vector3(0, 0, cameraZoom));
+        }
+        createZoomOutButton(0, -framePos, ZoomOut)
+
+        // TEXT
+        async function loadFontData() {
+            const response = await fetch('/Knewave_Regular.json');
+            const fontData = await response.json();
+            const text = BABYLON.MeshBuilder.CreateText('', 'THE PONG', fontData, {
+                size: 2,
+                depth: 0.5
+            });
+            if (text)
+                text.position = new BABYLON.Vector3(0, -1, 3);
+            return fontData;
+        }
 
         //PUSH BUTTONS
         for (let i = 0; i < 3; i++) {
@@ -367,7 +369,7 @@ export default function initTicTacToe() {
                         matriz.value[i][x] = figure;
                         buttons[i][x].dispose();
                         puntuation.playerTurn = 0;
-                    } 
+                    }
                     if (checkVic() == true && figure == 1) {
                         console.log("Ganador 1");
                         buttons.forEach((row) => {

@@ -258,6 +258,7 @@ watch(playerNum, (newCount) => {
   }
 });
 
+interface User { username: string }
 const searchTerm = ref('')
 const allUsers = ref<User[]>([])
 
