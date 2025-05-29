@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { actionRequest, getBlocked, getFriends, getRequests, getUsers } from '../api'
+import { actionRequest, blockUser, deleteFriend, getBlocked, getFriends, getRequests, getUsers } from '../api'
 import router from '../router'
+import { useI18n } from 'vue-i18n';
 
 interface User { username: string }
 
+const { t } = useI18n();
 const allUsers = ref<User[]>([])
 const searchTerm = ref('')
 const results = ref<User[]>([])
@@ -80,6 +82,33 @@ const loadBlocked = async () => {
 		console.error('Error al cargar bloqueados:', err);
 	}
 };
+
+const removeFriend = async (buddy: string) => {
+	const confirmDelete = confirm(`¿Estás seguro de que quieres eliminar a ${buddy} de tu lista de amigos?`);
+	if (!confirmDelete) return;
+
+	try {
+		await deleteFriend(username, buddy);
+		loadFriends();
+		alert('Amigo eliminado');
+	} catch (err) {
+		console.error('Error eliminando amigo:', err);
+		alert('No se pudo eliminar al amigo');
+	}
+};
+
+async function handleUnblockUser(buddyName: string) {
+	try {
+		// Aquí modificas blocked = "0" en backend
+		await blockUser(username, buddyName, false); // debes adaptar blockUser() a esto
+		alert(`${buddyName} ha sido desbloqueado`);
+
+		await loadBlocked(); // Recarga para actualizar el botón
+	} catch (err) {
+		console.error(err);
+		alert(`Error al desbloquear a ${buddyName}`);
+	}
+}
 </script>
 
 <template>
@@ -87,8 +116,8 @@ const loadBlocked = async () => {
 		<div class="flex flex-col md:w-1/3 w-full items-center justify-center">
 			<div class="flex flex-col w-[90%] h-[90%]  rounded-xl">
 				<div class="flex relative w-full bg-white px-4 py-2 rounded-t-xl">
-					<h1 class="text-xl font-bold mx-4 my-2">Buscar</h1>
-					<input v-model="searchTerm" type="text" placeholder="Buscar usuario…"
+					<h1 class="text-xl font-bold mx-4 my-2">{{t("search")}}</h1>
+					<input v-model="searchTerm" type="text" :placeholder="t('searchUser')"
 						class="w-full max-w-64 border p-2 rounded" />
 					<ul v-if="filteredUsers.length"
 						class="absolute top-15 left-30 z-10 w-64 bg-white border rounded mt-1 max-h-40 overflow-auto">
@@ -99,12 +128,12 @@ const loadBlocked = async () => {
 					</ul>
 				</div>
 				<div class="bg-white w-full h-full rounded-b-xl">
-					<h1 class="text-xl font-bold mt-4 mb-2 m-3">Solicitudes pendientes</h1>
+					<h1 class="text-xl font-bold mt-4 mb-2 m-3">{{t("Pendingfriendrequests")}}</h1>
 					<table class="table-auto w-full bg-gray-300 rounded-xl">
 						<thead>
 							<tr class="bg-white">
-								<th class="text-center px-4 py-2">Usuario</th>
-								<th class="px-4 py-2 text-center">Acción</th>
+								<th class="text-center px-4 py-2">{{t('username')}}</th>
+								<th class="px-4 py-2 text-center">{{t("action")}}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -113,15 +142,15 @@ const loadBlocked = async () => {
 								<td class="items-center justify-center flex px-4 py-2">
 									<button @click="acceptRequest(sol.id)"
 										class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded mr-2">
-										Aceptar
+										{{t("accept")}}
 									</button>
 									<button @click="rejectRequest(sol.id)"
 										class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
-										Rechazar
+										{{t("reject")}}
 									</button>
 								</td>
 							</tr>
-							<p v-else class="text-gray-500 px-4 py-2">Sin solicitudes todavia</p>
+							<p v-else class="text-gray-500 px-4 py-2">{{t("noPendingRequests")}}</p>
 						</tbody>
 					</table>
 			</div>
@@ -130,24 +159,28 @@ const loadBlocked = async () => {
 		<div class="flex md:w-1/3 w-full items-center justify-center">
 
 			<div class="w-[90%] h-[90%] bg-green-400 rounded-xl">
-				<h1 class="text-2xl font-bold mx-4 my-2">Mis amigos</h1>
+				<h1 class="text-2xl font-bold mx-4 my-2">{{t("myFriends")}}</h1>
 
 				<table class="table-auto w-full bg-green-200 rounded-xl">
 					<thead>
 						<tr class="bg-white">
-							<th class="text-center px-4 py-2">Nombre de usuario</th>
-							<th class="text-center px-4 py-2">Acciones</th>
+							<th class="text-center px-4 py-2">{{t("username")}}</th>
+							<th class="text-center px-4 py-2">{{t("action")}}</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-if="friends.length" v-for="friend in friends" :key="friend.id">
-							<td class=" px-4 py-2">{{ friend.buddy }}</td>
+						<tr v-if="friends.length" v-for="friend in friends" :key="friend.id" class="text-center">
+							<!-- <td class=" px-4 py-2">{{ friend.buddy }}</td> -->
+							 <td class=" px-4 py-2">
+								 <RouterLink :to="{ path: '/games', query: { username: friend.buddy } }"
+									 class="">{{ friend.buddy }}</RouterLink>
+							 </td>
 							<td class=" px-4 py-2">
 								<!-- Aquí puedes poner botones como "Chatear", "Eliminar", etc -->
-								<!-- <button class="bg-blue-500 hover:bg-blue-700 transition rounded px-2">noFunc</button> -->
+								<button @click="removeFriend(friend.buddy)" class="bg-blue-500 hover:bg-blue-700 transition rounded px-2">Eliminar</button>
 							</td>
 						</tr>
-						<p v-else class="text-gray-500 px-4 py-2">Sin amigos todavia</p>
+						<p v-else class="text-gray-500 px-4 py-2">{{t("noFriends")}}</p>
 					</tbody>
 				</table>
 			</div>
@@ -156,24 +189,27 @@ const loadBlocked = async () => {
 		<div class="flex md:w-1/3 w-full items-center justify-center">
 			<div class="w-[90%] h-[90%] bg-red-500 rounded-xl">
 
-				<h1 class="text-2xl font-bold mx-4 my-2">Usuarios bloqueados</h1>
+				<h1 class="text-2xl font-bold mx-4 my-2">{{t("blockedUsers")}}</h1>
 
 				<table class="table-auto w-full bg-red-200 rounded-b-xl">
 					<thead>
 						<tr class="bg-white">
-							<th class="text-left px-4 py-2">Nombre de usuario</th>
-							<th class="text-left px-4 py-2">Acciones</th>
+							<th class="text-center px-4 py-2">{{t("username")}}</th>
+							<th class="text-center px-4 py-2">{{t("action")}}</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="user in blocked" :key="user.id">
-							<td class=" px-4 py-2">{{ user.buddy }}</td>
+						<tr v-for="user in blocked" :key="user.id" class="text-center">
+							 <td class=" px-4 py-2">
+								 <RouterLink :to="{ path: '/games', query: { username: user.buddy } }"
+									 class="">{{ user.buddy }}</RouterLink>
+							 </td>
 							<td class=" px-4 py-2">
-								<button class="bg-blue-500 hover:bg-blue-700 transition rounded px-2">noFunc</button>
+								<button @click="handleUnblockUser(user.buddy)" class="bg-blue-500 hover:bg-blue-700 transition rounded px-2">{{t("unblock")}}</button>
 							</td>
 						</tr>
 						<tr v-if="blocked.length === 0">
-							<td colspan="2" class="text-gray-500 px-4 py-2">No tienes usuarios bloqueados</td>
+							<td colspan="2" class="text-gray-500 px-4 py-2">{{t("noBlockedUsers")}}</td>
 						</tr>
 					</tbody>
 				</table>

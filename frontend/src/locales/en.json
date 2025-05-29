@@ -65,5 +65,26 @@
 
   "prepare": "Prepare",
   "opponetName": "Opponent name",
-  "randomPong": "Random Pong"
+  "randomPong": "Random Pong",
+  "search": "Search",
+  "searchUser": "Search user",
+  "Pendingfriendrequests": "Pending friend requests",
+  "noPendingRequests": "No pending requests",
+  "action": "Action",
+  "accept": "Accept",
+  "reject": "Reject",
+  "myFriends": "My friends",
+  "noFriends": "You have no friends",
+  "blockedUsers": "Blocked users",
+  "noBlockedUsers": "You have no blocked users",
+  "unblock": "Unblock",
+
+  "youAreBlocked": "You are blocked by this user",
+  "youBlocked": "You blocked this user",
+  "pending": "Pending",
+  "winner": "Winner",
+  "round": "Round",
+  "unrated": "Unrated",
+  "noTournaments": "You have not joined any tournament",
+  "statistics": "Statistics"
   }

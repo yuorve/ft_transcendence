@@ -100,7 +100,7 @@ const translatedRouteName = computed(() => {
     class="bg-gradient-to-r from-blue-500 to-blue-900 flex w-screen h-18 p-3 px-0 border-amber-300 border">
     <div class="hidden justify-evenly items-center w-3/4 sm:flex" v-if="isAuthenticated">
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/">{{ t('start') }}</RouterLink>
-      <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/friends">Amigos</RouterLink>
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/friends">{{ t("friends") }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/Pong">{{ t('pong') }}</RouterLink>
       <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/Tictactoe">{{ t('tictac') }}
       </RouterLink>

@@ -17,30 +17,30 @@
 			<!-- Botones de acción -->
 			<div v-if="username !== auth?.username" class="flex gap-2">
 				<p v-if="hasBlockedTarget()" class="text-red-700 font-semibold">
-					Lo tienes bloqueado</p>
+					{{t("youBlocked")}}</p>
 				<p v-else-if="isBlockedByTarget()" class="text-red-700 font-semibold">
-					Te tiene bloqueado
+					{{t("youAreBlocked")}}
 				</p>
 				<p v-else-if="!isFriend(String(username)) && isRequestPending()"
 					class="text-gray-500 font-semibold">
-					Pendiente
+					{{t("pending")}}
 				</p>
 
 				<!-- Mostrar botón de añadir amigo solo si no está pendiente ni es amigo -->
 				<button v-else-if="!isFriend(String(username)) && !isRequestPending()"
 					@click="addFriend(String(username))"
 					class="bg-blue-500 hover:bg-blue-600 transition text-white px-2 py-1 rounded">
-					➕ Añadir amigo
+					➕ {{t("addFriend")}}
 				</button>
 				<!-- Solo mostrar si SÍ es amigo -->
 				<button v-else @click="removeFriend(String(username))"
 					class="bg-violet-500 hover:bg-violet-700 transition text-white px-2 py-1 rounded">
-					❌ Borrar amigo
+					❌ {{t("removeFriend")}}
 				</button>
 				<div v-if="!isFriend(String(username)) && !isRequestPending()">
 					<button v-if="hasBlockedTarget()" @click="handleUnblockUser(String(username))"
 						class="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 transition">
-						🔓 Desbloquear
+						🔓 {{t("unblock")}}
 					</button>
 					<button v-else @click="handleBlockUser(String(username))"
 						class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition">
@@ -102,7 +102,7 @@
 								<span>{{ t('tournament') }} {{ torneo.tournament }} - {{ t('game') }} {{
 									torneo.games[0].type }}</span>
 								<span class="text-green-700">
-									Ganador: {{ torneo.champion || 'Pendiente' }}
+									{{t("winner")}}: {{ torneo.champion || 'Pendiente' }}
 								</span>
 							</summary>
 							<div class="p-4 bg-white">
@@ -112,30 +112,30 @@
 										'bg-red-100': isLoss(game)
 									}">
 									<p>
-										<strong>Ronda {{ game.round }} — Juego {{ game.game_order }}:</strong>
+										<strong>{{t("round")}} {{ game.round }} — {{t("game")}} {{ game.game_order }}:</strong>
 									</p>
 									<p>
 										{{ game.player1 }} vs {{ game.player2 }}
 										<span v-if="game.score1 !== '' && game.score2 !== ''">
 											{{ game.score1 }} - {{ game.score2 }}
 										</span>
-										<span v-else class="italic text-gray-500">Sin puntuar</span>
+										<span v-else class="italic text-gray-500">{{t("unrated")}}</span>
 									</p>
-									<p><strong>Fecha:</strong> {{ formatDate(game.created_at) }}</p>
+									<p><strong>{{t("date")}}:</strong> {{ formatDate(game.created_at) }}</p>
 								</div>
 							</div>
 						</details>
 					</div>
 				</div>
 
-				<p v-else class="text-gray-500">No has participado en ningún torneo.</p>
+				<p v-else class="text-gray-500">{{("noTournaments")}}.</p>
 			</div>
 		</div>
 
 		<!-- Estadísticas Tab -->
 		<div v-else-if="activeTab === 'Estadísticas'" class="w-full h-full">
 			<div class="flex flex-col items-center justify-center h-full">
-				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">Estadísticas</h2>
+				<h2 class="text-2xl font-bold mb-2 px-4 py-1 rounded w-fit bg-white">{{t("statistics")}}</h2>
 				<div class="w-[98%] flex flex-wrap gap-8 bg-amber-300 rounded justify-around items-center h-full">
 					<!-- Partidas por tipo -->
 					<div class="flex flex-col items-center sm:w-1/3 border">
