@@ -206,7 +206,7 @@ onMounted(async () => {
 // Filtros para cada tipo de juego
 const normalPongGames = computed(() =>
 	allGames.value.filter(
-		g => g.type === 'Pong' && g.score1 !== '' && g.score2 !== '' && Number(g.game_order) === -1
+		g => g.type === 'pong' && g.score1 !== '' && g.score2 !== '' && Number(g.game_order) === -1
 	)
 )
 const normalTicTacToeGames = computed(() =>
@@ -326,6 +326,7 @@ const removeFriend = async (buddy: string) => {
 
 	try {
 		await deleteFriend(currentUser, buddy);
+		loadFriends();
 		alert('Amigo eliminado');
 	} catch (err) {
 		console.error('Error eliminando amigo:', err);
@@ -397,6 +398,7 @@ const loadPendingRequests = async () => {
 	try {
 		const res = await getRequests(String(username));
 		pendingRequests.value = res.friends || [];
+		loadFriends();
 	} catch (err) {
 		console.error("Error cargando solicitudes pendientes:", err);
 	}

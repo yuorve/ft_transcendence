@@ -31,10 +31,8 @@
             <tr v-for="player in playersArray" :key="player.id" class="">
               <td v-if="player.username !== username" class="pt-2">
                 <div class="bg-gray-200 w-full rounded-xl border-2 px-2 py-1">
-                  {{ player.username }} -
+                  {{ player.username }}
                   <span v-if="player.isFriend">(Amigo)</span>
-                  <span v-else><router-link
-                      :to="{ name: 'Chats', params: { buddy: player.username } }">Invitar</router-link></span>
                 </div>
               </td>
             </tr>

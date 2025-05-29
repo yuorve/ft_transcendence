@@ -45,7 +45,7 @@ async function gamesRoutes(fastify) {
   fastify.put('/games/:id', async (request, reply) => {
     const { id } = request.params;
     const { player1, player2, score1, score2 } = request.body;
-    
+
     if (
       typeof player1 !== 'string' ||
       typeof player2 !== 'string' ||
@@ -53,10 +53,10 @@ async function gamesRoutes(fastify) {
       typeof score2 !== 'string'
     ) {
       return reply
-      .status(400)
-      .send({ error: 'Faltan datos: player1, player2, score1 o score2' });
+        .status(400)
+        .send({ error: 'Faltan datos: player1, player2, score1 o score2' });
     }
-    
+
     try {
       // Actualiza TODOS los campos que envías
       await run(`UPDATE games SET player1 = ?, player2 = ?, score1 = ?, score2 = ? WHERE game = ?`, [player1, player2, score1, score2, id]);
@@ -221,6 +221,31 @@ async function gamesRoutes(fastify) {
       });
     } catch (err) {
       reply.status(500).send({ error: err.message });
+    }
+  });
+
+  // Borrar un torneo completo (torneo y sus partidas)
+  fastify.delete('/tournament/:tournamentId', async (request, reply) => {
+    const { tournamentId } = request.params;
+    try {
+      // Obtener todos los IDs de partidas asociadas al torneo
+      const rows = await all(
+        'SELECT game FROM tournaments WHERE tournament = ?',
+        [tournamentId]
+      );
+
+      // Borrar todas las partidas asociadas
+      for (const row of rows) {
+        await run('DELETE FROM games WHERE game = ?', [row.game]);
+      }
+
+      // Borrar las entradas del torneo
+      await run('DELETE FROM tournaments WHERE tournament = ?', [tournamentId]);
+
+      reply.send({ message: 'Torneo y partidas eliminados correctamente' });
+    } catch (err) {
+      console.error('Error al eliminar torneo:', err);
+      reply.status(500).send({ error: 'Error al eliminar torneo y partidas' });
     }
   });
 

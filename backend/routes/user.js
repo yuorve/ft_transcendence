@@ -46,12 +46,13 @@ async function userRoutes(fastify) {
     }
   });
 
+  const defaultProfileImage = "/src/assets/default-profile.png";
   // Ruta para obtener l imagen de un usuario a partir del nombre
   fastify.get('/user-image/:user', async (request, reply) => {
     try {
       const { user } = request.params;
       const users = await all('SELECT profileImage FROM users WHERE username = ?', [user]);
-      const profileImage = users.length > 0 ? users[0].profileImage : null;
+       const profileImage = users.length > 0 ? users[0].profileImage !== null ? users[0].profileImage : defaultProfileImage : defaultProfileImage;
 
       reply.send({ profileImage });
     } catch (error) {

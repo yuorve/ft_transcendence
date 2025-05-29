@@ -132,6 +132,13 @@ export async function deleteGame(gameId: string) {
   });
   return response.json();
 }
+// Borrar un torneo
+export async function deleteTournament(tournamentId: string) {
+  const response = await fetch(`${API_URL}/tournament/${tournamentId}`, {
+    method: 'DELETE',
+  });
+  return response.json();
+}
 
 // Obtener una partida concreta por su ID de juego
 export async function getGame(gameId: string) {

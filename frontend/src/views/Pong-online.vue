@@ -92,7 +92,7 @@ if (socket) {
     if (!route.query.fromInvite) {
       socket.send(JSON.stringify({ 
         type: gameMode.value, 
-        game: 'Pong', 
+        game: 'pong', 
         id: gameid, 
         player: username 
       }));
@@ -151,7 +151,7 @@ if (socket) {
               
               createGame(
                 gameid,
-                "Pong",
+                "pong",
                 -1,
                 player1.value,
                 player2.value,
