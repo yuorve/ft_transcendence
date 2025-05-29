@@ -150,6 +150,13 @@ function startNewTournament() {
 onMounted(async () => {
   await checkTournament();
   useWebSocket();
+
+  websocketState.messages.forEach((data, index) => {
+    if (index >= websocketState.processedMessages) {
+
+    }
+  });
+  websocketState.processedMessages = websocketState.messages.length;
 });
 
 const players = ref<string[]>([currentUser]);
