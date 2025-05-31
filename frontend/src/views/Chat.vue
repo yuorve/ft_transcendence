@@ -354,8 +354,8 @@ function handleWebSocketMessages() {
                 const chatIndex = privateChats.value.findIndex(
                     (c) => c.username === from
                 );
-
-                if (chatIndex >= 0) {
+                //Para que le llegue tambien notificacion al creador del torneo
+                /* if (chatIndex >= 0) {
                     // Chat existente - añadir mensaje
                     privateChats.value[chatIndex].messages.push({
                         from,
@@ -397,7 +397,7 @@ function handleWebSocketMessages() {
                         );
                         scrollToBottom(chatElement);
                     });
-                }
+                } */
 
                 // Llamar a la función global para manejar la respuesta en Tournament.vue
                 if (window.handleTournamentInviteResponse) {
@@ -597,10 +597,6 @@ function handleWebSocketMessages() {
                     });
                 }
 
-                // Si la invitación fue aceptada, el que envió la invitación
-                // será redirigido automáticamente por el servidor
-                // No necesitamos hacer nada más aquí porque el servidor
-                // enviará un mensaje de tipo "startGame" que manejamos en otro bloque
             } else if (data.type === "startGame") {
                 console.log("Recibido startGame:", data);
                 if (data.gameId) {
