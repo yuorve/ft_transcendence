@@ -1,10 +1,10 @@
 <template>
 	<div class="register-container">
-	  <h2>Actualizar Contraseña</h2>
+	  <h2>{{ t("changePass")}}</h2>
 	  <form @submit.prevent="register" enctype="multipart/form-data">
-		<label>Usuario</label>
+		<label>{{t("username")}}</label>
   
-		<label>Contraseña</label>
+		<label>{{t("password")}}</label>
 		<input type="password" v-model="password" required placeholder="*******" />
   
 		<button type="submit" :disabled="!isFormValid">Eliminar Cuenta</button>
@@ -17,7 +17,9 @@
   import { ref, computed, watch } from "vue";
   import { useRouter } from "vue-router";
   import { deleteAccount } from "../api";
+  import { useI18n } from 'vue-i18n';
   
+  const { t } = useI18n();
   const router = useRouter();
   const logout = inject("logout");
   const password = ref("");

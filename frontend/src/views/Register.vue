@@ -1,24 +1,24 @@
 <template>
 	<div class="flex items-center justify-center p-5 bg-amber-300">
 		<div class="register-container">
-		<h2>Registro</h2>
+		<h2>{{t("registration")}}</h2>
 		<form @submit.prevent="register">
-			<label>Usuario</label>
+			<label>{{t("username")}}</label>
 			<input type="text" v-model="username" required placeholder="Nombre de usuario" />
 	
-			<label>Correo Electrónico</label>
+			<label>{{t("mail")}}</label>
 			<input type="email" v-model="email" required placeholder="correo@ejemplo.com" />
 	
-			<label>Contraseña</label>
+			<label>{{t("password")}}</label>
 			<input type="password" v-model="password" required placeholder="*******" />
 	
-			<label>Foto de perfil</label>
+			<label>{{t("profImg")}}</label>
 			<input type="file" @change="handleFileUpload" required accept="image/*" />
 	
-			<button type="submit">Registrarse</button>
+			<button type="submit">{{t("register")}}</button>
 		</form>
 	
-		<p>¿Ya tienes cuenta? <router-link to="/login">Iniciar sesión</router-link></p>
+		<p>{{t("haveAcc")}} <router-link to="/login">{{t("login")}}</router-link></p>
 		</div>
 	</div>
   </template>
@@ -27,7 +27,9 @@
   import { ref } from "vue";
   import { useRouter } from "vue-router";
   import { registerUser, checkUsernameAvailability } from "../api";
-  
+  import { useI18n } from 'vue-i18n'
+
+  const { t } = useI18n();
   const router = useRouter();
   const username = ref("");
   const email = ref("");

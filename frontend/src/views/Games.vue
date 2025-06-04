@@ -294,7 +294,7 @@ const currentUser = localStorage.getItem("username") || "";
 async function handleBlockUser(buddyName: string) {
 	try {
 		await blockUser(currentUser, buddyName);
-		alert(`${buddyName} has been blocked`);
+		alert(`${buddyName} ` + t("blockedUser"));
 		await loadMyBlocked();
 	} catch (err) {
 		console.error(err);
@@ -310,7 +310,7 @@ const addFriend = async (buddy: string) => {
 
 	try {
 		const res = await sendRequest(String(username), currentUser);
-		alert(`${username} has been requested as a friend`);
+		alert(`${username} ` + t("request"));
 		console.log(res.message || "Solicitud enviada a " + username);
 		await loadPendingRequests();
 		loadFriends();
@@ -321,13 +321,13 @@ const addFriend = async (buddy: string) => {
 }
 
 const removeFriend = async (buddy: string) => {
-	const confirmDelete = confirm(`¿Estás seguro de que quieres eliminar a ${buddy} de tu lista de amigos?`);
+	const confirmDelete = confirm(t("confDel1") + ` ${buddy} ` + t("confDel2"));
 	if (!confirmDelete) return;
 
 	try {
 		await deleteFriend(currentUser, buddy);
 		loadFriends();
-		alert('Amigo eliminado');
+		alert(t("friendDeleted"));
 	} catch (err) {
 		console.error('Error eliminando amigo:', err);
 		alert('No se pudo eliminar al amigo');

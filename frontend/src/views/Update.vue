@@ -1,13 +1,13 @@
 <template>
 	<div class="register-container">
-	  <h2>Actualizar Imagen</h2>
+	  <h2>{{t("changeImg")}}</h2>
 	  <form @submit.prevent="register" enctype="multipart/form-data">
-		<label>Usuario</label>
+		<label>{{t("username")}}</label>
   
-		<label>Foto de perfil</label>
+		<label>{{t("profImg")}}</label>
 		<input type="file" @change="handleFileUpload" accept="image/*" />
   
-		<button type="submit" :disabled="!isFormValid">Actualizar</button>
+		<button type="submit" :disabled="!isFormValid">{{t("update")}}</button>
 	  </form>
   
 	</div>
@@ -17,7 +17,9 @@
   import { ref, computed, watch, inject } from "vue";
   import { useRouter } from "vue-router";
   import { UpdateImage, API_URL } from "../api";
-  
+  import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n();
   const router = useRouter();
   const username = ref(localStorage.getItem("username") || "");
   const profileImage = ref(null);

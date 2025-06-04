@@ -6,7 +6,9 @@ import { Engine, Scene } from "@babylonjs/core";
 import { useRoute, useRouter } from "vue-router";
 import { API_URL, createGame, generateId, getProfile, updateGame, getUserImage } from "../api";
 import { useWebSocket } from '../services/websocket';
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n();
 let scene: Scene | null = null;
 let engine: Engine | null = null;
 const auth = inject<{ username: string }>("auth");
@@ -79,6 +81,18 @@ function initializePaddles() {
     console.log("Game joiner paddles initialized");
   }
   
+  loadProfileImage();
+  if(puntuation.isHost)
+    createGame(
+      gameid,
+      "pong",
+       -1,
+        player1.value,
+       player2.value,
+        "",
+        ""
+    );
+
   paddlesInitialized.value = true;
 }
 
@@ -148,16 +162,16 @@ if (socket) {
                 puntuation.opponentPaddle = scene?.getMeshByName("paddle2");
                 paddlesInitialized.value = true;
               }
-              
-              createGame(
-                gameid,
-                "pong",
-                -1,
-                player1.value,
-                player2.value,
-                "",
-                ""
-              );
+              if(puntuation.isHost)
+                createGame(
+                  gameid,
+                  "pong",
+                  -1,
+                  player1.value,
+                  player2.value,
+                  "",
+                  ""
+                );
           } else {
               player1.value = data.id;
               player2.value = auth?.username || 'ErrorUser';
@@ -373,9 +387,9 @@ watch(
   </div>
   <div class="absolute w-full h-full text-9xl flex flex-col text-center items-center justify-center pointer-events-none"
     v-if="puntuation.pr >= 5 || puntuation.pl >= 5">
-    <h1>FIN DE LA PARTIDA</h1>
-    <h2 v-if="puntuation.pl >= 5">GANADOR {{ player1 }}</h2>
-    <h2 v-else>GANADOR {{ player2 }}</h2>
+    <h1>{{t("endOfGame")}}</h1>
+    <h2 v-if="puntuation.pl >= 5">{{t("winner")}} {{ player1 }}</h2>
+    <h2 v-else>{{t("winner")}} {{ player2 }}</h2>
   </div>
 
 </template>

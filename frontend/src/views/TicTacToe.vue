@@ -245,9 +245,9 @@ nextTick(() => {
     <div
       class="absolute w-full h-full text-xl flex flex-col text-center items-center justify-center pointer-events-none xl:text-8xl"
       v-if="puntuation.pl >= 5 || puntuation.pr >= 5">
-      <h1 class="bg-white rounded-2xl">FIN DE LA PARTIDA</h1>
-      <h2 class="bg-white rounded-2xl" v-if="puntuation.pl >= 5">GANADOR {{ player1 }}</h2>
-      <h2 class="bg-white rounded-2xl" v-else>GANADOR {{ player2 }}</h2>
+      <h1 class="bg-white rounded-2xl">{{t("endOfGame")}}</h1>
+      <h2 class="bg-white rounded-2xl" v-if="puntuation.pl >= 5">{{t("wwinner")}} {{ player1 }}</h2>
+      <h2 class="bg-white rounded-2xl" v-else>{{t("winner")}} {{ player2 }}</h2>
     </div>
   </div>
 </template>

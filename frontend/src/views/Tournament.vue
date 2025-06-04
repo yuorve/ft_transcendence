@@ -22,7 +22,9 @@ import {
 } from "../api";
 import type { Game, MyTournamentsResponse, TournamentResponse } from "../api";
 // import type { int } from "@babylonjs/core";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n();
 // Obtener el usuario actual del sistema (debe estar en `provide` en `App.vue`)
 const auth = inject<{ username: string }>("auth");
 const currentUser = auth?.username || "Tú"; // Si no hay usuario, poner "Tú"
@@ -423,7 +425,7 @@ const borrarTorneo = async (tournamentId: string) => {
         v-if="tournamentActive === false && !fromPong"
     >
         <div id="GameSelector">
-            <p>Selecciona el juego</p>
+            <p>{{t("chooseGame")}}</p>
             <button
                 :class="game === 'pong' ? 'bg-red-500' : 'bg-amber-300'"
                 @click="
@@ -436,7 +438,7 @@ const borrarTorneo = async (tournamentId: string) => {
                 "
                 class="cursor-pointer transition py-1 px-3 rounded-md"
             >
-                Pong
+                {{t("pong")}}
             </button>
             <button
                 :class="game === 'TicTacToe' ? 'bg-red-500' : 'bg-amber-300'"
@@ -450,29 +452,29 @@ const borrarTorneo = async (tournamentId: string) => {
                 "
                 class="cursor-pointer transition py-1 px-3 rounded-md"
             >
-                3 en raya
+                {{t("tictac")}}
             </button>
         </div>
-        <p>Selecciona el número de jugadores</p>
+        <p>{{t("playerNum")}}</p>
         <div class="flex items-center justify-center gap-10">
             <!-- <button @click="reset" class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md">reset</button> -->
             <button
                 @click="playerNum = 2"
                 class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md"
             >
-                2
+                {{t("2")}}
             </button>
             <button
                 @click="playerNum = 4"
                 class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md"
             >
-                4
+                {{t("4")}}
             </button>
             <button
                 @click="playerNum = 8"
                 class="cursor-pointer bg-amber-300 py-1 px-3 rounded-md"
             >
-                8
+                {{t("8")}}
             </button>
         </div>
         <div
@@ -502,7 +504,7 @@ const borrarTorneo = async (tournamentId: string) => {
                     <button
                         class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
                     >
-                        Invitar
+                        {{t("invite")}}
                     </button>
                 </div>
             </div>
@@ -511,10 +513,9 @@ const borrarTorneo = async (tournamentId: string) => {
             v-if="waitingForResponses"
             class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-4"
         >
-            <strong class="font-bold">Esperando respuestas...</strong>
+            <strong class="font-bold">{{ t("waitingresp") }}</strong>
             <span class="block sm:inline"
-                >Se han enviado invitaciones a todos los jugadores. Esperando
-                confirmación.</span
+                >{{t("waitingConf")}}</span
             >
             <div class="mt-2">
                 <div
@@ -524,12 +525,12 @@ const borrarTorneo = async (tournamentId: string) => {
                 >
                     <span>{{ player }}:</span>
                     <span v-if="response === null" class="text-yellow-600"
-                        >⏳ Esperando...</span
+                        >⏳ {{t("waiting")}}</span
                     >
                     <span v-else-if="response === true" class="text-green-600"
-                        >✅ Aceptado</span
+                        >✅ {{t("accepted")}}</span
                     >
-                    <span v-else class="text-red-600">❌ Rechazado</span>
+                    <span v-else class="text-red-600">❌ {{t("rejected")}}</span>
                 </div>
             </div>
         </div>
@@ -562,7 +563,7 @@ const borrarTorneo = async (tournamentId: string) => {
             class="w-auto bg-amber-300"
         >
             <h2 class="text-center font-bold text-xl mb-4">
-                Datos del Torneo {{ tournamentData.tournament }}
+                {{t("dataTour")}} {{ tournamentData.tournament }}
             </h2>
             <h2 class="text-center font-bold text-xl mb-4">
                 {{ tournamentData.champion || "Nadie" }}
@@ -573,22 +574,22 @@ const borrarTorneo = async (tournamentId: string) => {
                     :key="roundGroup.round"
                     class="flex flex-col items-center"
                 >
-                    <h3 class="mb-2">Ronda {{ roundGroup.round }}</h3>
+                    <h3 class="mb-2">{{t("round")}} {{ roundGroup.round }}</h3>
                     <div class="flex justify-center bg-gray-300">
                         <div
                             v-for="game in roundGroup.games"
                             :key="game.game"
                             class="bg-green-400 p-3 m-1"
                         >
-                            <p><strong>Juego:</strong> {{ game.game }}</p>
+                            <p><strong>{{t("game")}}:</strong> {{ game.game }}</p>
                             <p>
-                                <strong>Jugador 1:</strong> {{ game.player1 }}
+                                <strong>{{t("player1")}}:</strong> {{ game.player1 }}
                             </p>
                             <p>
-                                <strong>Jugador 2:</strong> {{ game.player2 }}
+                                <strong>{{t("player2")}}:</strong> {{ game.player2 }}
                             </p>
-                            <p><strong>Ronda:</strong> {{ game.round }}</p>
-                            <p><strong>orden:</strong> {{ game.game_order }}</p>
+                            <p><strong>{{t("round")}}:</strong> {{ game.round }}</p>
+                            <p><strong>{{t("order")}}:</strong> {{ game.game_order }}</p>
                         </div>
                     </div>
                 </div>
@@ -600,7 +601,7 @@ const borrarTorneo = async (tournamentId: string) => {
                 class="p-2 bg-gradient-to-b from-red-400 to-red-800 w-fit cursor-pointer rounded-md border-2 border-red-400 text-2xl text-white"
                 @click="redirect"
             >
-                jugar pong con {{ player1 }} y {{ player2 }} la partida
+                {{t("playWith")}} {{ player1 }} y {{ player2 }} {{t("theGame")}}
                 {{ gameid }}
             </button>
             <button
@@ -608,7 +609,7 @@ const borrarTorneo = async (tournamentId: string) => {
                 class="p-2 bg-gradient-to-b from-red-400 to-red-800 w-fit cursor-pointer rounded-md border-2 border-red-400 text-2xl text-white"
                 @click="startNewTournament"
             >
-                Nuevo torneo
+                {{t("newTour")}}
             </button>
         </div>
     </div>

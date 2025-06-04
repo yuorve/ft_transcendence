@@ -1,25 +1,28 @@
 <template>
 	<div class="register-container">
-	  <h2>Actualizar Contraseña</h2>
+	  <h2>{{ t("changePass")}}</h2>
 	  <form @submit.prevent="register" enctype="multipart/form-data">
-		<label>Usuario</label>
+		<label>{{t(("user"))}}</label>
   
-		<label>Contraseña Anterior</label>
+		<label>{{t("oldPass")}}</label>
 		<input type="password" v-model="password" required placeholder="*******" />
   
-		<label>Nueva Contraseña</label>
+		<label>{{t("newPass")}}</label>
 		<input type="password" v-model="newpassword" required placeholder="*******" />
   
-		<button type="submit" :disabled="!isFormValid">Actualizar</button>
+		<button type="submit" :disabled="!isFormValid">{{t("update")}}</button>
 	  </form>
   
 	</div>
   </template>
   
-  <script setup>
+<script setup>
   import { ref, computed, watch } from "vue";
   import { useRouter } from "vue-router";
   import { UpdatePassword } from "../api";
+  import { useI18n } from 'vue-i18n'
+
+  const { t } = useI18n();
   
   const router = useRouter();
   const password = ref("");

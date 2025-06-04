@@ -90,7 +90,7 @@ const removeFriend = async (buddy: string) => {
 	try {
 		await deleteFriend(username, buddy);
 		loadFriends();
-		alert('Amigo eliminado');
+		alert(t("friendDeleted"));
 	} catch (err) {
 		console.error('Error eliminando amigo:', err);
 		alert('No se pudo eliminar al amigo');
@@ -101,7 +101,7 @@ async function handleUnblockUser(buddyName: string) {
 	try {
 		// Aquí modificas blocked = "0" en backend
 		await blockUser(username, buddyName, false); // debes adaptar blockUser() a esto
-		alert(`${buddyName} ha sido desbloqueado`);
+		alert(`${buddyName} ` + t("unblockedUser"));
 
 		await loadBlocked(); // Recarga para actualizar el botón
 	} catch (err) {
@@ -177,7 +177,7 @@ async function handleUnblockUser(buddyName: string) {
 							 </td>
 							<td class=" px-4 py-2">
 								<!-- Aquí puedes poner botones como "Chatear", "Eliminar", etc -->
-								<button @click="removeFriend(friend.buddy)" class="bg-blue-500 hover:bg-blue-700 transition rounded px-2">Eliminar</button>
+								<button @click="removeFriend(friend.buddy)" class="bg-blue-500 hover:bg-blue-700 transition rounded px-2">{{t("delete")}}</button>
 							</td>
 						</tr>
 						<p v-else class="text-gray-500 px-4 py-2">{{t("noFriends")}}</p>

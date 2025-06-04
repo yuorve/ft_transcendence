@@ -1,24 +1,22 @@
 <template>
   <div class="flex flex-col items-center justify-center gap-3">
     <div class="w-full justify-items-center bg-amber-300 text-center">
-      <h1 class="text-green-600">Bienvenido a FT-Transcendence</h1>
+      <h1 class="text-green-600">{{t("welcome")}}</h1>
     </div>
     <div class="flex items-top justify-center gap-3 my-3">
-      <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/pong-online?mode=newGame">Nueva Partida
-        de Pong en Línea</RouterLink>
-      <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/tictactoe-online?mode=newGame">Nueva
-        Partida de 3 en Raya en Línea</RouterLink>
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/pong-online?mode=newGame">{{t("newPongOn")}}</RouterLink>
+      <RouterLink class="bg-red-600 p-3 rounded-xl text-white text-center" to="/tictactoe-online?mode=newGame">{{t("newTicOn")}}</RouterLink>
     </div>
     <div class="flex w-[98%] flex-col-reverse md:flex-row h-full  justify-center gap-3">
       <div class="container mx-auto p-4 border-2 bg-white rounded-xl">
-        <h1 class="text-2xl font-bold mb-4">Usuarios Conectados</h1>
+        <h1 class="text-2xl font-bold mb-4">{{t("connectedUsers")}}</h1>
 
         <div v-if="!playersArray" class="text-gray-600">
-          Cargando usuarios...
+          {{t("chargingUsers")}}
         </div>
 
         <div v-else-if="playersArray.length === 1" class="text-gray-600">
-          Aún no hay nadie conectado.
+          {{t("nousers")}}
         </div>
 
         <table v-else class="table-auto w-full">
@@ -32,7 +30,7 @@
               <td v-if="player.username !== username" class="pt-2">
                 <div class="bg-gray-200 w-full rounded-xl border-2 px-2 py-1">
                   {{ player.username }}
-                  <span v-if="player.isFriend">(Amigo)</span>
+                  <span v-if="player.isFriend">({{ t("friend") }})</span>
                 </div>
               </td>
             </tr>
@@ -40,35 +38,35 @@
         </table>
       </div>
       <div class="container mx-auto p-4 border-2 bg-white rounded-xl">
-        <h1 class="text-2xl font-bold mb-4">Juegos en Curso</h1>
+        <h1 class="text-2xl font-bold mb-4">{{t("ongoing")}}</h1>
         <div class="flex gap-3">
           <td class="border-2 rounded-xl px-3 text-center"
             :class="randomPongGameId ? 'bg-green-500 transition duration-500 hover:bg-green-600' : 'bg-gray-400 pointer-events-none'">
             <router-link :to="{ name: 'PongOnline', query: { mode: 'joinGame', gameid: randomPongGameId } }">
-              🎮 Pong aleatorio
+              🎮 {{t("randomPong")}}
             </router-link>
           </td>
 
           <td class="border-2 rounded-xl px-3 text-center"
             :class="randomTTTGameId ? 'bg-green-500 transition duration-500 hover:bg-green-600' : 'bg-gray-400 pointer-events-none'">
             <router-link :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: randomTTTGameId } }">
-              🎮 TTT aleatorio
+              🎮 {{t("randomTic")}}
             </router-link>
           </td>
 
         </div>
         <div v-if="!gamesArray" class="text-gray-600">
-          Cargando partidas...
+          {{t("chargingGames")}}
         </div>
 
         <div v-else-if="gamesArray.length === 0" class="text-gray-600">
-          Aún no hay nadie jugando.
+          {{t("nogames")}}
         </div>
 
         <table v-else class="table-auto w-full">
           <thead>
             <tr>
-              <th class="px-4 py-2">Partidas</th>
+              <th class="px-4 py-2">{{t("games")}}</th>
             </tr>
           </thead>
           <tbody>
@@ -79,10 +77,10 @@
                   <td class="" v-if="game.player1">{{ game.player1 }}</td>
                   <td class="" v-if="game.player2">{{ game.player2 }}</td>
                   <td class="bg-green-500 px-2 rounded-xl transition duration-500 hover:bg-green-600" v-if="(!game.player1 || !game.player2) && game.game === 'pong'"><router-link
-                      :to="{ name: 'PongOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link></td>
+                      :to="{ name: 'PongOnline', query: { mode: 'joinGame', gameid: game.id } }">{{t("join")}}</router-link></td>
                   <td class="bg-green-500 px-2 rounded-xl transition duration-500 hover:bg-green-600" v-if="(!game.player1 || !game.player2) && game.game === 'TicTacToe'">
                     <router-link
-                      :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: game.id } }">Unirse</router-link>
+                      :to="{ name: 'TTTOnline', query: { mode: 'joinGame', gameid: game.id } }">{{t("join")}}</router-link>
                   </td>
 
                 </div>
@@ -103,6 +101,9 @@ import { RouterLink } from "vue-router";
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { getFriends, getBlocked, noPlayer } from '../api';
 import { useWebSocket } from '../services/websocket';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 interface Player {
   id: string;
