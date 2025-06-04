@@ -39,8 +39,8 @@ async function loadProfileImage() {
         const promiseP1 = getUserImage(player1.value);
         const promiseP2 = getUserImage(player2.value);
         const [imageUrlP1, imageUrlP2] = await Promise.all([promiseP1, promiseP2]);        
-        profileImageP1.value = (imageUrlP1 && imageUrlP1.profileImage) ? `${API_URL}${imageUrlP1.profileImage}` : defaultProfileImage;
-        profileImageP2.value = (imageUrlP2 && imageUrlP2.profileImage) ? `${API_URL}${imageUrlP2.profileImage}` : defaultProfileImage;
+        profileImageP1.value = (imageUrlP1 && imageUrlP1.profileImage) ? `${imageUrlP1.profileImage}` : defaultProfileImage;
+        profileImageP2.value = (imageUrlP2 && imageUrlP2.profileImage) ? `${imageUrlP2.profileImage}` : defaultProfileImage;
     } catch (error) {
         console.error("Error al obtener la imagen del usuario:", error);
     }

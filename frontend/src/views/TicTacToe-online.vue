@@ -33,8 +33,8 @@ async function loadProfileImage() {
         const promiseP1 = getUserImage(player1.value);
         const promiseP2 = getUserImage(player2.value);
         const [imageUrlP1, imageUrlP2] = await Promise.all([promiseP1, promiseP2]);        
-        profileImageP1.value = (imageUrlP1 && imageUrlP1.profileImage) ? `${API_URL}${imageUrlP1.profileImage}` : defaultProfileImage;
-        profileImageP2.value = (imageUrlP2 && imageUrlP2.profileImage) ? `${API_URL}${imageUrlP2.profileImage}` : defaultProfileImage;
+        profileImageP1.value = (imageUrlP1 && imageUrlP1.profileImage) ? `${imageUrlP1.profileImage}` : defaultProfileImage;
+        profileImageP2.value = (imageUrlP2 && imageUrlP2.profileImage) ? `${imageUrlP2.profileImage}` : defaultProfileImage;
     } catch (error) {
         console.error("Error al obtener la imagen del usuario:", error);
     }
@@ -222,7 +222,6 @@ watch(
 				<img :src="profileImageP1" alt="Profile Image" class=" w-30 h-30 rounded-full shadow-2xl border-2">
 				<p class="bg-blue-200 border-1 border-blue-700 shadow-2xl rounded-md p-1">{{ player1 }}</p>
 			</div>
-			<div class="border-3 w-full flex-1 flex justify-center">stadistics</div>
 		</div>
 		<div class="flex flex-col flex-1 m-0 p-0 h-full border-l-3 border-l-blue-700 border-r-3 border-r-amber-700">
 			<div class="border-b-3 border-b-gray-700 h-full">
@@ -237,7 +236,6 @@ watch(
 				<img :src="profileImageP2" alt="Guest Image" class=" w-30 h-30 rounded-full shadow-2xl border-2">
 				<p class="bg-amber-200 border-1 border-amber-700 shadow-2xl rounded-md p-1">{{ player2 }}</p>
 			</div>
-			<div class="border-3 w-full flex-1 flex justify-center">stadistics</div>
 			</div>
 		</div>
 </template>

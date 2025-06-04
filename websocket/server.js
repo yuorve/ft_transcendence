@@ -249,7 +249,7 @@ wss.on("connection", (ws, request) => {
                     if (!games[gameId]) {
                         games[gameId] = {
                             id: gameId,
-                            game: "Pong",
+                            game: "pong",
                             player1: toUsername,
                             player2: fromUsername,
                             score1: 0,
@@ -483,7 +483,7 @@ wss.on("connection", (ws, request) => {
                         player2: null,
                         score2: null,
                     };
-                    if (data.game === "Pong") {
+                    if (data.game === "pong") {
                         games[gameId].ball = {
                             x: 0.0,
                             y: 0.0,
@@ -534,7 +534,7 @@ wss.on("connection", (ws, request) => {
                                     game: data.id,
                                 })
                             );
-                            if (data.game === "Pong") {
+                            if (data.game === "pong") {
                                 player2.send(
                                     JSON.stringify({
                                         type: "ballUpdate",
