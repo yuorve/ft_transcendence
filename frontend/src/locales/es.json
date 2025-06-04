@@ -131,5 +131,12 @@
   "order": "orden",
   "playWith": "jugar pong con",
   "theGame": "el juego",
-  "newTour": "Nuevo torneo"
+  "newTour": "Nuevo torneo",
+
+
+  "tournamets": "Torneos",
+  "stadistics": "estadísticas",
+  "typeGames": "Partidas jugadas por tipo",
+  "winDefTic": "Wins/Defeats 3 in a row"
+
 }

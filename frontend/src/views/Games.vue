@@ -128,7 +128,7 @@
 					</div>
 				</div>
 
-				<p v-else class="text-gray-500">{{("noTournaments")}}.</p>
+				<p v-else class="text-gray-500">{{t("noTournaments")}}.</p>
 			</div>
 		</div>
 
@@ -383,7 +383,7 @@ async function handleUnblockUser(buddyName: string) {
 	try {
 		// Aquí modificas blocked = "0" en backend
 		await blockUser(currentUser, buddyName, false); // debes adaptar blockUser() a esto
-		alert(`${buddyName} ha sido desbloqueado`);
+		alert(`${buddyName} ` + t("unblockedUser"));
 
 		await loadMyBlocked(); // Recarga para actualizar el botón
 	} catch (err) {

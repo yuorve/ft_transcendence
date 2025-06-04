@@ -131,5 +131,10 @@
   "order": "Պատվեր",
   "playWith": "խաղալ Պոնգ հետ",
   "theGame": "խաղը",
-  "newTour": "Նոր մրցաշար"
+  "newTour": "Նոր մրցաշար",
+
+  
+  "tournamets": "Tournaments",
+  "stadistics": "estadísticas",
+  "typeGames": "Partidas jugadas por tipo"
 }

@@ -86,7 +86,7 @@
   "noPendingRequests": "No pending requests",
   "request": "has been requested as a friend",
   "confDel1": "Are you sure you want to delete ",
-  "confDel2": "from your friends list?"
+  "confDel2": "from your friends list?",
   "action": "Action",
   "accept": "Accept",
   "accepted": "Accepted",
@@ -131,5 +131,12 @@
   "order": "order",
   "playWith": "jugar pong con",
   "theGame": "the game",
-  "newTour": "New tournament"
+  "newTour": "New tournament",
+
+
+  "tournamets": "Tournaments",
+  "stadistics": "stadistics",
+  "typeGames": "Games played by type",
+  "winDefTic": "Wins/Defeats 3 in a row"
+
   }
